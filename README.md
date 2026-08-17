@@ -60,3 +60,9 @@ SHA to `TradeJS-Deploy`. The project workflow needs only the cross-repository
 `DEPLOY_REPOSITORY_TOKEN`; application and server secrets remain in Deploy. A
 bootstrap push still verifies and publishes the image when this token is
 absent, but reports a notice and does not dispatch a production rollout.
+
+Before enabling dispatch, either make the GHCR package
+`tradejs-project-app` public for the current anonymous Compose pull, or keep it
+private and configure a read-only `GHCR_PULL_TOKEN` plus registry login in
+`TradeJS-Deploy`. Repository visibility does not automatically make its
+container package public.

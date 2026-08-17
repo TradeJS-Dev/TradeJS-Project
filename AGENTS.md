@@ -25,6 +25,8 @@ and the immutable handoff to `TradeJS-Deploy`.
   their package/repository assumptions are deliberately refactored.
 - Dispatch an immutable project SHA and image tag to `TradeJS-Deploy`; Deploy
   owns SSH, Compose, TLS, volumes, and server lifecycle.
+- Do not assume a public repository creates a public GHCR package. Require an
+  explicit public-package decision or a Deploy-owned read-only pull token.
 
 ## Verification
 
