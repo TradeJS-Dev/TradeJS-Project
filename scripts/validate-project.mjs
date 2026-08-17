@@ -17,6 +17,7 @@ const requiredFiles = [
   "deploy/runtime.env",
   "entrypoint.sh",
   "tradejs.config.ts",
+  "yarn.lock",
 ];
 for (const relativePath of requiredFiles) {
   assert(
@@ -50,6 +51,7 @@ for (const secretName of [
   "NEXTAUTH_SECRET",
   "AI_API_KEY",
   "AGENT_GITHUB_TOKEN",
+  "PG_PASSWORD",
 ]) {
   assert(
     !new RegExp(`^${secretName}=`, "m").test(runtimeEnv),

@@ -7,7 +7,7 @@ It is the explicit layer between the published TradeJS engine/packages and
 This repository was created with the real public generator:
 
 ```bash
-npx create-tradejs@3.0.1 TradeJS-Project --no-install
+npx create-tradejs@latest TradeJS-Project --no-install
 ```
 
 The generated project was then extended with production ownership; it was not
@@ -27,6 +27,10 @@ recreated as a monorepo clone.
 `TradeJS-Deploy` owns Compose, SSH, TLS, persistent volumes, and server
 lifecycle. Backtest/research artifacts live under this project's ignored
 `data/` directory, not in the engine repository.
+
+`deploy/runtime.env` contains only secret-free application defaults. Deploy
+injects `PG_PASSWORD`, authentication secrets, exchange/API credentials, and
+other production-only secrets when it writes the container environment file.
 
 ## Local setup
 

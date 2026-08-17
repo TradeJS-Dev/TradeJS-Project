@@ -17,6 +17,8 @@ and the immutable handoff to `TradeJS-Deploy`.
 - Keep non-secret production values in `deploy/runtime.env`.
 - Keep credentials only in local `.env`, GitHub Actions secrets, or the target
   server secret store. Never commit their values.
+- Treat `PG_PASSWORD` as a Deploy-owned production secret; the checked-in
+  runtime defaults must not provide a fallback value.
 - Build the app from published `@tradejs/*` packages with an immutable lockfile.
 - Publish only `tradejs-project-app` from this repository.
 - Keep ML inference and the monorepo research agent owned by `TradeJS` until
