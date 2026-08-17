@@ -98,6 +98,10 @@ assert(
   workflow.includes("DEPLOY_REPOSITORY_TOKEN"),
   "Cross-repository dispatch token is not explicit",
 );
+assert(
+  workflow.includes("if: env.DEPLOY_REPOSITORY_TOKEN != ''"),
+  "Project bootstrap must skip deploy dispatch until its token exists",
+);
 
 console.log(
   "Validated TradeJS-Project package, runtime image, and deploy handoff.",

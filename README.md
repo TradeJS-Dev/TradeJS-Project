@@ -57,4 +57,6 @@ docker build --check .
 A successful push to `main` publishes
 `ghcr.io/tradejs-dev/tradejs-project-app:<commit-sha>` and dispatches that exact
 SHA to `TradeJS-Deploy`. The project workflow needs only the cross-repository
-`DEPLOY_REPOSITORY_TOKEN`; application and server secrets remain in Deploy.
+`DEPLOY_REPOSITORY_TOKEN`; application and server secrets remain in Deploy. A
+bootstrap push still verifies and publishes the image when this token is
+absent, but reports a notice and does not dispatch a production rollout.
