@@ -2,6 +2,9 @@ node_modules
 .yarn/install-state.gz
 .tradejs
 .next
-data
+data/
+notes/
 .env
 *.tgz
+service.log*
+error.log*

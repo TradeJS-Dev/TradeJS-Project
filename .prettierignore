@@ -1,6 +1,7 @@
 .tradejs/
 .next/
 data/
+notes/
 node_modules/
 .env
 yarn.lock

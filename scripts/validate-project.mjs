@@ -15,7 +15,9 @@ const requiredFiles = [
   "Dockerfile",
   "cronjob",
   "deploy/runtime.env",
+  "docker-compose.dev.yml",
   "entrypoint.sh",
+  "scripts/research-notes-check.mjs",
   "tradejs.config.ts",
   "yarn.lock",
 ];
@@ -38,9 +40,21 @@ assert(
 );
 assert(
   packageJson.scripts.checks ===
-    "yarn format:check && yarn validate && yarn build",
+    "yarn format:check && yarn validate && yarn notes:check && yarn build",
   "Unexpected checks contour",
 );
+for (const scriptName of [
+  "backtest",
+  "replay",
+  "ai-export",
+  "ai-pocket-search",
+  "ai-train",
+  "research:auto",
+  "research:core",
+  "notes:check",
+]) {
+  assert(packageJson.scripts[scriptName], `Missing ${scriptName} script`);
+}
 
 const config = read("tradejs.config.ts");
 assert(config.includes("defineConfig(basePreset)"), "basePreset is not active");
@@ -63,6 +77,39 @@ const dockerfile = read("Dockerfile");
 assert(
   dockerfile.includes("yarn install --immutable"),
   "Docker install is mutable",
+);
+
+const localCompose = read("docker-compose.dev.yml");
+for (const volumeName of [
+  "investing_pgdata",
+  "investing_redisdata",
+  "investing_pgadmin_data",
+]) {
+  assert(
+    localCompose.includes(volumeName),
+    `Local Compose does not preserve ${volumeName}`,
+  );
+}
+assert(
+  localCompose.includes("ghcr.io/tradejs-dev/tradejs-ml-infer:latest"),
+  "Local Compose does not use the published ml-infer image",
+);
+assert(
+  localCompose.includes("platform: ${ML_INFER_PLATFORM:-linux/amd64}"),
+  "Local Compose does not declare the published ml-infer platform",
+);
+assert(
+  (localCompose.match(/external: true/g) ?? []).length === 3,
+  "Existing local volumes must remain explicitly external",
+);
+const mlInferService = localCompose.slice(
+  localCompose.indexOf("  ml-infer:"),
+  localCompose.indexOf("  pgadmin:"),
+);
+assert(!mlInferService.includes("build:"), "ml-infer must not build TradeJS");
+assert(
+  !mlInferService.includes("packages/ml"),
+  "ml-infer must not mount TradeJS sources",
 );
 assert(
   dockerfile.includes("yarn build"),

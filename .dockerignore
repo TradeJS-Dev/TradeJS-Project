@@ -3,6 +3,8 @@
 .tradejs
 .next
 data
+notes
 node_modules
 .env
 *.tgz
+*.log

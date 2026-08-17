@@ -18,15 +18,20 @@ recreated as a monorepo clone.
 - `tradejs.config.ts` — installed presets and private/public strategy packages.
 - `package.json` and `yarn.lock` — exact TradeJS package composition.
 - `deploy/runtime.env` — secret-free production application settings.
+- `docker-compose.dev.yml` — local Timescale, Redis, optional pgAdmin, and
+  published `ml-infer` orchestration.
+- ignored `data/` and `notes/` — local backtest/AI/research artifacts and the
+  durable research record.
 - `Dockerfile`, `entrypoint.sh`, and `cronjob` — runtime app image and process
   supervision.
 - `.github/workflows/publish.yml` — image publication and immutable dispatch to
   `TradeJS-Deploy`.
 
-`TradeJS` owns the framework packages and ML inference implementation.
-`TradeJS-Deploy` owns Compose, SSH, TLS, persistent volumes, and server
-lifecycle. Backtest/research artifacts live under this project's ignored
-`data/` directory, not in the engine repository.
+`TradeJS` owns the framework packages, strategy-neutral research tooling, and
+ML inference image implementation. `TradeJS-Deploy` owns production Compose,
+SSH, TLS, server volumes, and server lifecycle. This repository owns local
+Compose plus ignored `data/` and `notes/`; neither directory belongs in the
+engine repository or Git.
 
 `deploy/runtime.env` contains only secret-free application defaults. Deploy
 injects `PG_PASSWORD`, authentication secrets, exchange/API credentials, and
@@ -45,10 +50,55 @@ Open <http://localhost:3000/routes/dashboard>. The checked-in `.env.example`
 contains names and safe local defaults only; replace all secret placeholders in
 the ignored `.env`.
 
+`yarn infra-up` starts Timescale, Redis, and `ml-infer`. The inference service
+uses `ghcr.io/tradejs-dev/tradejs-ml-infer:latest` by default, so it no longer
+needs a TradeJS checkout, `Dockerfile.infer`, or monorepo source mounts. Override
+`ML_INFER_IMAGE` when testing another published tag. The current published
+image is `linux/amd64`; `ML_INFER_PLATFORM` makes that explicit and Docker
+Desktop runs it under emulation on arm64 hosts. Optional pgAdmin is managed with
+`yarn pgadmin:up` and `yarn pgadmin:down`.
+
+The named volumes default to `investing_pgdata`, `investing_redisdata`, and
+`investing_pgadmin_data` and are explicitly external so Compose attaches the
+existing local databases without relabelling or deleting them. Create these
+volumes first on a new machine. Do not use `docker compose down -v` unless you
+explicitly intend to delete those databases.
+
+## Backtest and research
+
+Run personal operational flows from this repository:
+
+```bash
+yarn backtest
+yarn replay
+yarn results
+yarn ai-export
+yarn ai-train --localOnly
+yarn ai-pocket-search
+yarn research:auto
+yarn research:core --help
+yarn strategy-release --help
+yarn notes:check
+```
+
+The project directory is the `PROJECT_CWD`: `.env`, `tradejs.config.ts`,
+`data/`, `notes/`, and all relative research artifacts resolve here. When
+testing unreleased engine changes, point `TRADEJS_SOURCE_REPOSITORY_ROOT` at the
+separate TradeJS checkout; Git SHA/diff/remote and source builds resolve there
+without moving artifacts out of this project.
+
+Research notes are permanently ignored and use
+`notes/<Strategy>/YYYY-MM-DD-<short-kebab-slug>.md`. Shared records use
+`notes/Shared/`, cross-strategy records use `notes/CrossStrategy/`, and files
+are not allowed directly under `notes/`. A `reproduction: complete` record must
+contain the complete ordered research contract and a machine-readable JSON
+metrics snapshot; `yarn notes:check` enforces these invariants.
+
 ## Verification
 
 ```bash
 yarn checks
+docker compose -f docker-compose.dev.yml config --quiet
 docker build --check .
 ```
 

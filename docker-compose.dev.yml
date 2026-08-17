@@ -1,0 +1,113 @@
+name: tradejs-project-dev
+
+services:
+  timescale:
+    container_name: inv-timescale
+    image: timescale/timescaledb:latest-pg16
+    platform: linux/amd64
+    environment:
+      POSTGRES_USER: ${PG_USER:-app}
+      POSTGRES_PASSWORD: ${PG_PASSWORD:-app}
+      POSTGRES_DB: ${PG_DATABASE:-app}
+    ports:
+      - "${PG_PORT:-5432}:5432"
+    command:
+      - postgres
+      - -c
+      - max_wal_size=16GB
+      - -c
+      - min_wal_size=2GB
+      - -c
+      - checkpoint_completion_target=0.9
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        ["CMD-SHELL", "pg_isready -U ${PG_USER:-app} -d ${PG_DATABASE:-app}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    container_name: inv-redis
+    image: redis/redis-stack:latest
+    stop_grace_period: 2m
+    environment:
+      REDIS_ARGS: >-
+        --appendonly yes --appendfsync everysec --save 60 1
+        --stop-writes-on-bgsave-error no
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+      - "${REDIS_INSIGHT_PORT:-5540}:8001"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  ml-infer:
+    container_name: ml-infer
+    image: ${ML_INFER_IMAGE:-ghcr.io/tradejs-dev/tradejs-ml-infer:latest}
+    platform: ${ML_INFER_PLATFORM:-linux/amd64}
+    environment:
+      MODEL_DIR: /app/data/ml/models
+      DEFAULT_STRATEGY: ${ML_DEFAULT_STRATEGY:-TrendLine}
+      ML_GRPC_HOST: 0.0.0.0
+      ML_GRPC_PORT: 50051
+    ports:
+      - "50051:50051"
+    volumes:
+      - ./data:/app/data
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import socket; socket.create_connection(('127.0.0.1', 50051), 2).close()",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  pgadmin:
+    profiles: [tools]
+    container_name: inv-pgadmin
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@example.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+      PGADMIN_LISTEN_PORT: "5050"
+    ports:
+      - "5050:5050"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      timescale:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget --spider --quiet http://127.0.0.1:5050/misc/ping || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+    name: ${TRADEJS_PGDATA_VOLUME:-investing_pgdata}
+    external: true
+  redisdata:
+    name: ${TRADEJS_REDISDATA_VOLUME:-investing_redisdata}
+    external: true
+  pgadmin_data:
+    name: ${TRADEJS_PGADMIN_VOLUME:-investing_pgadmin_data}
+    external: true
