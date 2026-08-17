@@ -4,6 +4,7 @@ node_modules
 .next
 data/
 notes/
+output/
 .env
 *.tgz
 service.log*

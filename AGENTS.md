@@ -29,8 +29,8 @@ the immutable handoff to `TradeJS-Deploy`.
   `PROJECT_CWD` identifies this config/artifact root;
   `TRADEJS_SOURCE_REPOSITORY_ROOT` optionally identifies a separate source
   checkout for Git lineage and unreleased builds.
-- Keep local `data/` and `notes/` here and ignored. Do not create symlinks back
-  to an engine or strategy repository.
+- Keep local `data/`, `notes/`, and `output/` here and ignored. Do not create
+  symlinks back to an engine or strategy repository.
 - Dispatch an immutable project SHA and image tag to `TradeJS-Deploy`; Deploy
   owns SSH, Compose, TLS, volumes, and server lifecycle.
 - Do not assume a public repository creates a public GHCR package. Require an

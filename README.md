@@ -20,8 +20,8 @@ recreated as a monorepo clone.
 - `deploy/runtime.env` — secret-free production application settings.
 - `docker-compose.dev.yml` — local Timescale, Redis, optional pgAdmin, and
   published `ml-infer` orchestration.
-- ignored `data/` and `notes/` — local backtest/AI/research artifacts and the
-  durable research record.
+- ignored `data/`, `notes/`, and `output/` — local backtest/AI/research
+  artifacts, runtime-feedback artifacts, and the durable research record.
 - `Dockerfile`, `entrypoint.sh`, and `cronjob` — runtime app image and process
   supervision.
 - `.github/workflows/publish.yml` — image publication and immutable dispatch to
@@ -30,8 +30,8 @@ recreated as a monorepo clone.
 `TradeJS` owns the framework packages, strategy-neutral research tooling, and
 ML inference image implementation. `TradeJS-Deploy` owns production Compose,
 SSH, TLS, server volumes, and server lifecycle. This repository owns local
-Compose plus ignored `data/` and `notes/`; neither directory belongs in the
-engine repository or Git.
+Compose plus ignored `data/`, `notes/`, and `output/`; these local artifact
+directories do not belong in the engine repository or Git.
 
 `deploy/runtime.env` contains only secret-free application defaults. Deploy
 injects `PG_PASSWORD`, authentication secrets, exchange/API credentials, and
@@ -82,10 +82,11 @@ yarn notes:check
 ```
 
 The project directory is the `PROJECT_CWD`: `.env`, `tradejs.config.ts`,
-`data/`, `notes/`, and all relative research artifacts resolve here. When
-testing unreleased engine changes, point `TRADEJS_SOURCE_REPOSITORY_ROOT` at the
-separate TradeJS checkout; Git SHA/diff/remote and source builds resolve there
-without moving artifacts out of this project.
+`data/`, `notes/`, `output/`, and all relative research artifacts resolve here.
+When testing unreleased engine changes, point
+`TRADEJS_SOURCE_REPOSITORY_ROOT` at the separate TradeJS checkout; Git
+SHA/diff/remote and source builds resolve there without moving artifacts out of
+this project.
 
 Research notes are permanently ignored and use
 `notes/<Strategy>/YYYY-MM-DD-<short-kebab-slug>.md`. Shared records use

@@ -12,6 +12,12 @@ const assert = (condition, message) => {
 const requiredFiles = [
   ".env.example",
   ".github/workflows/publish.yml",
+  ".codex/skills/ai-train-local-research/SKILL.md",
+  ".codex/skills/backtest-config-redis/SKILL.md",
+  ".codex/skills/runtime-parity-mismatch-analysis/SKILL.md",
+  ".codex/skills/save-strategy-config-from-backtest/SKILL.md",
+  ".codex/skills/strategy-backtest-research/SKILL.md",
+  ".codex/skills/strategy-release/SKILL.md",
   "Dockerfile",
   "cronjob",
   "deploy/runtime.env",
@@ -58,6 +64,25 @@ for (const scriptName of [
 
 const config = read("tradejs.config.ts");
 assert(config.includes("defineConfig(basePreset)"), "basePreset is not active");
+
+const gitignore = read(".gitignore");
+for (const artifactDirectory of ["data/", "notes/", "output/"]) {
+  assert(
+    gitignore.includes(artifactDirectory),
+    `${artifactDirectory} must stay ignored`,
+  );
+}
+
+const strategyReleaseSkill = read(".codex/skills/strategy-release/SKILL.md");
+assert(
+  strategyReleaseSkill.includes("/Users/aleksnick/dev/tradejs/tradejs-project"),
+  "strategy-release skill must run from TradeJS-Project",
+);
+assert(
+  strategyReleaseSkill.includes("PROJECT_CWD") &&
+    strategyReleaseSkill.includes("TRADEJS_SOURCE_REPOSITORY_ROOT"),
+  "strategy-release skill must separate project and source roots",
+);
 
 const runtimeEnv = read("deploy/runtime.env");
 for (const secretName of [
