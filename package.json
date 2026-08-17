@@ -1,0 +1,32 @@
+{
+  "name": "tradejs-project",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "yarn@4.13.0",
+  "scripts": {
+    "dev": "tradejs-app dev",
+    "build": "tradejs-app build",
+    "start": "tradejs-app start",
+    "backtest": "tradejs backtest",
+    "doctor": "tradejs doctor --skip-ml",
+    "infra-up": "tradejs infra-up",
+    "infra-down": "tradejs infra-down",
+    "signals:daemon": "tradejs signals-daemon",
+    "market:ws": "tradejs market-ws",
+    "format:check": "prettier --check .",
+    "validate": "node ./scripts/validate-project.mjs",
+    "checks": "yarn format:check && yarn validate && yarn build"
+  },
+  "dependencies": {
+    "@tradejs/app": "^3.0.1",
+    "@tradejs/base": "^3.1.0",
+    "@tradejs/cli": "^3.0.1",
+    "@tradejs/core": "^3.0.1"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2"
+  },
+  "engines": {
+    "node": "24.x"
+  }
+}

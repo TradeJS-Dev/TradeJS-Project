@@ -1,0 +1,6 @@
+.tradejs/
+.next/
+data/
+node_modules/
+.env
+yarn.lock

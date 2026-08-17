@@ -1,0 +1,8 @@
+.git
+.github
+.tradejs
+.next
+data
+node_modules
+.env
+*.tgz
