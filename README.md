@@ -116,3 +116,5 @@ Before enabling dispatch, either make the GHCR package
 private and configure a read-only `GHCR_PULL_TOKEN` plus registry login in
 `TradeJS-Deploy`. Repository visibility does not automatically make its
 container package public.
+
+Keywords: ai, claude, codex.

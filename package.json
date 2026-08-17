@@ -2,6 +2,11 @@
   "name": "tradejs-project",
   "version": "0.1.0",
   "private": true,
+  "keywords": [
+    "ai",
+    "claude",
+    "codex"
+  ],
   "packageManager": "yarn@4.13.0",
   "scripts": {
     "dev": "tradejs-app dev",
