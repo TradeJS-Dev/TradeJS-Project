@@ -316,8 +316,8 @@ message:
   remove deployment and mode-only fields (`ENABLE`, `ACCOUNT_ID`,
   `DEPLOYMENT_ID`, `ENV`, `MAKE_ORDERS`, `RECORD_RUNTIME_TRADES`, and
   `AI_REPLAY_ANALYSES`), retain
-  `MAX_LOSS_VALUE=1`, and save it as a local draft or immutable per-strategy
-  `releaseVersion`;
+  `MAX_LOSS_VALUE=1`, and save it as the secret-free candidate file used to
+  publish the next immutable per-strategy `releaseVersion`;
 - run `yarn runtime-config verify` and local dry-run `signals`; stop on package
   version, config, account, or private-position blockers.
 
@@ -327,11 +327,14 @@ then use `runtime-config rollout` with the secret-free candidate file. That
 operation must be a no-op when config and package versions already match;
 otherwise it publishes the strategy's next immutable `releaseVersion` and
 switches only the target deployment to `{ strategyName, releaseVersion,
-controlState: "entries_paused" }`. Use `bootstrap` only when the deployment does
-not exist. Run `runtime-config verify` and dry-run signals, then resume entries
+controlState: "entries_paused" }`. If the binding does not exist, use the
+explicit canonical `runtime-config provision` command with its account and
+connector; there is no bootstrap or legacy-config migration path. Run
+`runtime-config verify` and dry-run signals, then resume entries
 only when `decide` returns `START_MICRO_FORWARD`. Never write
 `deploymentStrategy.config` or use production fingerprints/git SHAs as
-identity. Report unavailable access, package incompatibility, account/position
+identity. A release without an explicitly linked evidence artifact remains
+`not_attached` in the UI. Report unavailable access, package incompatibility, account/position
 preflight failure, or an ambiguous target as the exact blocker.
 
 ## Return one verdict

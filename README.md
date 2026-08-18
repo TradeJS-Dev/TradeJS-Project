@@ -33,6 +33,13 @@ SSH, TLS, server volumes, and server lifecycle. This repository owns local
 Compose plus ignored `data/`, `notes/`, and `output/`; these local artifact
 directories do not belong in the engine repository or Git.
 
+Production strategy configuration is not stored in this repository or in a
+mutable Redis config key. Redis contains immutable per-strategy releases, and a
+deployment references exactly `{ strategyName, releaseVersion, controlState }`.
+The release owns interval, universe, policy, risk, and exact package versions;
+the deployment owns connector and trading-account binding. The app renders the
+release config read-only and only exposes pause/resume for new entries.
+
 `deploy/runtime.env` contains only secret-free application defaults. Deploy
 injects `PG_PASSWORD`, authentication secrets, exchange/API credentials, and
 other production-only secrets when it writes the container environment file.
@@ -109,8 +116,14 @@ A successful push to `main` publishes
 `ghcr.io/tradejs-dev/tradejs-project-app:<commit-sha>` and dispatches that exact
 SHA to `TradeJS-Deploy`. The project workflow needs only the cross-repository
 `DEPLOY_REPOSITORY_TOKEN`; application and server secrets remain in Deploy. A
-bootstrap push still verifies and publishes the image when this token is
+first push still verifies and publishes the image when this token is
 absent, but reports a notice and does not dispatch a production rollout.
+
+Every `@tradejs/*` dependency uses an exact version. Image construction fails
+if an installed version differs from `package.json`; the generated
+`runtime-package-manifest.json` records the same exact versions and Project SHA.
+After a strategy package release, update `package.json` and `yarn.lock`, pass
+`yarn checks`, and push Project before changing the Redis release pointer.
 
 Before enabling dispatch, either make the GHCR package
 `tradejs-project-app` public for the current anonymous Compose pull, or keep it

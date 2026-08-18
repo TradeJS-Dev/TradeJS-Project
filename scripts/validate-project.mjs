@@ -26,6 +26,7 @@ const requiredFiles = [
   "entrypoint.sh",
   "scripts/research-notes-check.mjs",
   "scripts/write-runtime-package-manifest.mjs",
+  "scripts/runtime-package-manifest.test.mjs",
   "tradejs.config.ts",
   "yarn.lock",
 ];
@@ -62,7 +63,7 @@ assert(
 );
 assert(
   packageJson.scripts.checks ===
-    "yarn format:check && yarn validate && yarn notes:check && yarn build",
+    "yarn format:check && yarn validate && yarn test && yarn notes:check && NODE_ENV=production yarn build",
   "Unexpected checks contour",
 );
 for (const scriptName of [
@@ -105,6 +106,25 @@ assert(
   strategyReleaseSkill.includes("PROJECT_CWD") &&
     strategyReleaseSkill.includes("TRADEJS_SOURCE_REPOSITORY_ROOT"),
   "strategy-release skill must separate project and source roots",
+);
+assert(
+  strategyReleaseSkill.includes("runtime-config provision") &&
+    !strategyReleaseSkill.includes("runtime-config bootstrap") &&
+    !strategyReleaseSkill.includes("runtime-config migrate"),
+  "strategy-release skill must use only canonical runtime config commands",
+);
+assert(
+  strategyReleaseSkill.includes(
+    "commit and push every strategy-owned source/gate change",
+  ) &&
+    strategyReleaseSkill.includes(
+      "update the strategy's direct exact dependency and lockfile",
+    ) &&
+    strategyReleaseSkill.includes(
+      "wait for both the matching Project publish",
+    ) &&
+    strategyReleaseSkill.includes("runtime-config rollout"),
+  "strategy-release skill must preserve the complete forward-test rollout handshake",
 );
 
 const runtimeEnv = read("deploy/runtime.env");

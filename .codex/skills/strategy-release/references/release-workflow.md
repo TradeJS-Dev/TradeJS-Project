@@ -605,7 +605,9 @@ restore-check a Redis backup, and run `runtime-config rollout` with the
 secret-free candidate file. It creates the next immutable per-strategy
 `releaseVersion` and switches only the selected deployment pointer in
 `entries_paused` state, or performs no write when config and package versions
-already match. Use `bootstrap` only for a missing deployment. Verify the
+already match. For a missing binding, use the explicit canonical `provision`
+command; never read, migrate, or recreate a mutable
+`users:*:strategies:*:<configId>` runtime config. Verify the
 deployment/account/connector with `runtime-config verify`, retain both
 directions, rerun `decide` and a dry-run, then resume only after
 `START_MICRO_FORWARD`. Do not increase risk, change unrelated releases, or
@@ -671,6 +673,10 @@ yarn signals --user <user> --deployment <deploymentId> --timeframe <interval> \
   --skipScreenshots --showSkipStats
 
 # Runtime server, after the exact immutable Project SHA is deployed.
+yarn runtime-config provision --user <user> --strategy <Strategy> \
+  --deployment <deploymentId> --account <accountId> \
+  --connector <connector> --file <secret-free-candidate.json> --write
+# Use provision only when the canonical deployment binding does not exist.
 yarn runtime-config rollout --user <user> --strategy <Strategy> \
   --deployment <deploymentId> --file <secret-free-candidate.json> --write
 yarn runtime-config verify --user <user> --deployment <deploymentId>
