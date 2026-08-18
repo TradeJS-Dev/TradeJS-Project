@@ -204,6 +204,11 @@ assert(
   "Cross-repository dispatch token is not explicit",
 );
 assert(
+  workflow.includes("gh api --method POST") &&
+    workflow.includes("TradeJS-Deploy/dispatches --input -"),
+  "Cross-repository dispatch must use the GitHub API client",
+);
+assert(
   workflow.includes("if: env.DEPLOY_REPOSITORY_TOKEN != ''"),
   "Project bootstrap must skip deploy dispatch until its token exists",
 );
