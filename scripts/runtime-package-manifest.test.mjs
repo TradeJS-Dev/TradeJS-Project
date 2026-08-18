@@ -72,6 +72,26 @@ test("rejects non-exact TradeJS dependency versions", (t) => {
 
   assert.throws(
     () => buildRuntimePackageManifest({ root }),
-    /@tradejs\/node must use an exact version/,
+    /@tradejs\/node must use an exact stable version/,
+  );
+});
+
+test("records an exact beta only when prerelease staging is explicit", (t) => {
+  const version = "3.1.8-beta.42";
+  const root = makeFixture({
+    declaredNodeVersion: version,
+    installedNodeVersion: version,
+  });
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+
+  assert.throws(
+    () => buildRuntimePackageManifest({ root }),
+    /@tradejs\/node must use an exact stable version/,
+  );
+  assert.equal(
+    buildRuntimePackageManifest({ root, allowPrerelease: true }).packages[
+      "@tradejs/node"
+    ],
+    version,
   );
 });

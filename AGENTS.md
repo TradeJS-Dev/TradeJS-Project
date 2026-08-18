@@ -21,6 +21,12 @@ the immutable handoff to `TradeJS-Deploy`.
 - Treat `PG_PASSWORD` as a Deploy-owned production secret; the checked-in
   runtime defaults must not provide a fallback value.
 - Build the app from published `@tradejs/*` packages with an immutable lockfile.
+- Keep the committed Project composition stable-only. Prerelease dependencies
+  are allowed only in ephemeral beta validation with the explicit
+  `TRADEJS_ALLOW_PRERELEASE=true` flag and must never be pushed or deployed.
+- Batch all newly promoted stable TradeJS packages through the weekly Project
+  sync so one release window produces one Project image rather than one image
+  per package.
 - Publish only `tradejs-project-app` from this repository.
 - Keep ML inference implementation and image publication owned by `TradeJS`;
   local orchestration consumes the published image from this repository and

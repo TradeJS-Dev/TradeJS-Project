@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { assertExactTradejsVersion } from "./tradejs-version.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (relativePath) =>
@@ -12,6 +13,7 @@ const assert = (condition, message) => {
 const requiredFiles = [
   ".env.example",
   ".github/workflows/publish.yml",
+  ".github/workflows/package-update.yml",
   ".github/dependabot.yml",
   ".codex/skills/ai-train-local-research/SKILL.md",
   ".codex/skills/backtest-config-redis/SKILL.md",
@@ -26,6 +28,14 @@ const requiredFiles = [
   "entrypoint.sh",
   "scripts/research-notes-check.mjs",
   "scripts/runtime-entrypoint.test.mjs",
+  "scripts/project-workflows.test.mjs",
+  "scripts/set-tradejs-version.mjs",
+  "scripts/set-tradejs-package-version.mjs",
+  "scripts/beta-runtime-smoke.sh",
+  "scripts/fixtures/doubletap-smoke-v1.json",
+  "scripts/fixtures/doubletap-smoke-v2.json",
+  "scripts/tradejs-version.mjs",
+  "scripts/tradejs-version.test.mjs",
   "scripts/write-runtime-package-manifest.mjs",
   "scripts/runtime-package-manifest.test.mjs",
   "tradejs.config.ts",
@@ -48,7 +58,9 @@ assert(
   "TradeJS-Project must depend on @tradejs/base",
 );
 for (const [name, version] of tradejsDependencies) {
-  assert(/^\d+\.\d+\.\d+$/.test(version), `${name} must use an exact version`);
+  assertExactTradejsVersion(name, version, {
+    allowPrerelease: process.env.TRADEJS_ALLOW_PRERELEASE === "true",
+  });
 }
 const strategyDependencies = Object.entries(packageJson.dependencies).filter(
   ([name]) =>
@@ -119,11 +131,10 @@ assert(
     "commit and push every strategy-owned source/gate change",
   ) &&
     strategyReleaseSkill.includes(
-      "update the strategy's direct exact dependency and lockfile",
+      "production-like Project smoke to move the npm `beta` tag",
     ) &&
-    strategyReleaseSkill.includes(
-      "wait for both the matching Project publish",
-    ) &&
+    strategyReleaseSkill.includes("weekly Project sync to batch") &&
+    strategyReleaseSkill.includes("matching Project\n  publish workflow") &&
     strategyReleaseSkill.includes("runtime-config rollout"),
   "strategy-release skill must preserve the complete forward-test rollout handshake",
 );

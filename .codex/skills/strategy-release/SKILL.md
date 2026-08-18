@@ -293,25 +293,25 @@ to that server's exact `userName`, `deploymentId`, `accountId`, and
 
 When the user says to start forward tests after a release verdict, treat that
 as authorization for the complete rollout of that exact strategy candidate,
-including the narrowly scoped production Redis release/pointer update after
-the immutable image is deployed. Do not wait for a second `готово`/`ready`
-message:
+including the narrowly scoped production Redis release/pointer update after the
+weekly stable image is deployed. Do not publish a production version immediately
+and do not wait for a second `готово`/`ready` message:
 
 - commit and push every strategy-owned source/gate change for the exact
-  candidate; keep unrelated repo changes out of that commit unless explicitly
-  included;
-- when strategy code changed, choose and write the next package version (patch
-  unless the approved change is intentionally breaking), run that repository's
-  checks, commit and push it, publish the matching `v<version>` GitHub release,
-  and wait until that exact npm version is available; never deploy an untagged
-  strategy checkout;
-- update the strategy's direct exact dependency and lockfile in
-  `TradeJS-Project`, run Project checks, then commit and push Project so its
-  immutable SHA-tagged app image is built and dispatched to Deploy;
-- record the pushed Project SHA, wait for both the matching Project publish
-  workflow and the repository-dispatch Deploy workflow to succeed, and verify
-  that `/app/runtime-package-manifest.json` names that exact SHA and package
-  version; never infer deployment success from a completed image build alone;
+  candidate; keep unrelated repo changes out of that commit and leave the
+  package manifest on its current stable baseline;
+- wait for the push workflow to publish a unique next-patch beta candidate and
+  for its production-like Project smoke to move the npm `beta` tag; never
+  install that prerelease in the committed Project or production;
+- use the protected weekly stable promotion as the routine path. It publishes
+  and tags one stable patch only from the current verified beta;
+- wait for the weekly Project sync to batch all promoted stable packages into
+  one exact dependency/lockfile commit, then wait for both the matching Project
+  publish workflow and repository-dispatch Deploy workflow to succeed;
+- record the deployed Project SHA and verify that
+  `/app/runtime-package-manifest.json` names that exact SHA, contains only
+  stable exact versions, and names the promoted strategy package version; never
+  infer deployment success from beta validation or an image build alone;
 - materialize the candidate from strategy defaults plus the selected config,
   remove deployment and mode-only fields (`ENABLE`, `ACCOUNT_ID`,
   `DEPLOYMENT_ID`, `ENV`, `MAKE_ORDERS`, `RECORD_RUNTIME_TRADES`, and

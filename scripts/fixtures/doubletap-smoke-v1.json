@@ -1,0 +1,7 @@
+{
+  "INTERVAL": "15",
+  "UNIVERSE": "crypto",
+  "MAX_LOSS_VALUE": 1,
+  "AI_ENABLED": false,
+  "ML_ENABLED": false
+}

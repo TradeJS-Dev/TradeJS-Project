@@ -117,6 +117,22 @@ docker build --check .
 
 ## Production handoff
 
+The committed Project composition is stable-only. Normal framework and package
+pushes publish prerelease versions and validate them from an ephemeral clone by
+setting `TRADEJS_ALLOW_PRERELEASE=true`; that flag is absent from the production
+workflow and defaults to `false` in the Dockerfile. Therefore neither a beta
+dependency nor a beta validation image can be committed or deployed by the
+normal Project handoff.
+
+Every Monday at `06:00 UTC`, after package promotion windows, the protected
+`package-update.yml` workflow resolves the stable npm `latest` tag for every
+direct `@tradejs/*` dependency, updates the exact package versions and lockfile
+in one batch, runs `yarn checks`, commits one composition, and publishes one
+Project image. A manual dispatch provides the same batched emergency sync.
+`scripts/beta-runtime-smoke.sh` separately validates candidate images with
+isolated Redis and Timescale, immutable v1/v2 strategy releases, a minimal
+deployment reference, no legacy mutable config key, and app/market-ws health.
+
 A successful push to `main` publishes
 `ghcr.io/tradejs-dev/tradejs-project-app:<commit-sha>` and dispatches that exact
 SHA to `TradeJS-Deploy`. The project workflow needs only the cross-repository
@@ -127,8 +143,9 @@ absent, but reports a notice and does not dispatch a production rollout.
 Every `@tradejs/*` dependency uses an exact version. Image construction fails
 if an installed version differs from `package.json`; the generated
 `runtime-package-manifest.json` records the same exact versions and Project SHA.
-After a strategy package release, update `package.json` and `yarn.lock`, pass
-`yarn checks`, and push Project before changing the Redis release pointer.
+After the weekly stable sync and Project deployment, changing the Redis release
+pointer remains a separate explicit operation and always leaves new entries
+paused until activation.
 
 Before enabling dispatch, either make the GHCR package
 `tradejs-project-app` public for the current anonymous Compose pull, or keep it
