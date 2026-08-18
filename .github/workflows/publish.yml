@@ -66,12 +66,40 @@ jobs:
       - name: Dispatch immutable release to TradeJS-Deploy
         if: env.DEPLOY_REPOSITORY_TOKEN != ''
         env:
-          GH_TOKEN: ${{ secrets.DEPLOY_REPOSITORY_TOKEN }}
           IMAGE_TAG: ${{ github.sha }}
           PROJECT_SHA: ${{ github.sha }}
         run: |
-          node -e 'process.stdout.write(JSON.stringify({event_type:"tradejs-project-image-published",client_payload:{image_tag:process.env.IMAGE_TAG,project_sha:process.env.PROJECT_SHA,app_changed:true,agent_changed:false,ml_infer_changed:false}}))' |
-            gh api --method POST repos/TradeJS-Dev/TradeJS-Deploy/dispatches --input -
+          node <<'NODE'
+          const token = String(process.env.DEPLOY_REPOSITORY_TOKEN || '').trim();
+          if (!token) throw new Error('DEPLOY_REPOSITORY_TOKEN is empty');
+          const response = await fetch(
+            'https://api.github.com/repos/TradeJS-Dev/TradeJS-Deploy/dispatches',
+            {
+              method: 'POST',
+              headers: {
+                Accept: 'application/vnd.github+json',
+                Authorization: `Bearer ${token}`,
+                'X-GitHub-Api-Version': '2022-11-28',
+              },
+              body: JSON.stringify({
+                event_type: 'tradejs-project-image-published',
+                client_payload: {
+                  image_tag: process.env.IMAGE_TAG,
+                  project_sha: process.env.PROJECT_SHA,
+                  app_changed: true,
+                  agent_changed: false,
+                  ml_infer_changed: false,
+                },
+              }),
+            },
+          );
+          const responseBody = await response.text();
+          if (!response.ok) {
+            throw new Error(
+              `Deploy dispatch failed (${response.status}): ${responseBody}`,
+            );
+          }
+          NODE
       - name: Report disabled deploy dispatch
         if: env.DEPLOY_REPOSITORY_TOKEN == ''
         run: echo "::notice::Create the DEPLOY_REPOSITORY_TOKEN secret to enable TradeJS-Deploy dispatches."
