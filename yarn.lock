@@ -1095,18 +1095,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/app@npm:^3.1.0":
-  version: 3.1.0
-  resolution: "@tradejs/app@npm:3.1.0"
+"@tradejs/app@npm:3.1.1":
+  version: 3.1.1
+  resolution: "@tradejs/app@npm:3.1.1"
   dependencies:
     "@chakra-ui/charts": "npm:3.36.1"
     "@chakra-ui/react": "npm:3.36.1"
     "@emotion/react": "npm:^11.14.0"
-    "@tradejs/core": "npm:^3.1.0"
-    "@tradejs/indicators": "npm:^3.1.0"
-    "@tradejs/infra": "npm:^3.1.0"
-    "@tradejs/node": "npm:^3.1.0"
-    "@tradejs/types": "npm:^3.1.0"
+    "@tradejs/core": "npm:^3.1.1"
+    "@tradejs/indicators": "npm:^3.1.1"
+    "@tradejs/infra": "npm:^3.1.1"
+    "@tradejs/node": "npm:^3.1.1"
+    "@tradejs/types": "npm:^3.1.1"
     "@types/bcryptjs": "npm:2.4.6"
     "@types/lodash": "npm:4.17.24"
     "@types/node": "npm:24.13.3"
@@ -1135,11 +1135,11 @@ __metadata:
     zustand: "npm:5.0.14"
   bin:
     tradejs-app: ./bin/tradejs-app.mjs
-  checksum: 10c0/5396a474bf4ee1772a486713d1a53e926871ab48bf6d62ae3bece91e38b580452468e13ae3416d55297c0006e5b559a5a24b6d2b4ca3ad25d2b37822ee0649c0
+  checksum: 10c0/51f5209288a64f3e2b3c091d3c2ef498d22b97817d26fe34369f58313b6379e20b23755f93590a84258380595647345ad5d48bf774da6da791fda44a1880254e
   languageName: node
   linkType: hard
 
-"@tradejs/base@npm:^3.1.0":
+"@tradejs/base@npm:3.1.0":
   version: 3.1.0
   resolution: "@tradejs/base@npm:3.1.0"
   dependencies:
@@ -1171,17 +1171,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/cli@npm:^3.1.0":
-  version: 3.1.0
-  resolution: "@tradejs/cli@npm:3.1.0"
+"@tradejs/cli@npm:3.1.1":
+  version: 3.1.1
+  resolution: "@tradejs/cli@npm:3.1.1"
   dependencies:
-    "@tradejs/connectors": "npm:^3.1.0"
-    "@tradejs/core": "npm:^3.1.0"
-    "@tradejs/indicators": "npm:^3.1.0"
-    "@tradejs/infra": "npm:^3.1.0"
-    "@tradejs/node": "npm:^3.1.0"
+    "@tradejs/connectors": "npm:^3.1.1"
+    "@tradejs/core": "npm:^3.1.1"
+    "@tradejs/indicators": "npm:^3.1.1"
+    "@tradejs/infra": "npm:^3.1.1"
+    "@tradejs/node": "npm:^3.1.1"
     "@tradejs/strategy-kit": "npm:^3.0.0"
-    "@tradejs/types": "npm:^3.1.0"
+    "@tradejs/types": "npm:^3.1.1"
     args: "npm:^5.0.3"
     bcryptjs: "npm:^2.4.3"
     chalk: "npm:4.1.2"
@@ -1195,11 +1195,24 @@ __metadata:
     ws: "npm:^8.21.1"
   bin:
     tradejs: dist/cli.js
-  checksum: 10c0/99e8c444c9b12df6687da0cc12ef1081e187cacae46234f1981ad2cef83ae4e2984a04ea9638fceb13e70ccb4a33a6e8e31f2c5dd3a0a74ad5c22fdfea17f85e
+  checksum: 10c0/792fc2de5e7aedc616e8e297faf0004f46aecb2b215fd8c817aafc8e9228ec1261e2722bb36f1cd77c11922366c2350d14abdefc726230ee5c20b5017183431f
   languageName: node
   linkType: hard
 
-"@tradejs/connectors@npm:^3.0.1, @tradejs/connectors@npm:^3.1.0":
+"@tradejs/connectors@npm:3.1.1, @tradejs/connectors@npm:^3.1.1":
+  version: 3.1.1
+  resolution: "@tradejs/connectors@npm:3.1.1"
+  dependencies:
+    "@tradejs/core": "npm:^3.1.1"
+    "@tradejs/types": "npm:^3.1.1"
+    bybit-api: "npm:^4.7.1"
+    chalk: "npm:4.1.2"
+    lodash: "npm:^4.18.1"
+  checksum: 10c0/2b3893a1bf04c30c78737727c508796c96218575739a07dd92e083b2b40cc4e8021184f388b317b91fc44026076c191456387ba47ab439e9234da11fff3a641b
+  languageName: node
+  linkType: hard
+
+"@tradejs/connectors@npm:^3.0.1":
   version: 3.1.0
   resolution: "@tradejs/connectors@npm:3.1.0"
   dependencies:
@@ -1209,6 +1222,19 @@ __metadata:
     chalk: "npm:4.1.2"
     lodash: "npm:^4.18.1"
   checksum: 10c0/e3c4a0de66276ff7f681f15d680c27d472799b2cedd517732b6c5d8e09d4a9c2d4ed504273a576d0fec529ec1d370b238f3f9e98660156bf62bcf3d46d2d504d
+  languageName: node
+  linkType: hard
+
+"@tradejs/core@npm:3.1.1, @tradejs/core@npm:^3.1.1":
+  version: 3.1.1
+  resolution: "@tradejs/core@npm:3.1.1"
+  dependencies:
+    "@tradejs/types": "npm:^3.1.1"
+    date-fns: "npm:^3.6.0"
+    fast-technical-indicators: "npm:^1.1.4"
+    klinecharts: "npm:10.0.0-alpha9"
+    lodash: "npm:^4.18.1"
+  checksum: 10c0/e9080cea8824a086fe0c89aa5edf0008159a3db3d6553f40a7ea0157ade5721d3960334f9aefa98f09983da28bf0b866428d73e77c4e8e44be893b8efef91c6d
   languageName: node
   linkType: hard
 
@@ -1225,7 +1251,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/indicators@npm:^3.0.1, @tradejs/indicators@npm:^3.1.0":
+"@tradejs/indicators@npm:3.1.1, @tradejs/indicators@npm:^3.1.1":
+  version: 3.1.1
+  resolution: "@tradejs/indicators@npm:3.1.1"
+  dependencies:
+    "@tradejs/core": "npm:^3.1.1"
+    "@tradejs/types": "npm:^3.1.1"
+    fast-technical-indicators: "npm:^1.1.4"
+    klinecharts: "npm:10.0.0-alpha9"
+    technicalindicators: "npm:^3.1.0"
+  checksum: 10c0/3da3a5f92240b4c98a26c23c641425a2f6d2fd7cb6b2996bb812e5a1ad10ce95b3b433a957b863c7159f5fb392d546f15b1744a31a6c20fa8290a78b0861a559
+  languageName: node
+  linkType: hard
+
+"@tradejs/indicators@npm:^3.0.1":
   version: 3.1.0
   resolution: "@tradejs/indicators@npm:3.1.0"
   dependencies:
@@ -1235,6 +1274,22 @@ __metadata:
     klinecharts: "npm:10.0.0-alpha9"
     technicalindicators: "npm:^3.1.0"
   checksum: 10c0/8eb5a2485e94d3b7b393796ce7d2e8df403567641196ad035120b5c46568c6908b738c2a035acf0aae633da17ce2a82a227a4f306b06c1fde4e1d55dee8c57ab
+  languageName: node
+  linkType: hard
+
+"@tradejs/infra@npm:3.1.1, @tradejs/infra@npm:^3.1.1":
+  version: 3.1.1
+  resolution: "@tradejs/infra@npm:3.1.1"
+  dependencies:
+    "@grpc/grpc-js": "npm:^1.14.4"
+    "@grpc/proto-loader": "npm:^0.8.1"
+    "@tradejs/types": "npm:^3.1.1"
+    chalk: "npm:4.1.2"
+    date-fns: "npm:^3.6.0"
+    ioredis: "npm:5.11.1"
+    pg: "npm:8.22.0"
+    winston: "npm:3.19.0"
+  checksum: 10c0/8dd258101fa30645449197e4e56816054ad2e809cee533326eb072b28dd3e3f9f85694028f7511829333f367531beb7a83c4208b9f6977f6bbfc1e574da99f79
   languageName: node
   linkType: hard
 
@@ -1254,7 +1309,28 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/node@npm:^3.0.1, @tradejs/node@npm:^3.1.0":
+"@tradejs/node@npm:3.1.1, @tradejs/node@npm:^3.1.1":
+  version: 3.1.1
+  resolution: "@tradejs/node@npm:3.1.1"
+  dependencies:
+    "@langchain/core": "npm:^1.2.3"
+    "@langchain/openai": "npm:^1.5.5"
+    "@tradejs/core": "npm:^3.1.1"
+    "@tradejs/infra": "npm:^3.1.1"
+    "@tradejs/types": "npm:^3.1.1"
+    chalk: "npm:4.1.2"
+    ioredis: "npm:5.11.1"
+    lodash: "npm:^4.18.1"
+    pinets: "npm:0.8.12"
+    progress: "npm:^2.0.3"
+    puppeteer: "npm:24.43.1"
+    ts-node: "npm:^10.9.2"
+    tsconfig-paths: "npm:^4.2.0"
+  checksum: 10c0/bf25b1515db9a9b90a0f8f75a6b45d7fa1bcba086b82eb31b091ef66298b3d4917ea0d73e2cfa31af80a20ee2b339b7c28e1befcda250bff5c7fc346a650153c
+  languageName: node
+  linkType: hard
+
+"@tradejs/node@npm:^3.0.1":
   version: 3.1.0
   resolution: "@tradejs/node@npm:3.1.0"
   dependencies:
@@ -1275,7 +1351,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/strategy-adaptive-momentum-ribbon@npm:^3.0.0":
+"@tradejs/strategy-adaptive-momentum-ribbon@npm:3.0.0, @tradejs/strategy-adaptive-momentum-ribbon@npm:^3.0.0":
   version: 3.0.0
   resolution: "@tradejs/strategy-adaptive-momentum-ribbon@npm:3.0.0"
   dependencies:
@@ -1286,7 +1362,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/strategy-adaptive-trend-channel@npm:^3.0.0":
+"@tradejs/strategy-adaptive-trend-channel@npm:3.0.0, @tradejs/strategy-adaptive-trend-channel@npm:^3.0.0":
   version: 3.0.0
   resolution: "@tradejs/strategy-adaptive-trend-channel@npm:3.0.0"
   dependencies:
@@ -1297,7 +1373,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/strategy-breakout@npm:^3.0.0":
+"@tradejs/strategy-breakout@npm:3.0.0, @tradejs/strategy-breakout@npm:^3.0.0":
   version: 3.0.0
   resolution: "@tradejs/strategy-breakout@npm:3.0.0"
   dependencies:
@@ -1308,7 +1384,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/strategy-cup-and-handle@npm:^3.0.0":
+"@tradejs/strategy-cup-and-handle@npm:3.0.0, @tradejs/strategy-cup-and-handle@npm:^3.0.0":
   version: 3.0.0
   resolution: "@tradejs/strategy-cup-and-handle@npm:3.0.0"
   dependencies:
@@ -1319,7 +1395,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/strategy-double-tap@npm:^3.0.0":
+"@tradejs/strategy-double-tap@npm:3.0.0, @tradejs/strategy-double-tap@npm:^3.0.0":
   version: 3.0.0
   resolution: "@tradejs/strategy-double-tap@npm:3.0.0"
   dependencies:
@@ -1330,7 +1406,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/strategy-grid-classic@npm:^3.0.0":
+"@tradejs/strategy-grid-classic@npm:3.0.0, @tradejs/strategy-grid-classic@npm:^3.0.0":
   version: 3.0.0
   resolution: "@tradejs/strategy-grid-classic@npm:3.0.0"
   dependencies:
@@ -1341,7 +1417,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/strategy-grid@npm:^3.0.0":
+"@tradejs/strategy-grid@npm:3.0.0, @tradejs/strategy-grid@npm:^3.0.0":
   version: 3.0.0
   resolution: "@tradejs/strategy-grid@npm:3.0.0"
   dependencies:
@@ -1353,7 +1429,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/strategy-head-and-shoulders@npm:^3.0.0":
+"@tradejs/strategy-head-and-shoulders@npm:3.0.0, @tradejs/strategy-head-and-shoulders@npm:^3.0.0":
   version: 3.0.0
   resolution: "@tradejs/strategy-head-and-shoulders@npm:3.0.0"
   dependencies:
@@ -1364,7 +1440,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/strategy-hyperliquid-consensus@npm:^3.0.0":
+"@tradejs/strategy-hyperliquid-consensus@npm:3.0.0, @tradejs/strategy-hyperliquid-consensus@npm:^3.0.0":
   version: 3.0.0
   resolution: "@tradejs/strategy-hyperliquid-consensus@npm:3.0.0"
   dependencies:
@@ -1375,7 +1451,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/strategy-kit@npm:^3.0.0":
+"@tradejs/strategy-kit@npm:3.0.0, @tradejs/strategy-kit@npm:^3.0.0":
   version: 3.0.0
   resolution: "@tradejs/strategy-kit@npm:3.0.0"
   dependencies:
@@ -1385,7 +1461,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/strategy-liquidity-tails@npm:^3.0.0":
+"@tradejs/strategy-liquidity-tails@npm:3.0.0, @tradejs/strategy-liquidity-tails@npm:^3.0.0":
   version: 3.0.0
   resolution: "@tradejs/strategy-liquidity-tails@npm:3.0.0"
   dependencies:
@@ -1396,7 +1472,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/strategy-liquidity-zones@npm:^3.0.0":
+"@tradejs/strategy-liquidity-zones@npm:3.0.0, @tradejs/strategy-liquidity-zones@npm:^3.0.0":
   version: 3.0.0
   resolution: "@tradejs/strategy-liquidity-zones@npm:3.0.0"
   dependencies:
@@ -1407,7 +1483,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/strategy-ma-strategy@npm:^3.0.0":
+"@tradejs/strategy-ma-strategy@npm:3.0.0, @tradejs/strategy-ma-strategy@npm:^3.0.0":
   version: 3.0.0
   resolution: "@tradejs/strategy-ma-strategy@npm:3.0.0"
   dependencies:
@@ -1418,7 +1494,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/strategy-market-flush-reversal@npm:^3.0.0":
+"@tradejs/strategy-market-flush-reversal@npm:3.0.0, @tradejs/strategy-market-flush-reversal@npm:^3.0.0":
   version: 3.0.0
   resolution: "@tradejs/strategy-market-flush-reversal@npm:3.0.0"
   dependencies:
@@ -1429,7 +1505,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/strategy-relative-rotation@npm:^3.0.0":
+"@tradejs/strategy-relative-rotation@npm:3.0.0, @tradejs/strategy-relative-rotation@npm:^3.0.0":
   version: 3.0.0
   resolution: "@tradejs/strategy-relative-rotation@npm:3.0.0"
   dependencies:
@@ -1440,7 +1516,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/strategy-structure-zones@npm:^3.0.0":
+"@tradejs/strategy-structure-zones@npm:3.0.0, @tradejs/strategy-structure-zones@npm:^3.0.0":
   version: 3.0.0
   resolution: "@tradejs/strategy-structure-zones@npm:3.0.0"
   dependencies:
@@ -1451,7 +1527,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/strategy-trend-follow@npm:^3.0.0":
+"@tradejs/strategy-trend-follow@npm:3.0.0, @tradejs/strategy-trend-follow@npm:^3.0.0":
   version: 3.0.0
   resolution: "@tradejs/strategy-trend-follow@npm:3.0.0"
   dependencies:
@@ -1462,7 +1538,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/strategy-trend-line@npm:^3.0.0":
+"@tradejs/strategy-trend-line@npm:3.0.0, @tradejs/strategy-trend-line@npm:^3.0.0":
   version: 3.0.0
   resolution: "@tradejs/strategy-trend-line@npm:3.0.0"
   dependencies:
@@ -1475,7 +1551,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/strategy-trend-shift@npm:^3.0.0":
+"@tradejs/strategy-trend-shift@npm:3.0.0, @tradejs/strategy-trend-shift@npm:^3.0.0":
   version: 3.0.0
   resolution: "@tradejs/strategy-trend-shift@npm:3.0.0"
   dependencies:
@@ -1486,7 +1562,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/strategy-volatility-compression-breakout@npm:^3.0.0":
+"@tradejs/strategy-volatility-compression-breakout@npm:3.0.0, @tradejs/strategy-volatility-compression-breakout@npm:^3.0.0":
   version: 3.0.0
   resolution: "@tradejs/strategy-volatility-compression-breakout@npm:3.0.0"
   dependencies:
@@ -1497,7 +1573,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/strategy-volume-divergence@npm:^3.0.0":
+"@tradejs/strategy-volume-divergence@npm:3.0.0, @tradejs/strategy-volume-divergence@npm:^3.0.0":
   version: 3.0.0
   resolution: "@tradejs/strategy-volume-divergence@npm:3.0.0"
   dependencies:
@@ -1505,6 +1581,13 @@ __metadata:
     "@tradejs/strategy-kit": "npm:^3.0.0"
     "@tradejs/types": "npm:^3.0.1"
   checksum: 10c0/1d90d0a7067dadc6287c2c2f179585d9870f4169fd1e3a471e4a8475d049f7b0c7b641897eafdd6e27532dde8f4e83731d67762014361429b46a462f6bd62c8f
+  languageName: node
+  linkType: hard
+
+"@tradejs/types@npm:3.1.1, @tradejs/types@npm:^3.1.1":
+  version: 3.1.1
+  resolution: "@tradejs/types@npm:3.1.1"
+  checksum: 10c0/744c87c123e86785a6f2b5c62ce4658cd1a0c548dfc1ed030668fa3d78b381a6a4214c7b0fc369c8650afe9fd959d98ede719c9e762d3926d63b095717c0d239
   languageName: node
   linkType: hard
 
@@ -5507,10 +5590,36 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "tradejs-project@workspace:."
   dependencies:
-    "@tradejs/app": "npm:^3.1.0"
-    "@tradejs/base": "npm:^3.1.0"
-    "@tradejs/cli": "npm:^3.1.0"
-    "@tradejs/core": "npm:^3.1.0"
+    "@tradejs/app": "npm:3.1.1"
+    "@tradejs/base": "npm:3.1.0"
+    "@tradejs/cli": "npm:3.1.1"
+    "@tradejs/connectors": "npm:3.1.1"
+    "@tradejs/core": "npm:3.1.1"
+    "@tradejs/indicators": "npm:3.1.1"
+    "@tradejs/infra": "npm:3.1.1"
+    "@tradejs/node": "npm:3.1.1"
+    "@tradejs/strategy-adaptive-momentum-ribbon": "npm:3.0.0"
+    "@tradejs/strategy-adaptive-trend-channel": "npm:3.0.0"
+    "@tradejs/strategy-breakout": "npm:3.0.0"
+    "@tradejs/strategy-cup-and-handle": "npm:3.0.0"
+    "@tradejs/strategy-double-tap": "npm:3.0.0"
+    "@tradejs/strategy-grid": "npm:3.0.0"
+    "@tradejs/strategy-grid-classic": "npm:3.0.0"
+    "@tradejs/strategy-head-and-shoulders": "npm:3.0.0"
+    "@tradejs/strategy-hyperliquid-consensus": "npm:3.0.0"
+    "@tradejs/strategy-kit": "npm:3.0.0"
+    "@tradejs/strategy-liquidity-tails": "npm:3.0.0"
+    "@tradejs/strategy-liquidity-zones": "npm:3.0.0"
+    "@tradejs/strategy-ma-strategy": "npm:3.0.0"
+    "@tradejs/strategy-market-flush-reversal": "npm:3.0.0"
+    "@tradejs/strategy-relative-rotation": "npm:3.0.0"
+    "@tradejs/strategy-structure-zones": "npm:3.0.0"
+    "@tradejs/strategy-trend-follow": "npm:3.0.0"
+    "@tradejs/strategy-trend-line": "npm:3.0.0"
+    "@tradejs/strategy-trend-shift": "npm:3.0.0"
+    "@tradejs/strategy-volatility-compression-breakout": "npm:3.0.0"
+    "@tradejs/strategy-volume-divergence": "npm:3.0.0"
+    "@tradejs/types": "npm:3.1.1"
     prettier: "npm:^3.6.2"
   languageName: unknown
   linkType: soft

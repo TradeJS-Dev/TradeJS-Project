@@ -2,6 +2,7 @@ node_modules
 .yarn/install-state.gz
 .tradejs
 .next
+runtime-package-manifest.json
 data/
 notes/
 output/

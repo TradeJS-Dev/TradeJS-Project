@@ -1,5 +1,7 @@
 # syntax=docker/dockerfile:1
 
+ARG TRADEJS_PROJECT_SHA=unknown
+
 FROM node:24-alpine AS dependencies
 
 WORKDIR /app
@@ -16,19 +18,24 @@ RUN --mount=type=cache,target=/root/.yarn/berry/cache \
 
 FROM dependencies AS builder
 
+ARG TRADEJS_PROJECT_SHA
+
 COPY tradejs.config.ts ./tradejs.config.ts
+COPY scripts/write-runtime-package-manifest.mjs ./scripts/write-runtime-package-manifest.mjs
 
 ENV NODE_ENV=production \
     PROJECT_CWD=/app \
     APP_URL=http://localhost:3000 \
     NEXTAUTH_URL=http://localhost:3000
 
-RUN --mount=type=cache,target=/app/.tradejs/app/.next/cache \
-    yarn build
+RUN TRADEJS_PROJECT_SHA=${TRADEJS_PROJECT_SHA} yarn runtime:manifest && \
+    test -s /app/runtime-package-manifest.json
+
+RUN --mount=type=cache,target=/app/.tradejs/app/.next/cache yarn build
 
 FROM node:24-alpine AS runner
 
-ARG TRADEJS_PROJECT_SHA=unknown
+ARG TRADEJS_PROJECT_SHA
 
 LABEL org.opencontainers.image.source="https://github.com/TradeJS-Dev/TradeJS-Project" \
       org.opencontainers.image.description="TradeJS project runtime" \

@@ -59,7 +59,6 @@ jobs:
           push: true
           tags: |
             ghcr.io/tradejs-dev/tradejs-project-app:${{ github.sha }}
-            ghcr.io/tradejs-dev/tradejs-project-app:latest
           build-args: |
             TRADEJS_PROJECT_SHA=${{ github.sha }}
           cache-from: type=gha,scope=project-app

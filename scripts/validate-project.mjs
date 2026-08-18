@@ -12,6 +12,7 @@ const assert = (condition, message) => {
 const requiredFiles = [
   ".env.example",
   ".github/workflows/publish.yml",
+  ".github/dependabot.yml",
   ".codex/skills/ai-train-local-research/SKILL.md",
   ".codex/skills/backtest-config-redis/SKILL.md",
   ".codex/skills/runtime-parity-mismatch-analysis/SKILL.md",
@@ -24,6 +25,7 @@ const requiredFiles = [
   "docker-compose.dev.yml",
   "entrypoint.sh",
   "scripts/research-notes-check.mjs",
+  "scripts/write-runtime-package-manifest.mjs",
   "tradejs.config.ts",
   "yarn.lock",
 ];
@@ -36,9 +38,23 @@ for (const relativePath of requiredFiles) {
 
 const packageJson = JSON.parse(read("package.json"));
 assert(packageJson.private === true, "TradeJS-Project must remain private");
+const tradejsDependencies = Object.entries(packageJson.dependencies).filter(
+  ([name]) => name.startsWith("@tradejs/"),
+);
 assert(
-  packageJson.dependencies["@tradejs/base"] === "^3.1.0",
-  "TradeJS-Project must use the extracted non-empty @tradejs/base",
+  tradejsDependencies.some(([name]) => name === "@tradejs/base"),
+  "TradeJS-Project must depend on @tradejs/base",
+);
+for (const [name, version] of tradejsDependencies) {
+  assert(/^\d+\.\d+\.\d+$/.test(version), `${name} must use an exact version`);
+}
+const strategyDependencies = Object.entries(packageJson.dependencies).filter(
+  ([name]) =>
+    name.startsWith("@tradejs/strategy-") && name !== "@tradejs/strategy-kit",
+);
+assert(
+  strategyDependencies.length === 20,
+  "All 20 strategy packages must be direct dependencies",
 );
 assert(
   !Object.hasOwn(packageJson.dependencies, "@tradejs/strategies"),
@@ -57,6 +73,8 @@ for (const scriptName of [
   "ai-train",
   "research:auto",
   "research:core",
+  "runtime-config",
+  "runtime:manifest",
   "notes:check",
 ]) {
   assert(packageJson.scripts[scriptName], `Missing ${scriptName} script`);
@@ -66,7 +84,12 @@ const config = read("tradejs.config.ts");
 assert(config.includes("defineConfig(basePreset)"), "basePreset is not active");
 
 const gitignore = read(".gitignore");
-for (const artifactDirectory of ["data/", "notes/", "output/"]) {
+for (const artifactDirectory of [
+  "data/",
+  "notes/",
+  "output/",
+  "runtime-package-manifest.json",
+]) {
   assert(
     gitignore.includes(artifactDirectory),
     `${artifactDirectory} must stay ignored`,
@@ -102,6 +125,11 @@ const dockerfile = read("Dockerfile");
 assert(
   dockerfile.includes("yarn install --immutable"),
   "Docker install is mutable",
+);
+assert(
+  dockerfile.includes("runtime-package-manifest.json") &&
+    dockerfile.includes("yarn runtime:manifest"),
+  "Docker image does not contain an installed-package manifest",
 );
 
 const localCompose = read("docker-compose.dev.yml");
@@ -167,12 +195,24 @@ assert(
   "Deploy dispatch event is missing",
 );
 assert(
+  workflow.includes("tradejs-project-app:${{ github.sha }}") &&
+    !workflow.includes("tradejs-project-app:latest"),
+  "Project app image must be published only under its commit SHA",
+);
+assert(
   workflow.includes("DEPLOY_REPOSITORY_TOKEN"),
   "Cross-repository dispatch token is not explicit",
 );
 assert(
   workflow.includes("if: env.DEPLOY_REPOSITORY_TOKEN != ''"),
   "Project bootstrap must skip deploy dispatch until its token exists",
+);
+
+const dependabot = read(".github/dependabot.yml");
+assert(
+  dependabot.includes('"@tradejs/strategy-*"') &&
+    dependabot.includes('"@tradejs/node"'),
+  "Dependabot must track strategy and runtime packages",
 );
 
 console.log(

@@ -1,0 +1,22 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 5
+    groups:
+      tradejs-strategies:
+        patterns:
+          - "@tradejs/strategy-*"
+      tradejs-runtime:
+        patterns:
+          - "@tradejs/app"
+          - "@tradejs/base"
+          - "@tradejs/cli"
+          - "@tradejs/connectors"
+          - "@tradejs/core"
+          - "@tradejs/indicators"
+          - "@tradejs/infra"
+          - "@tradejs/node"
+          - "@tradejs/types"
