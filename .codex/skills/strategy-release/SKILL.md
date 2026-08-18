@@ -292,7 +292,10 @@ to that server's exact `userName`, `deploymentId`, `accountId`, and
 ### Forward-test rollout handshake
 
 When the user says to start forward tests after a release verdict, treat that
-as authorization for the local rollout phase only:
+as authorization for the complete rollout of that exact strategy candidate,
+including the narrowly scoped production Redis release/pointer update after
+the immutable image is deployed. Do not wait for a second `готово`/`ready`
+message:
 
 - commit and push every strategy-owned source/gate change for the exact
   candidate; keep unrelated repo changes out of that commit unless explicitly
@@ -305,6 +308,10 @@ as authorization for the local rollout phase only:
 - update the strategy's direct exact dependency and lockfile in
   `TradeJS-Project`, run Project checks, then commit and push Project so its
   immutable SHA-tagged app image is built and dispatched to Deploy;
+- record the pushed Project SHA, wait for both the matching Project publish
+  workflow and the repository-dispatch Deploy workflow to succeed, and verify
+  that `/app/runtime-package-manifest.json` names that exact SHA and package
+  version; never infer deployment success from a completed image build alone;
 - materialize the candidate from strategy defaults plus the selected config,
   remove deployment and mode-only fields (`ENABLE`, `ACCOUNT_ID`,
   `DEPLOYMENT_ID`, `ENV`, `MAKE_ORDERS`, `RECORD_RUNTIME_TRADES`, and
@@ -314,17 +321,18 @@ as authorization for the local rollout phase only:
 - run `yarn runtime-config verify` and local dry-run `signals`; stop on package
   version, config, account, or private-position blockers.
 
-Do not update production Redis during that local phase. After the user deploys
-the pushed code to the server and replies `готово`/`ready`, treat that reply as
-authorization for the production Redis phase: verify
-`/app/runtime-package-manifest.json`, back up Redis, publish the candidate as
-the strategy's next immutable `releaseVersion`, and switch only the target
-deployment to `{ strategyName, releaseVersion, controlState:
-"entries_paused" }`. Run `yarn runtime-config verify` and dry-run signals,
-then resume entries only when `decide` returns `START_MICRO_FORWARD`. Never
-write `deploymentStrategy.config` or use production fingerprints/git SHAs as
-identity. Report unavailable access, package incompatibility, or an ambiguous
-target as the exact blocker.
+Do not update production Redis before the exact image deployment succeeds. Once
+it succeeds, verify the runtime manifest, take and restore-check a Redis backup,
+then use `runtime-config rollout` with the secret-free candidate file. That
+operation must be a no-op when config and package versions already match;
+otherwise it publishes the strategy's next immutable `releaseVersion` and
+switches only the target deployment to `{ strategyName, releaseVersion,
+controlState: "entries_paused" }`. Use `bootstrap` only when the deployment does
+not exist. Run `runtime-config verify` and dry-run signals, then resume entries
+only when `decide` returns `START_MICRO_FORWARD`. Never write
+`deploymentStrategy.config` or use production fingerprints/git SHAs as
+identity. Report unavailable access, package incompatibility, account/position
+preflight failure, or an ambiguous target as the exact blocker.
 
 ## Return one verdict
 
@@ -350,7 +358,7 @@ an intermediate production label.
 Release:
 
 ```text
-Use $strategy-release in release mode for <Strategy>. Evaluate config <Strategy>:ai as one core + deterministic AI-gate composition. First audit Git history and immutable evidence, bridge every stronger prior result to the current frozen experiment, and prioritize causally distinct untested commits before novel hypotheses. Use only --cacheOnly history and keep a chronological core release tail sealed while running three causal improvement rounds: one anchor per family, full metric/match/trace analysis, then two evidence-driven child variants per surviving family in each of two refinement rounds. After round 3 select up to three complete, reconciled, non-no-op diagnostic seeds with different cadence even when they failed the release rule and run one evidence-driven core rescue child for each. If one raw side remains useful while the other side or current gate destroys the composition, run the mandatory five-variant direction-policy checkpoint instead of stopping before gate research. Never exceed 18 core candidates. Report full AI-gate statistics plus 3y, 4y, 5y-or-maximum-available and terminal ALL/LONG/SHORT statistics even when no finalist is found. Keep both directions visible in raw evidence; any one-side composition must be an explicit tested gate policy. Use one gate round and at most one supported recent-direction repair. Set llmComparison=off. Finish with full-period `ai-train --localOnly --chart -n 0`, immutable evidence, one release verdict, and `strategy:release decide`. If the user asks to start forward tests, first commit and push the exact strategy candidate, update local Redis to that candidate config, and rerun dry-run signals; after the user deploys and replies ready/готово, update production Redis to the same candidate and start only the authorized forward deployment at MAX_LOSS_VALUE=1 after `START_MICRO_FORWARD`; never promote it or increase risk automatically.
+Use $strategy-release in release mode for <Strategy>. Evaluate config <Strategy>:ai as one core + deterministic AI-gate composition. First audit Git history and immutable evidence, bridge every stronger prior result to the current frozen experiment, and prioritize causally distinct untested commits before novel hypotheses. Use only --cacheOnly history and keep a chronological core release tail sealed while running three causal improvement rounds: one anchor per family, full metric/match/trace analysis, then two evidence-driven child variants per surviving family in each of two refinement rounds. After round 3 select up to three complete, reconciled, non-no-op diagnostic seeds with different cadence even when they failed the release rule and run one evidence-driven core rescue child for each. If one raw side remains useful while the other side or current gate destroys the composition, run the mandatory five-variant direction-policy checkpoint instead of stopping before gate research. Never exceed 18 core candidates. Report full AI-gate statistics plus 3y, 4y, 5y-or-maximum-available and terminal ALL/LONG/SHORT statistics even when no finalist is found. Keep both directions visible in raw evidence; any one-side composition must be an explicit tested gate policy. Use one gate round and at most one supported recent-direction repair. Set llmComparison=off. Finish with full-period `ai-train --localOnly --chart -n 0`, immutable evidence, one release verdict, and `strategy:release decide`. If the user asks to start forward tests, complete the exact strategy/package/Project commits and pushes, wait for the matching automatic image deploy, then backup and update production Redis with `runtime-config rollout` only when config or package versions changed; start only the authorized forward deployment at MAX_LOSS_VALUE=1 after `START_MICRO_FORWARD`, and never promote it or increase risk automatically.
 ```
 
 Diagnose live:

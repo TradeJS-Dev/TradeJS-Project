@@ -596,12 +596,17 @@ candidate, remove operational fields, retain `MAX_LOSS_VALUE=1`, run
 `yarn runtime-config verify`, and rerun dry-run `signals`. Keep unrelated
 working-tree changes out of both commits unless explicitly requested.
 
-Do not mutate production Redis in the local phase. After the user deploys the
-pushed code and replies `готово`/`ready`, treat that reply as authorization for
-the production Redis phase. Verify `/app/runtime-package-manifest.json`, back
-up Redis, publish the next immutable per-strategy `releaseVersion`, and switch
-only the selected deployment pointer in `entries_paused` state. Verify the
-deployment/account/connector with `yarn runtime-config verify`, retain both
+The user's request to start forward tests authorizes the complete rollout for
+that exact candidate; do not require a second `готово`/`ready` handshake. Do
+not mutate production Redis before the pushed Project SHA has passed Project
+publish and the matching repository-dispatch Deploy workflow. Then verify the
+same SHA and package versions in `/app/runtime-package-manifest.json`, take and
+restore-check a Redis backup, and run `runtime-config rollout` with the
+secret-free candidate file. It creates the next immutable per-strategy
+`releaseVersion` and switches only the selected deployment pointer in
+`entries_paused` state, or performs no write when config and package versions
+already match. Use `bootstrap` only for a missing deployment. Verify the
+deployment/account/connector with `runtime-config verify`, retain both
 directions, rerun `decide` and a dry-run, then resume only after
 `START_MICRO_FORWARD`. Do not increase risk, change unrelated releases, or
 manually place orders.
@@ -660,13 +665,14 @@ npm view <strategy-package>@<package-version> version
 git -C <TradeJS-Project> add package.json yarn.lock
 git -C <TradeJS-Project> commit -m "Update <Strategy> runtime package"
 git -C <TradeJS-Project> push
+# Wait for Project publish and the matching repository-dispatch Deploy run.
 yarn runtime-config verify --user <user> --deployment <deploymentId>
 yarn signals --user <user> --deployment <deploymentId> --timeframe <interval> \
   --skipScreenshots --showSkipStats
 
-# Runtime server, after the immutable image is deployed and acknowledged.
-yarn runtime-config migrate --user <user> --strategy <Strategy> \
-  --config <legacy-config-id> --deployment <deploymentId> --write
+# Runtime server, after the exact immutable Project SHA is deployed.
+yarn runtime-config rollout --user <user> --strategy <Strategy> \
+  --deployment <deploymentId> --file <secret-free-candidate.json> --write
 yarn runtime-config verify --user <user> --deployment <deploymentId>
 yarn runtime-config resume --user <user> --strategy <Strategy> \
   --deployment <deploymentId>
