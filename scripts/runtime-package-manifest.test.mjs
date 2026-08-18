@@ -61,7 +61,7 @@ test("rejects a container install that differs from package.json", (t) => {
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
 
   assert.throws(
-    () => buildRuntimePackageManifest({ root }),
+    () => buildRuntimePackageManifest({ root, allowPrerelease: false }),
     /package\.json=3\.1\.4 installed=3\.1\.3/,
   );
 });
@@ -71,7 +71,7 @@ test("rejects non-exact TradeJS dependency versions", (t) => {
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
 
   assert.throws(
-    () => buildRuntimePackageManifest({ root }),
+    () => buildRuntimePackageManifest({ root, allowPrerelease: false }),
     /@tradejs\/node must use an exact stable version/,
   );
 });
@@ -85,7 +85,7 @@ test("records an exact beta only when prerelease staging is explicit", (t) => {
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
 
   assert.throws(
-    () => buildRuntimePackageManifest({ root }),
+    () => buildRuntimePackageManifest({ root, allowPrerelease: false }),
     /@tradejs\/node must use an exact stable version/,
   );
   assert.equal(
