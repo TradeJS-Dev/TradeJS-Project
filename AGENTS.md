@@ -11,6 +11,94 @@ TradeJS composition, local runtime infrastructure, backtest/research artifacts,
 research notes, server runtime configuration, the production app image, and
 the immutable handoff to `TradeJS-Deploy`.
 
+## Workspace Routing
+
+- The canonical workspace map is `~/dev/tradejs/AGENTS.md`. Do not scan sibling
+  repositories when that map already identifies the owner.
+- This is the operational command center and the only local owner of `.env`,
+  `tradejs.config.ts`, local Compose, Redis/Timescale, `data/`, `notes/`, and
+  `output/`.
+- Framework/CLI/runtime source changes belong in `~/dev/tradejs/investing`.
+  Strategy source changes belong in the matching standalone
+  `~/dev/tradejs/tradejs-strategy-*` repository. Public docs and landing changes
+  belong in `tradejs-docs` and `tradejs-site`.
+- When external source is under study, keep this directory as `PROJECT_CWD` and
+  point `TRADEJS_SOURCE_REPOSITORY_ROOT` at that exact source repository.
+
+## Operational Entry Points
+
+Run these commands from this repository. Prefer package scripts when present;
+for CLI commands without a script use `yarn exec tradejs <command>`.
+
+- Local services/app: `yarn infra-up`, `yarn infra-down`, `yarn doctor`,
+  `yarn pgadmin:up`, `yarn dev`, and `yarn checks`.
+- Backtest: `yarn backtest -c <Strategy>:<config> -d 30 --cacheOnly --fast`.
+- Results: `yarn results --strategy <Strategy> --coverage`.
+- Replay: `yarn replay --days 7 --cacheOnly`.
+- AI: `yarn ai-export`, `yarn ai-train --strategy <Strategy> --localOnly
+--json -n 0`, and `yarn ai-pocket-search --strategy <Strategy> -n 0`.
+- Core research: `yarn research:core init|prepare|run|analyze|verify`.
+- Strategy release: `yarn strategy-release
+profile|create|verify|decide|diagnose|retention`. The Project wrapper uses a
+  hyphen; `strategy:release` is the source-monorepo script name.
+- Runtime config: `yarn runtime-config
+inspect|verify|provision|rollout|pause|resume|rollback`.
+- One-shot signals/parity/evidence: `yarn exec tradejs signals`,
+  `yarn exec tradejs runtime-parity`, `yarn exec tradejs runtime-evidence`,
+  `yarn exec tradejs runtime-evidence-sync`,
+  `yarn exec tradejs replay-runtime-evidence`, and
+  `yarn exec tradejs execution-calibration`, and
+  `yarn exec tradejs runtime-scorecard`.
+
+Historical research defaults to `--cacheOnly`. A forward test is a
+`$strategy-release` rollout of one verified candidate, not a generic backtest;
+it requires explicit authorization, an exact runtime binding, the deployed
+stable package, `START_MICRO_FORWARD`, and `MAX_LOSS_VALUE=1`.
+
+`yarn signals:daemon` is long-running, and `--makeOrders` enables order
+placement. Start it only for an explicitly requested runtime task with an exact
+deployment/account binding. `yarn research:auto` may notify Telegram and
+dispatch an agent that pushes a review branch; run it only when explicitly
+requested.
+
+## TradeJS Skills
+
+Skills live under `~/dev/tradejs/investing/.codex/skills`. Read the complete
+matching `SKILL.md` before acting:
+
+- `$strategy-backtest-research` — strategy implementation, figures, backtest
+  configs/sweeps, and core export preparation.
+- `$ai-train-local-research` — deterministic gate research, qN+ metrics,
+  pocket discovery, stability, and gate-vs-LLM analysis.
+- `$strategy-release` — release research, authorized micro-forward rollout,
+  and live diagnosis.
+- `$backtest-config-redis` — read a named RedisJSON backtest config.
+- `$save-strategy-config-from-backtest` — explicitly promote/copy a backtest
+  grid after comparing the existing runtime value.
+- `$runtime-parity-mismatch-analysis` — analyze an existing mismatch JSON
+  before considering a rerun.
+
+## Redis And Local Artifacts
+
+- Redis is `inv-redis` on `6379`; RedisInsight is
+  `http://localhost:5540`. Use `docker exec -it inv-redis redis-cli` for an
+  interactive shell and non-interactive `docker exec inv-redis redis-cli ...`
+  for automation.
+- Prefer `SCAN`/`--scan` and exact `JSON.GET` reads. Never run `FLUSHALL`,
+  `FLUSHDB`, broad `DEL`, or config writes without explicit authorization.
+- Backtest artifacts: `data/backtests/{tests,cache,output}`.
+- AI artifacts: `data/ai/{export,output}`.
+- Replay artifacts: `data/replay/` and `data/replay/output/`.
+- Core research: `data/research/core/<researchId>/`.
+- Runtime evidence:
+  `data/runtime-evidence/{inbox,artifacts,receipts}/`.
+- Strategy release evidence: `data/strategy-release/`.
+- Notes: `notes/<Strategy>/`, `notes/Shared/`, and
+  `notes/CrossStrategy/`; validate with `yarn notes:check`.
+
+Never stage, commit, or force-add `data/`, `notes/`, or `output/`. Local Redis
+is not the production source of truth.
+
 ## Boundaries
 
 - Configure installed plugins in `tradejs.config.ts`; do not copy engine or
