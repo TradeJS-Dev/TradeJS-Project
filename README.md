@@ -39,6 +39,8 @@ deployment references exactly `{ strategyName, releaseVersion, controlState }`.
 The release owns interval, universe, policy, risk, and exact package versions;
 the deployment owns connector and trading-account binding. The app renders the
 release config read-only and only exposes pause/resume for new entries.
+`deploy/runtime.env` explicitly selects the deployment consumed by the signals
+daemon; the container refuses to start when that binding is absent.
 
 `deploy/runtime.env` contains only secret-free application defaults. Deploy
 injects `PG_PASSWORD`, authentication secrets, exchange/API credentials, and

@@ -25,6 +25,7 @@ const requiredFiles = [
   "docker-compose.dev.yml",
   "entrypoint.sh",
   "scripts/research-notes-check.mjs",
+  "scripts/runtime-entrypoint.test.mjs",
   "scripts/write-runtime-package-manifest.mjs",
   "scripts/runtime-package-manifest.test.mjs",
   "tradejs.config.ts",
@@ -128,6 +129,10 @@ assert(
 );
 
 const runtimeEnv = read("deploy/runtime.env");
+assert(
+  runtimeEnv.includes("SIGNALS_DAEMON_DEPLOYMENT_ID=doubletap-forward"),
+  "Production signals daemon must select the canonical deployment explicitly",
+);
 for (const secretName of [
   "AUTH_SECRET",
   "NEXTAUTH_SECRET",
@@ -150,6 +155,16 @@ assert(
   dockerfile.includes("runtime-package-manifest.json") &&
     dockerfile.includes("yarn runtime:manifest"),
   "Docker image does not contain an installed-package manifest",
+);
+
+const entrypoint = read("entrypoint.sh");
+assert(
+  entrypoint.includes(
+    "SIGNALS_DAEMON_DEPLOYMENT_ID:?SIGNALS_DAEMON_DEPLOYMENT_ID is required",
+  ) &&
+    entrypoint.includes('--deployment "$SIGNALS_DAEMON_DEPLOYMENT_ID"') &&
+    !entrypoint.includes('SIGNALS_DAEMON_DEPLOYMENT_ID:-}" ]; then'),
+  "Container entrypoint must require the canonical deployment without a fallback",
 );
 
 const localCompose = read("docker-compose.dev.yml");

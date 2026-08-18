@@ -3,6 +3,7 @@
 set -Eeuo pipefail
 
 readonly SIGNALS_LOG_PATH="${SIGNALS_LOG_PATH:-/var/log/cron.signals.15.log}"
+readonly SIGNALS_DAEMON_DEPLOYMENT_ID="${SIGNALS_DAEMON_DEPLOYMENT_ID:?SIGNALS_DAEMON_DEPLOYMENT_ID is required}"
 declare -a managed_pids=()
 
 append_bool_flag() {
@@ -42,12 +43,9 @@ touch "$SIGNALS_LOG_PATH"
 
 signals_args=(
   signals-daemon
+  --deployment "$SIGNALS_DAEMON_DEPLOYMENT_ID"
   --timeframe "${SIGNALS_DAEMON_TIMEFRAME:-15}"
 )
-
-if [ -n "${SIGNALS_DAEMON_DEPLOYMENT_ID:-}" ]; then
-  signals_args+=(--deployment "$SIGNALS_DAEMON_DEPLOYMENT_ID")
-fi
 
 if [ -n "${SIGNALS_DAEMON_CHUNK:-1/1}" ]; then
   signals_args+=(--chunk "${SIGNALS_DAEMON_CHUNK:-1/1}")
