@@ -590,7 +590,7 @@ export default defineConfig(basePreset, {
         strategies: {
           TrendFollow: {
             version: 1,
-            enabled: false,
+            enabled: true,
             config: trendFollowForwardRuntimeConfig,
           },
         },
