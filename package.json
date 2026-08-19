@@ -43,14 +43,14 @@
     "checks": "yarn format:check && yarn validate && yarn test && yarn notes:check && NODE_ENV=production yarn build"
   },
   "dependencies": {
-    "@tradejs/app": "3.1.8",
+    "@tradejs/app": "3.1.10",
     "@tradejs/base": "3.1.0",
-    "@tradejs/cli": "3.1.8",
-    "@tradejs/connectors": "3.1.8",
-    "@tradejs/core": "3.1.8",
-    "@tradejs/indicators": "3.1.8",
-    "@tradejs/infra": "3.1.8",
-    "@tradejs/node": "3.1.8",
+    "@tradejs/cli": "3.1.10",
+    "@tradejs/connectors": "3.1.10",
+    "@tradejs/core": "3.1.10",
+    "@tradejs/indicators": "3.1.10",
+    "@tradejs/infra": "3.1.10",
+    "@tradejs/node": "3.1.10",
     "@tradejs/strategy-adaptive-momentum-ribbon": "3.0.0",
     "@tradejs/strategy-adaptive-trend-channel": "3.0.0",
     "@tradejs/strategy-breakout": "3.0.0",
@@ -72,7 +72,7 @@
     "@tradejs/strategy-trend-shift": "3.0.0",
     "@tradejs/strategy-volatility-compression-breakout": "3.0.0",
     "@tradejs/strategy-volume-divergence": "3.0.0",
-    "@tradejs/types": "3.1.8"
+    "@tradejs/types": "3.1.10"
   },
   "devDependencies": {
     "prettier": "^3.6.2"

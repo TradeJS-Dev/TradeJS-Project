@@ -589,7 +589,7 @@ export default defineConfig(basePreset, {
         tickers: trendFollowForwardTickers,
         strategies: {
           TrendFollow: {
-            version: 1,
+            version: 2,
             enabled: true,
             config: trendFollowForwardRuntimeConfig,
           },
@@ -603,7 +603,7 @@ export default defineConfig(basePreset, {
         enabled: true,
         strategies: {
           DoubleTap: {
-            version: 5,
+            version: 6,
             enabled: true,
             config: {
               INTERVAL: "15",
@@ -667,7 +667,7 @@ export default defineConfig(basePreset, {
             },
           },
           TrendShift: {
-            version: 1,
+            version: 2,
             enabled: true,
             config: {
               INTERVAL: "15",
