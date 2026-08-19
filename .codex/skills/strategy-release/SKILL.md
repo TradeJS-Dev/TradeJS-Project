@@ -267,9 +267,9 @@ The decision input must reference the structured chart report by both `path`
 and `sha256`; `decide` recomputes the file hash and verifies that it is a
 successful full-period local-deterministic chart run for the same strategy. A
 forward target is not a boolean. Local research normally leaves `runtimeTarget`
-  null and returns `MICRO_FORWARD_READY`; bind the handoff to the exact
-  Git-owned `deploymentId`, strategy declaration, and server account, then rerun
-  `decide` against that Project image.
+null and returns `MICRO_FORWARD_READY`; bind the handoff to the exact
+Git-owned `deploymentId`, strategy declaration, and server account, then rerun
+`decide` against that Project image.
 
 - `REPAIR_RECENT_DIRECTION`: spend the single repair round, then rebuild all
   historical/chart evidence. Never tune on a handful of trades.
