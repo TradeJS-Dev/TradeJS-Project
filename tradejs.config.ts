@@ -12,7 +12,7 @@ export default defineConfig(basePreset, {
         enabled: true,
         strategies: {
           DoubleTap: {
-            version: 4,
+            version: 5,
             enabled: true,
             config: {
               INTERVAL: "15",
