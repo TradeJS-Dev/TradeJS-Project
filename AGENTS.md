@@ -41,8 +41,7 @@ for CLI commands without a script use `yarn exec tradejs <command>`.
 - Strategy release: `yarn strategy-release
 profile|create|verify|decide|diagnose|retention`. The Project wrapper uses a
   hyphen; `strategy:release` is the source-monorepo script name.
-- Runtime config: `yarn runtime-config
-inspect|verify|provision|rollout|pause|resume|rollback`.
+- Runtime controls: `yarn runtime-control inspect|verify|pause|resume`.
 - One-shot signals/parity/evidence: `yarn exec tradejs signals`,
   `yarn exec tradejs runtime-parity`, `yarn exec tradejs runtime-evidence`,
   `yarn exec tradejs runtime-evidence-sync`,
@@ -73,8 +72,8 @@ matching `SKILL.md` before acting:
 - `$strategy-release` — release research, authorized micro-forward rollout,
   and live diagnosis.
 - `$backtest-config-redis` — read a named RedisJSON backtest config.
-- `$save-strategy-config-from-backtest` — explicitly promote/copy a backtest
-  grid after comparing the existing runtime value.
+- `$save-strategy-config-from-backtest` — explicitly promote a backtest grid
+  into this repository's Git-owned runtime declaration.
 - `$runtime-parity-mismatch-analysis` — analyze an existing mismatch JSON
   before considering a rerun.
 
@@ -103,6 +102,16 @@ is not the production source of truth.
 
 - Configure installed plugins in `tradejs.config.ts`; do not copy engine or
   strategy source into this repository.
+- Own the complete production declaration under `runtime.deployments` in
+  `tradejs.config.ts`. Each strategy has `{ version, enabled, config }`; bump
+  its version whenever its production package or config changes.
+- Never read or write `users:<user>:strategies:*`, Redis deployment documents,
+  per-strategy releases, result overlays, or research evidence as production
+  config. Redis owns only accounts, optional pause overrides, audit events,
+  heartbeats, signals, evaluations, and trades.
+- Treat `users:<user>:runtime:controls` as optional: absence follows Git
+  `enabled`; pause creates an override, resume removes it, and invalid/unreadable
+  controls fail closed.
 - Keep non-secret production values in `deploy/runtime.env`.
 - Keep credentials only in local `.env`, GitHub Actions secrets, or the target
   server secret store. Never commit their values.

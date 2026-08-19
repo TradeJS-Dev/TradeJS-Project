@@ -24,7 +24,7 @@
     "research:auto": "tradejs research:auto",
     "research:core": "tradejs research:core",
     "strategy-release": "tradejs strategy-release",
-    "runtime-config": "tradejs runtime-config",
+    "runtime-control": "tradejs runtime-control",
     "runtime:manifest": "node ./scripts/write-runtime-package-manifest.mjs",
     "clean-tests": "tradejs clean-tests",
     "doctor": "tradejs doctor",

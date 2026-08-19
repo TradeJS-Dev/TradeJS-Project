@@ -32,8 +32,8 @@ const requiredFiles = [
   "scripts/set-tradejs-version.mjs",
   "scripts/set-tradejs-package-version.mjs",
   "scripts/beta-runtime-smoke.sh",
-  "scripts/fixtures/doubletap-smoke-v1.json",
-  "scripts/fixtures/doubletap-smoke-v2.json",
+  "scripts/bump-runtime-strategy-versions.mjs",
+  "scripts/bump-runtime-strategy-versions.test.mjs",
   "scripts/tradejs-version.mjs",
   "scripts/tradejs-version.test.mjs",
   "scripts/write-runtime-package-manifest.mjs",
@@ -87,7 +87,7 @@ for (const scriptName of [
   "ai-train",
   "research:auto",
   "research:core",
-  "runtime-config",
+  "runtime-control",
   "runtime:manifest",
   "notes:check",
 ]) {
@@ -95,7 +95,38 @@ for (const scriptName of [
 }
 
 const config = read("tradejs.config.ts");
-assert(config.includes("defineConfig(basePreset)"), "basePreset is not active");
+assert(
+  config.includes("defineConfig(basePreset, {"),
+  "basePreset is not active",
+);
+for (const expectedRuntimeConfig of [
+  "production:",
+  'accountId: "bybit-default"',
+  "DoubleTap:",
+  "enabled: true",
+  'INTERVAL: "15"',
+  'UNIVERSE: "crypto"',
+  'POLICY_PROFILE_ID: "crypto"',
+]) {
+  assert(
+    config.includes(expectedRuntimeConfig),
+    `Missing production runtime declaration: ${expectedRuntimeConfig}`,
+  );
+}
+assert(
+  /DoubleTap: \{\s*version: [1-9][0-9]*,/m.test(config),
+  "DoubleTap runtime version must be a positive integer",
+);
+for (const forbiddenRuntimeField of [
+  "releaseVersion",
+  "deploymentStrategy.config",
+  "ACCOUNT_ID:",
+]) {
+  assert(
+    !config.includes(forbiddenRuntimeField),
+    `Legacy runtime field remains: ${forbiddenRuntimeField}`,
+  );
+}
 
 const gitignore = read(".gitignore");
 for (const artifactDirectory of [
@@ -121,10 +152,11 @@ assert(
   "strategy-release skill must separate project and source roots",
 );
 assert(
-  strategyReleaseSkill.includes("runtime-config provision") &&
-    !strategyReleaseSkill.includes("runtime-config bootstrap") &&
-    !strategyReleaseSkill.includes("runtime-config migrate"),
-  "strategy-release skill must use only canonical runtime config commands",
+  strategyReleaseSkill.includes("tradejs.config.ts") &&
+    strategyReleaseSkill.includes("runtime-control verify") &&
+    !strategyReleaseSkill.includes("runtime-config") &&
+    !strategyReleaseSkill.includes("releaseVersion"),
+  "strategy-release skill must use the Git-owned runtime config flow",
 );
 assert(
   strategyReleaseSkill.includes(
@@ -134,14 +166,14 @@ assert(
       "production-like Project smoke to move the npm `beta` tag",
     ) &&
     strategyReleaseSkill.includes("weekly Project sync to batch") &&
-    strategyReleaseSkill.includes("matching Project\n  publish workflow") &&
-    strategyReleaseSkill.includes("runtime-config rollout"),
+    strategyReleaseSkill.includes("matching Project publish workflow") &&
+    strategyReleaseSkill.includes("runtime-control inspect"),
   "strategy-release skill must preserve the complete forward-test rollout handshake",
 );
 
 const runtimeEnv = read("deploy/runtime.env");
 assert(
-  runtimeEnv.includes("SIGNALS_DAEMON_DEPLOYMENT_ID=doubletap-forward"),
+  runtimeEnv.includes("SIGNALS_DAEMON_DEPLOYMENT_ID=production"),
   "Production signals daemon must select the canonical deployment explicitly",
 );
 for (const secretName of [

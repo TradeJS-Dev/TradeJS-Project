@@ -15,7 +15,8 @@ recreated as a monorepo clone.
 
 ## Ownership
 
-- `tradejs.config.ts` — installed presets and private/public strategy packages.
+- `tradejs.config.ts` — installed plugins plus the complete production runtime
+  declaration.
 - `package.json` and `yarn.lock` — exact TradeJS package composition.
 - `deploy/runtime.env` — secret-free production application settings.
 - `docker-compose.dev.yml` — local Timescale, Redis, optional pgAdmin, and
@@ -33,17 +34,27 @@ SSH, TLS, server volumes, and server lifecycle. This repository owns local
 Compose plus ignored `data/`, `notes/`, and `output/`; these local artifact
 directories do not belong in the engine repository or Git.
 
-Production strategy configuration is not stored in this repository or in a
-mutable Redis config key. Redis contains immutable per-strategy releases, and a
-deployment references exactly `{ strategyName, releaseVersion, controlState }`.
-The release owns interval, universe, policy, risk, and exact package versions;
-the deployment owns connector and trading-account binding. The app renders the
-release config read-only and only exposes pause/resume for new entries.
-`deploy/runtime.env` explicitly selects the deployment consumed by the signals
-daemon; the container refuses to start when that binding is absent. The daemon
-re-reads that deployment on every cycle, so a release, pause/resume, ticker, or
-account change replaces the old in-memory session without restarting the
-container.
+Production strategy configuration lives only in the committed
+`runtime.deployments` declaration in `tradejs.config.ts`. Each strategy owns a
+complete `{ version, enabled, config }` entry; `version` is incremented for that
+strategy whenever its production package or config changes. Exact npm versions
+remain in `package.json`, `yarn.lock`, and the image package manifest. The
+deployment declaration owns connector, account id, ticker/asset-class scope,
+and its strategy entries.
+
+Redis does not contain deployment documents, strategy config, releases, or
+result overlays. It retains the server-owned trading account, signals/trades,
+heartbeat, audit events, and the optional `users:<user>:runtime:controls`
+document. Missing controls mean no manual overrides; pause creates an
+`entriesPaused: true` override and resume removes it. The app renders committed
+config read-only and exposes only pause/resume for new entries. It does not
+require or display a production evidence artifact.
+
+`deploy/runtime.env` selects the `production` declaration consumed by the
+signals daemon; the container refuses to start when it is absent. The daemon
+re-reads the declaration and controls on every cycle, so pause/resume takes
+effect without a restart. Config/package changes arrive through a new immutable
+Project image and rebuild the affected session from closed-candle warmup.
 
 `deploy/runtime.env` contains only secret-free application defaults. Deploy
 injects `PG_PASSWORD`, authentication secrets, exchange/API credentials, and
@@ -130,8 +141,9 @@ direct `@tradejs/*` dependency, updates the exact package versions and lockfile
 in one batch, runs `yarn checks`, commits one composition, and publishes one
 Project image. A manual dispatch provides the same batched emergency sync.
 `scripts/beta-runtime-smoke.sh` separately validates candidate images with
-isolated Redis and Timescale, immutable v1/v2 strategy releases, a minimal
-deployment reference, no legacy mutable config key, and app/market-ws health.
+isolated Redis and Timescale, the exact Git-owned declaration, package manifest,
+optional pause lifecycle, absence of legacy runtime keys, and app/market-ws
+health.
 
 A successful push to `main` publishes
 `ghcr.io/tradejs-dev/tradejs-project-app:<commit-sha>` and dispatches that exact
@@ -143,9 +155,10 @@ absent, but reports a notice and does not dispatch a production rollout.
 Every `@tradejs/*` dependency uses an exact version. Image construction fails
 if an installed version differs from `package.json`; the generated
 `runtime-package-manifest.json` records the same exact versions and Project SHA.
-After the weekly stable sync and Project deployment, changing the Redis release
-pointer remains a separate explicit operation and always leaves new entries
-paused until activation.
+After the weekly stable sync, strategy config/version edits are committed in
+the same Project change before image publication. There is no Redis release
+pointer step. Operators may apply an optional pause override before or after
+deployment; Git-disabled strategies cannot be resumed from the UI.
 
 Before enabling dispatch, either make the GHCR package
 `tradejs-project-app` public for the current anonymous Compose pull, or keep it

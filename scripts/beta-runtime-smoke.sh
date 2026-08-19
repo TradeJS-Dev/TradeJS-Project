@@ -6,6 +6,13 @@ readonly image="${1:?Usage: beta-runtime-smoke.sh <image> <packages-csv> <versio
 readonly expected_packages_csv="${2:?Usage: beta-runtime-smoke.sh <image> <packages-csv> <version> <project-sha>}"
 readonly beta_version="${3:?Usage: beta-runtime-smoke.sh <image> <packages-csv> <version> <project-sha>}"
 readonly project_sha="${4:?Usage: beta-runtime-smoke.sh <image> <packages-csv> <version> <project-sha>}"
+readonly expected_runtime_version="${5:-$(node --input-type=module -e '
+  import fs from "node:fs";
+  const source = fs.readFileSync("tradejs.config.ts", "utf8");
+  const match = /DoubleTap: \{\s*version: ([1-9][0-9]*),/.exec(source);
+  if (!match) process.exit(1);
+  process.stdout.write(match[1]);
+')}"
 
 [[ "$beta_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-beta\.[1-9][0-9]*)?$ ]] || {
   echo "Invalid exact smoke version: $beta_version" >&2
@@ -19,8 +26,11 @@ readonly project_sha="${4:?Usage: beta-runtime-smoke.sh <image> <packages-csv> <
   echo "Invalid expected package list: $expected_packages_csv" >&2
   exit 1
 }
+[[ "$expected_runtime_version" =~ ^[1-9][0-9]*$ ]] || {
+  echo "Invalid expected DoubleTap runtime version: $expected_runtime_version" >&2
+  exit 1
+}
 
-readonly script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly run_id="${GITHUB_RUN_ID:-$$}"
 [[ "$run_id" =~ ^[0-9]+$ ]] || {
   echo "Invalid smoke run id: $run_id" >&2
@@ -31,8 +41,6 @@ readonly network="${prefix}-network"
 readonly redis_container="${prefix}-redis"
 readonly timescale_container="${prefix}-timescale"
 readonly app_container="${prefix}-app"
-readonly fixture_v1="${script_dir}/fixtures/doubletap-smoke-v1.json"
-readonly fixture_v2="${script_dir}/fixtures/doubletap-smoke-v2.json"
 
 cleanup() {
   docker rm -f \
@@ -69,7 +77,6 @@ runtime_cli() {
     -e PG_USER=app \
     -e PG_PASSWORD=app \
     -e PG_DATABASE=app \
-    -v "${script_dir}/fixtures:/smoke:ro" \
     --entrypoint /app/node_modules/.bin/tradejs \
     "$image" "$@"
 }
@@ -94,27 +101,15 @@ wait_for_command Timescale docker exec "$timescale_container" \
   pg_isready -U app -d app
 
 docker exec "$redis_container" redis-cli JSON.SET \
-  users:root:trading-accounts:bybit-staging '$' \
-  '{"id":"bybit-staging","label":"Beta smoke","provider":"bybit","enabled":true,"isDefault":true,"universes":["crypto"],"environment":"testnet","readOnly":true}' \
+  users:root:trading-accounts:bybit-default '$' \
+  '{"id":"bybit-default","label":"Beta smoke","provider":"bybit","enabled":true,"isDefault":true,"universes":["crypto"],"environment":"testnet","readOnly":true}' \
   >/dev/null
 
-runtime_cli runtime-config provision \
-  --user root \
-  --strategy DoubleTap \
-  --deployment doubletap-smoke \
-  --account bybit-staging \
-  --connector bybit \
-  --provider bybit \
-  --file /smoke/$(basename "$fixture_v1") \
-  --write >/dev/null
-docker exec "$redis_container" redis-cli JSON.SET \
-  users:root:runtime:deployments:doubletap-smoke '$.tickers' \
-  '["BTCUSDT"]' >/dev/null
-
-initial_verification="$(runtime_cli runtime-config verify \
-  --user root --deployment doubletap-smoke)"
-grep -q '"releaseVersion": 1' <<<"$initial_verification"
-grep -q '"controlState": "entries_paused"' <<<"$initial_verification"
+initial_verification="$(runtime_cli runtime-control verify \
+  --user root --deployment production)"
+grep -q "\"version\": $expected_runtime_version" <<<"$initial_verification"
+grep -q '"controlState": "active"' <<<"$initial_verification"
+[[ "$(docker exec "$redis_container" redis-cli EXISTS users:root:runtime:controls)" == "0" ]]
 
 docker run -d \
   --name "$app_container" \
@@ -131,8 +126,7 @@ docker run -d \
   -e NEXTAUTH_SECRET=beta-smoke-auth-secret \
   -e NEXTAUTH_URL=http://127.0.0.1:3000 \
   -e APP_URL=http://127.0.0.1:3000 \
-  -e SIGNALS_DAEMON_DEPLOYMENT_ID=doubletap-smoke \
-  -e SIGNALS_DAEMON_TIMEFRAME=1 \
+  -e SIGNALS_DAEMON_DEPLOYMENT_ID=production \
   -e SIGNALS_DAEMON_NOTIFY=false \
   -e SIGNALS_DAEMON_MAKE_ORDERS=false \
   -e SIGNALS_DAEMON_SHOW_SKIP_STATS=false \
@@ -165,48 +159,27 @@ docker exec \
     }
   '
 
-runtime_cli runtime-config rollout \
-  --user root \
-  --strategy DoubleTap \
-  --deployment doubletap-smoke \
-  --file /smoke/$(basename "$fixture_v2") \
-  --write >/dev/null
-rollout_verification="$(runtime_cli runtime-config verify \
-  --user root --deployment doubletap-smoke)"
-grep -q '"releaseVersion": 2' <<<"$rollout_verification"
-grep -q '"controlState": "entries_paused"' <<<"$rollout_verification"
+runtime_cli runtime-control pause \
+  --user root --deployment production --strategy DoubleTap >/dev/null
+paused="$(runtime_cli runtime-control inspect \
+  --user root --deployment production --strategy DoubleTap)"
+grep -q '"controlState": "entries_paused"' <<<"$paused"
+[[ "$(docker exec "$redis_container" redis-cli EXISTS users:root:runtime:controls)" == "1" ]]
 
-deployment_json="$(docker exec "$redis_container" redis-cli --raw JSON.GET \
-  users:root:runtime:deployments:doubletap-smoke)"
-release_v1_json="$(docker exec "$redis_container" redis-cli --raw JSON.GET \
-  users:root:strategies:DoubleTap:releases:1)"
-release_v2_json="$(docker exec "$redis_container" redis-cli --raw JSON.GET \
-  users:root:strategies:DoubleTap:releases:2)"
-mutable_config_exists="$(docker exec "$redis_container" redis-cli --raw EXISTS \
-  users:root:strategies:DoubleTap:config)"
-DEPLOYMENT_JSON="$deployment_json" \
-RELEASE_V1_JSON="$release_v1_json" \
-RELEASE_V2_JSON="$release_v2_json" \
-MUTABLE_CONFIG_EXISTS="$mutable_config_exists" \
-node --input-type=module -e '
-  const deployment = JSON.parse(process.env.DEPLOYMENT_JSON);
-  const releaseV1 = JSON.parse(process.env.RELEASE_V1_JSON);
-  const releaseV2 = JSON.parse(process.env.RELEASE_V2_JSON);
-  const reference = deployment.strategies[0];
-  const referenceKeys = Object.keys(reference).sort().join(",");
-  if (referenceKeys !== "controlState,releaseVersion,strategyName") {
-    throw new Error(`Invalid deployment strategy fields: ${referenceKeys}`);
-  }
-  if (reference.releaseVersion !== 2 || reference.controlState !== "entries_paused") {
-    throw new Error("Deployment did not switch to paused release v2");
-  }
-  if (releaseV1.config.MAX_LOSS_VALUE !== 1 || releaseV2.config.MAX_LOSS_VALUE !== 2) {
-    throw new Error("Immutable release configs were not preserved");
-  }
-  if (process.env.MUTABLE_CONFIG_EXISTS !== "0") {
-    throw new Error("Legacy mutable strategy config exists");
-  }
-'
+runtime_cli runtime-control resume \
+  --user root --deployment production --strategy DoubleTap >/dev/null
+resumed="$(runtime_cli runtime-control inspect \
+  --user root --deployment production --strategy DoubleTap)"
+grep -q '"controlState": "active"' <<<"$resumed"
+[[ "$(docker exec "$redis_container" redis-cli EXISTS users:root:runtime:controls)" == "0" ]]
+
+legacy_keys="$(docker exec "$redis_container" redis-cli --scan | \
+  grep -E 'users:root:strategies:.*:(config|release-seq|releases:)|users:root:runtime:deployments:(doubletap-forward|doubletap-smoke)$' || true)"
+if [[ -n "$legacy_keys" ]]; then
+  echo "Legacy runtime configuration keys were created:" >&2
+  echo "$legacy_keys" >&2
+  exit 1
+fi
 
 docker exec "$app_container" curl -fsS http://127.0.0.1:3000 >/dev/null
 if docker logs "$app_container" 2>&1 | grep -qi 'cycle failed'; then

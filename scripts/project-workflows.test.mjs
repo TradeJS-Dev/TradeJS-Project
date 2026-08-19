@@ -19,6 +19,8 @@ test("weekly stable package sync is batched into one Project image", () => {
   assert.match(workflow, /cron: "0 6 \* \* 1"/);
   assert.match(workflow, /registry\.npmjs\.org/);
   assert.match(workflow, /latest is not a stable exact version/);
+  assert.match(workflow, /bump-runtime-strategy-versions\.mjs/);
+  assert.match(workflow, /package\.json yarn\.lock tradejs\.config\.ts/);
   assert.match(workflow, /yarn install --no-immutable/);
   assert.match(workflow, /run: yarn checks/);
   assert.match(workflow, /beta-runtime-smoke\.sh/);
