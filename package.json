@@ -67,7 +67,7 @@
     "@tradejs/strategy-market-flush-reversal": "3.0.0",
     "@tradejs/strategy-relative-rotation": "3.0.0",
     "@tradejs/strategy-structure-zones": "3.0.0",
-    "@tradejs/strategy-trend-follow": "3.0.0",
+    "@tradejs/strategy-trend-follow": "3.0.1",
     "@tradejs/strategy-trend-line": "3.0.0",
     "@tradejs/strategy-trend-shift": "3.0.0",
     "@tradejs/strategy-volatility-compression-breakout": "3.0.0",

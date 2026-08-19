@@ -1527,7 +1527,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/strategy-trend-follow@npm:3.0.0, @tradejs/strategy-trend-follow@npm:^3.0.0":
+"@tradejs/strategy-trend-follow@npm:3.0.1":
+  version: 3.0.1
+  resolution: "@tradejs/strategy-trend-follow@npm:3.0.1"
+  dependencies:
+    "@tradejs/core": "npm:^3.0.1"
+    "@tradejs/strategy-kit": "npm:^3.0.0"
+    "@tradejs/types": "npm:^3.0.1"
+  checksum: 10c0/ce9baf2831f2547bd85579e8d6dabe041f4aef2ecec7c84b00d031df3a35f46d410d023dd46e7501aa003bd974e1488ee3041732268cd61583c72930c6c7b482
+  languageName: node
+  linkType: hard
+
+"@tradejs/strategy-trend-follow@npm:^3.0.0":
   version: 3.0.0
   resolution: "@tradejs/strategy-trend-follow@npm:3.0.0"
   dependencies:
@@ -5614,7 +5625,7 @@ __metadata:
     "@tradejs/strategy-market-flush-reversal": "npm:3.0.0"
     "@tradejs/strategy-relative-rotation": "npm:3.0.0"
     "@tradejs/strategy-structure-zones": "npm:3.0.0"
-    "@tradejs/strategy-trend-follow": "npm:3.0.0"
+    "@tradejs/strategy-trend-follow": "npm:3.0.1"
     "@tradejs/strategy-trend-line": "npm:3.0.0"
     "@tradejs/strategy-trend-shift": "npm:3.0.0"
     "@tradejs/strategy-volatility-compression-breakout": "npm:3.0.0"
