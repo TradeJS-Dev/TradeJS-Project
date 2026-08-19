@@ -176,6 +176,10 @@ assert(
   runtimeEnv.includes("SIGNALS_DAEMON_DEPLOYMENT_ID=production"),
   "Production signals daemon must select the canonical deployment explicitly",
 );
+assert(
+  runtimeEnv.includes("trendfollow-forward-loss-guard-20260818"),
+  "TrendFollow forward deployment must be included in the production daemon set",
+);
 for (const secretName of [
   "AUTH_SECRET",
   "NEXTAUTH_SECRET",
@@ -205,9 +209,12 @@ assert(
   entrypoint.includes(
     "SIGNALS_DAEMON_DEPLOYMENT_ID:?SIGNALS_DAEMON_DEPLOYMENT_ID is required",
   ) &&
-    entrypoint.includes('--deployment "$SIGNALS_DAEMON_DEPLOYMENT_ID"') &&
+    entrypoint.includes(
+      'parse_deployment_ids "$SIGNALS_DAEMON_DEPLOYMENT_ID"',
+    ) &&
+    entrypoint.includes('--deployment "$deployment_id"') &&
     !entrypoint.includes('SIGNALS_DAEMON_DEPLOYMENT_ID:-}" ]; then'),
-  "Container entrypoint must require the canonical deployment without a fallback",
+  "Container entrypoint must require explicit deployment ids without a fallback",
 );
 
 const localCompose = read("docker-compose.dev.yml");
