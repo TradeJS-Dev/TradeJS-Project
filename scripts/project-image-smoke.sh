@@ -2,20 +2,13 @@
 
 set -Eeuo pipefail
 
-readonly image="${1:?Usage: beta-runtime-smoke.sh <image> <packages-csv> <version> <project-sha>}"
-readonly expected_packages_csv="${2:?Usage: beta-runtime-smoke.sh <image> <packages-csv> <version> <project-sha>}"
-readonly beta_version="${3:?Usage: beta-runtime-smoke.sh <image> <packages-csv> <version> <project-sha>}"
-readonly project_sha="${4:?Usage: beta-runtime-smoke.sh <image> <packages-csv> <version> <project-sha>}"
-readonly expected_runtime_version="${5:-$(node --input-type=module -e '
-  import fs from "node:fs";
-  const source = fs.readFileSync("config/runtime/strategies/double-tap.ts", "utf8");
-  const match = /version: ([1-9][0-9]*),/.exec(source);
-  if (!match) process.exit(1);
-  process.stdout.write(match[1]);
-')}"
+readonly image="${1:?Usage: project-image-smoke.sh <image> <packages-csv> <version> <project-sha>}"
+readonly expected_packages_csv="${2:?Usage: project-image-smoke.sh <image> <packages-csv> <version> <project-sha>}"
+readonly expected_version="${3:?Usage: project-image-smoke.sh <image> <packages-csv> <version> <project-sha>}"
+readonly project_sha="${4:?Usage: project-image-smoke.sh <image> <packages-csv> <version> <project-sha>}"
 
-[[ "$beta_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-beta\.[1-9][0-9]*)?$ ]] || {
-  echo "Invalid exact smoke version: $beta_version" >&2
+[[ "$expected_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
+  echo "Invalid exact stable smoke version: $expected_version" >&2
   exit 1
 }
 [[ "$project_sha" =~ ^[0-9a-f]{40}$ ]] || {
@@ -26,17 +19,12 @@ readonly expected_runtime_version="${5:-$(node --input-type=module -e '
   echo "Invalid expected package list: $expected_packages_csv" >&2
   exit 1
 }
-[[ "$expected_runtime_version" =~ ^[1-9][0-9]*$ ]] || {
-  echo "Invalid expected DoubleTap runtime version: $expected_runtime_version" >&2
-  exit 1
-}
-
 readonly run_id="${GITHUB_RUN_ID:-$$}"
 [[ "$run_id" =~ ^[0-9]+$ ]] || {
   echo "Invalid smoke run id: $run_id" >&2
   exit 1
 }
-readonly prefix="tradejs-beta-${run_id}"
+readonly prefix="tradejs-project-smoke-${run_id}"
 readonly network="${prefix}-network"
 readonly redis_container="${prefix}-redis"
 readonly timescale_container="${prefix}-timescale"
@@ -100,14 +88,10 @@ wait_for_command Redis docker exec "$redis_container" redis-cli ping
 wait_for_command Timescale docker exec "$timescale_container" \
   pg_isready -U app -d app
 
-docker exec "$redis_container" redis-cli JSON.SET \
-  users:root:trading-accounts:bybit-default '$' \
-  '{"id":"bybit-default","label":"Beta smoke","provider":"bybit","enabled":true,"isDefault":true,"universes":["crypto"],"environment":"testnet","readOnly":true}' \
-  >/dev/null
-
 initial_verification="$(runtime_cli runtime-control verify \
   --user root --deployment production)"
-grep -q "\"version\": $expected_runtime_version" <<<"$initial_verification"
+grep -Eq '"deploymentCompositionId": "dc1:[a-f0-9]{16}"' <<<"$initial_verification"
+grep -Eq '"strategyRevision": "sr1:[a-f0-9]{16}"' <<<"$initial_verification"
 grep -q '"controlState": "active"' <<<"$initial_verification"
 [[ "$(docker exec "$redis_container" redis-cli EXISTS users:root:runtime:controls)" == "0" ]]
 
@@ -122,38 +106,31 @@ docker run -d \
   -e PG_USER=app \
   -e PG_PASSWORD=app \
   -e PG_DATABASE=app \
-  -e AUTH_SECRET=beta-smoke-auth-secret \
-  -e NEXTAUTH_SECRET=beta-smoke-auth-secret \
+  -e AUTH_SECRET=project-smoke-auth-secret \
+  -e NEXTAUTH_SECRET=project-smoke-auth-secret \
   -e NEXTAUTH_URL=http://127.0.0.1:3000 \
   -e APP_URL=http://127.0.0.1:3000 \
-  -e SIGNALS_DAEMON_DEPLOYMENT_ID=production \
-  -e SIGNALS_DAEMON_NOTIFY=false \
-  -e SIGNALS_DAEMON_MAKE_ORDERS=false \
-  -e SIGNALS_DAEMON_SHOW_SKIP_STATS=false \
-  -e SIGNALS_DAEMON_EXTRA_ARGS='--cacheOnly --settleDelayMs 60000' \
-  -e SIGNALS_KLINE_WS_ENABLED=false \
-  -e DERIVATIVES_CONTEXT_ENABLED=false \
-  -e MARKET_WS_PORT=3001 \
-  "$image" >/dev/null
+  "$image" /app/node_modules/.bin/tradejs-app start >/dev/null
 
 wait_for_command 'app health' docker exec "$app_container" \
   curl -fsS http://127.0.0.1:3000
-wait_for_command 'market websocket health' docker exec "$app_container" \
-  curl -fsS http://127.0.0.1:3001/health
 
 docker exec \
-  -e EXPECTED_BETA_VERSION="$beta_version" \
+  -e EXPECTED_PACKAGE_VERSION="$expected_version" \
   -e EXPECTED_PACKAGES_CSV="$expected_packages_csv" \
   -e EXPECTED_PROJECT_SHA="$project_sha" \
   "$app_container" node --input-type=module -e '
     import fs from "node:fs";
     const manifest = JSON.parse(fs.readFileSync("/app/runtime-package-manifest.json", "utf8"));
     const expectedPackages = process.env.EXPECTED_PACKAGES_CSV.split(",");
+    if (manifest.schema !== "tradejs-runtime-package-manifest/v1") {
+      throw new Error(`Runtime manifest schema mismatch: ${manifest.schema}`);
+    }
     if (manifest.projectSha !== process.env.EXPECTED_PROJECT_SHA) {
       throw new Error(`Project SHA mismatch: ${manifest.projectSha}`);
     }
     for (const name of expectedPackages) {
-      if (manifest.packages[name] !== process.env.EXPECTED_BETA_VERSION) {
+      if (manifest.packages[name] !== process.env.EXPECTED_PACKAGE_VERSION) {
         throw new Error(`${name} is ${manifest.packages[name]}`);
       }
     }
@@ -182,10 +159,6 @@ if [[ -n "$legacy_keys" ]]; then
 fi
 
 docker exec "$app_container" curl -fsS http://127.0.0.1:3000 >/dev/null
-if docker logs "$app_container" 2>&1 | grep -qi 'cycle failed'; then
-  docker logs "$app_container" >&2
-  exit 1
-fi
 
-printf 'Production-like beta smoke passed: %s (%s)\n' \
-  "$beta_version" "$project_sha"
+printf 'Stable Project image smoke passed: %s (%s)\n' \
+  "$expected_version" "$project_sha"

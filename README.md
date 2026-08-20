@@ -38,10 +38,13 @@ directories do not belong in the engine repository or Git.
 Production strategy configuration lives only in the committed
 `runtime.deployments` declaration rooted in `tradejs.config.ts` and assembled
 from `config/runtime/`. Each strategy owns a complete
-`{ version, enabled, selection?, config }` binding; `version` is
-incremented whenever its production package, effective config, or runtime
-binding changes. Exact npm versions remain in `package.json`, `yarn.lock`, and
-the image package manifest. A deployment owns its connector, account id,
+`{ generation?, enabled, selection?, config }` binding. `generation` is an
+optional human label, not an identity field. Runtime parses the config with the
+strategy package and computes `strategyRevision` from exact runtime package
+versions plus the complete effective config. It computes a separate
+`deploymentCompositionId` from the target and sorted strategy bindings. Exact
+npm versions remain in `package.json`, `yarn.lock`, and the image package
+manifest. A deployment owns its connector, account id,
 asset-class defaults, and strategy bindings. A strategy-owned `selection`
 narrows its ticker universe before core evaluation. Forward-test exposure is
 controlled by the strategy's `MAX_LOSS_VALUE`, not encoded in module names.
@@ -106,14 +109,22 @@ yarn research:auto
 yarn research:core --help
 yarn strategy-release --help
 yarn notes:check
+yarn runtime:manifest
+yarn runtime:validate
 ```
 
 The project directory is the `PROJECT_CWD`: `.env`, `tradejs.config.ts`,
 `data/`, `notes/`, `output/`, and all relative research artifacts resolve here.
-When testing unreleased engine changes, point
-`TRADEJS_SOURCE_REPOSITORY_ROOT` at the separate TradeJS checkout; Git
-SHA/diff/remote and source builds resolve there without moving artifacts out of
-this project.
+For source-aware research, set `TRADEJS_SOURCE_REPOSITORY_ROOT` explicitly to
+the exact engine or standalone strategy repository under study. Git
+SHA/diff/remote and unreleased source builds resolve there without moving
+artifacts out of this project; tooling never infers the source repository from
+`PROJECT_CWD`.
+
+```bash
+TRADEJS_SOURCE_REPOSITORY_ROOT=../tradejs-strategy-trend-line \
+  yarn research:auto
+```
 
 Research notes are permanently ignored and use
 `notes/<Strategy>/YYYY-MM-DD-<short-kebab-slug>.md`. Shared records use
@@ -132,37 +143,54 @@ docker build --check .
 
 ## Production handoff
 
-The committed Project composition is stable-only. Normal framework and package
-pushes publish prerelease versions and validate them from an ephemeral clone by
-setting `TRADEJS_ALLOW_PRERELEASE=true`; that flag is absent from the production
-workflow and defaults to `false` in the Dockerfile. Therefore neither a beta
-dependency nor a beta validation image can be committed or deployed by the
-normal Project handoff.
+The committed Project composition is stable-only. Framework and package
+repositories validate their own prerelease tarballs in isolated npm consumers;
+Project assembles only stable exact versions. Validation and image construction
+reject prerelease dependencies unconditionally, so a beta package cannot enter
+the Project handoff.
 
 Every Monday at `06:00 UTC`, after package promotion windows, the protected
 `package-update.yml` workflow resolves the stable npm `latest` tag for every
 direct `@tradejs/*` dependency, updates the exact package versions and lockfile
 in one batch, runs `yarn checks`, commits one composition, and publishes one
 Project image. A manual dispatch provides the same batched emergency sync.
-`scripts/beta-runtime-smoke.sh` separately validates candidate images with
+`scripts/project-image-smoke.sh` validates the stable candidate image with
 isolated Redis and Timescale, the exact Git-owned declaration, package manifest,
-optional pause lifecycle, absence of legacy runtime keys, and app/market-ws
-health.
+optional pause lifecycle, absence of legacy runtime keys, and application
+health. It deliberately does not start the exchange-facing signals daemon or
+market websocket; package publication already proves distributable imports,
+while live process behavior belongs to explicit runtime validation.
 
-A successful push to `main` publishes
-`ghcr.io/tradejs-dev/tradejs-project-app:<commit-sha>` and dispatches that exact
-SHA to `TradeJS-Deploy`. The project workflow needs only the cross-repository
-`DEPLOY_REPOSITORY_TOKEN`; application and server secrets remain in Deploy. A
-first push still verifies and publishes the image when this token is
-absent, but reports a notice and does not dispatch a production rollout.
+Pushing `main` only updates source. Publishing is an explicit
+`workflow_dispatch` of `publish.yml`; it verifies the committed composition,
+publishes `ghcr.io/tradejs-dev/tradejs-project-app:<commit-sha>`, and dispatches
+that exact SHA to `TradeJS-Deploy`. The protected `production` GitHub
+environment must contain `DEPLOY_REPOSITORY_TOKEN`; a missing handoff credential
+fails the workflow before image publication. The protected weekly package
+update invokes the same workflow after its stable composition passes checks and
+Docker smoke.
+
+The complete repository-to-repository ownership and migration commands for
+GitHub Actions configuration are documented in
+[`docs/github-environment-ownership.md`](docs/github-environment-ownership.md).
+The workflow needs only the cross-repository `DEPLOY_REPOSITORY_TOKEN`;
+application and server secrets remain in Deploy. Without that token the
+workflow fails before publishing an image or dispatching a production rollout.
 
 Every `@tradejs/*` dependency uses an exact version. Image construction fails
 if an installed version differs from `package.json`; the generated
-`runtime-package-manifest.json` records the same exact versions and Project SHA.
-After the weekly stable sync, strategy config/version edits are committed in
-the same Project change before image publication. There is no Redis release
-pointer step. Operators may apply an optional pause override before or after
+`runtime-package-manifest.json` records the same exact versions, including the
+strategy packages' TradeJS runtime dependencies, and Project SHA. `yarn checks`
+typechecks the declaration, validates the complete plugin catalog, materializes
+strategy defaults, rejects stale package inventory, and prints the computed
+revisions before building. There is no manual version map or Redis release
+pointer. Operators may apply an optional pause override before or after
 deployment; Git-disabled strategies cannot be resumed from the UI.
+
+The manifest requires the exact 40-character Project Git SHA. It walks every
+installed TradeJS dependency and peer edge, rejects Base/Kit/strategy packages
+that bundle a second TradeJS runtime, and fails when the exact host version does
+not satisfy a package's peer range.
 
 Before enabling dispatch, either make the GHCR package
 `tradejs-project-app` public for the current anonymous Compose pull, or keep it

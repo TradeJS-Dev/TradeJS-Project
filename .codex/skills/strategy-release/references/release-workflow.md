@@ -33,10 +33,11 @@ Never copy credentials into research evidence.
 
 The local output is a portable composition handoff. Research fingerprints and
 checksums validate its inputs locally; production identifies the deployed
-package plus complete config by the explicit per-strategy `version` committed
-in Project. `ACCOUNT_ID` and `DEPLOYMENT_ID` remain binding fields outside the
-strategy config. API credentials are server secrets: never export, hash, or
-compare them as research identity.
+package plus parsed complete config by computed `strategyRevision`, while
+`deploymentCompositionId` binds the target and all strategy selections.
+`ACCOUNT_ID` and `DEPLOYMENT_ID` remain binding fields outside the strategy
+config. API credentials are server secrets: never export, hash, or compare them
+as research identity.
 `ENABLE`, `AI_ENABLED`,
 `AI_MODE`, `MIN_AI_QUALITY`, detector/side policy, interval/universe, fees, and
 execution/context semantics remain parity-critical.
@@ -210,8 +211,8 @@ If a matched one-field comparison has an opposing supported LONG/SHORT effect,
 run `directional-parameter-checkpoint.mjs` before freezing the next children.
 Follow [directional-parameter-split.md](directional-parameter-split.md). A
 target-only override or required detector-state isolation consumes the normal
-child/rescue budget; it does not grant extra trials. Preserve the global field
-as the exact legacy fallback and audit non-target identity or occupancy
+child/rescue budget; it does not grant extra trials. Replace the shared field
+with the required directional pair and audit non-target identity or occupancy
 spillover.
 
 Persist that conclusion as the round's immutable causal handoff. At minimum it
@@ -557,11 +558,12 @@ errors, the same strategy, `local-deterministic` mode, `recent=0`, no explicit
 date narrowing, and a non-empty full-export scan. Never copy a plausible hash
 into the input without the file. Likewise, `forwardTest.runtimeTarget` is
 either null or the exact `{ userName, deploymentId, accountId, strategyName,
-version }`; do not substitute a self-declared “resolved” boolean.
+strategyRevision, deploymentCompositionId }`; do not substitute a
+self-declared “resolved” boolean.
 Null on the research machine yields `MICRO_FORWARD_READY` with
 `requiresRuntimeBinding=true`, not failed evidence. Commit the secret-free
-handoff, deployment/account binding, and explicit version in Project, deploy
-that image, then rerun `decide` against it.
+handoff and deployment/account binding in Project, validate its computed
+revisions, deploy that image, then rerun `decide` against it.
 
 Case handling is deterministic:
 
@@ -589,20 +591,22 @@ strategy-owned source/gate change for the exact candidate, wait for its verified
 beta and protected stable promotion, then update the exact dependency and
 lockfile in TradeJS-Project. In that same Project commit, materialize the full
 candidate config, remove mode/secret fields, retain `MAX_LOSS_VALUE=1`, and
-increment the declaration's explicit strategy `version`. Run Project checks,
-`yarn runtime-control verify`, and dry-run `signals`, then push so the SHA-tagged
-image is built and dispatched. Keep unrelated changes out of both commits.
+run strict Project checks to compute `strategyRevision` and
+`deploymentCompositionId`. Run `yarn runtime-control verify` and dry-run
+`signals`, then push the source commit. Explicitly dispatch the SHA-tagged image
+publication only when deployment is authorized. Keep unrelated changes out of
+both commits.
 
-The user's request to start forward tests authorizes that complete rollout; do
-not require a second handshake. Production Redis must never receive strategy
-config, deployment documents, or version pointers. For an existing strategy,
-an optional manual pause may guard the image replacement; after verifying the
-deployed manifest, `runtime-control inspect`, `decide`, and a dry-run, resume
-entries after `START_MICRO_FORWARD`. Resume removes the override. A newly
-declared enabled strategy starts with the deployed image. Do not increase risk,
-change unrelated declarations, or manually place orders. Runtime records and UI
-use the explicit Project strategy version; research checksums are not a
-production server/UI dependency.
+Production Redis is not a rollout phase and must never receive strategy config,
+deployment documents, or version pointers. For an existing strategy, an
+optional manual pause may guard the image replacement; after verifying
+`/app/runtime-package-manifest.json`, `runtime-control inspect`, `decide`, and a
+dry-run, resume entries after `START_MICRO_FORWARD`. Resume removes the override.
+A newly declared enabled strategy starts with the deployed image. Do not
+increase risk, change unrelated strategy declarations, or manually place
+orders. Runtime records and UI use computed `strategyRevision` and
+`deploymentCompositionId`; research artifacts keep their own internal checksums
+but are not a production server/UI dependency.
 
 ## Command shapes
 
@@ -649,15 +653,15 @@ git -C <strategy-source-root> push
 
 npm view <strategy-package>@beta version
 npm view <strategy-package>@latest version
-git -C <TradeJS-Project> add package.json yarn.lock tradejs.config.ts
+git -C <TradeJS-Project> add package.json yarn.lock tradejs.config.ts config/runtime
 git -C <TradeJS-Project> commit -m "Update <Strategy> runtime package"
 git -C <TradeJS-Project> push
-# Wait for Project publish and the matching repository-dispatch Deploy run.
+gh workflow run publish.yml --repo TradeJS-Dev/TradeJS-Project --ref main
 yarn runtime-control verify --user <user> --deployment <deploymentId>
 yarn signals --user <user> --deployment <deploymentId> --timeframe <interval> \
   --skipScreenshots --showSkipStats
 
-# Optional guarded cutover after the exact immutable Project SHA is deployed.
+# Optional guarded cutover for an already declared strategy.
 yarn runtime-control pause --user <user> --strategy <Strategy> \
   --deployment <deploymentId>
 yarn runtime-control inspect --user <user> --deployment <deploymentId>

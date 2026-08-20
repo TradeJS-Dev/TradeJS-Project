@@ -15,7 +15,6 @@ concurrency:
 
 jobs:
   update:
-    environment: npm-production
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -37,7 +36,6 @@ jobs:
           import fs from 'node:fs';
 
           const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-          const previousDependencies = { ...packageJson.dependencies };
           const packageNames = Object.keys(packageJson.dependencies)
             .filter((name) => name.startsWith('@tradejs/'))
             .sort();
@@ -61,25 +59,13 @@ jobs:
             packageJson.dependencies[name] = version;
           }
           fs.writeFileSync('package.json', `${JSON.stringify(packageJson, null, 2)}\n`);
-          const changedPackages = resolved
-            .filter(({ name, version }) => previousDependencies[name] !== version)
-            .map(({ name }) => name);
-          fs.writeFileSync(
-            '.changed-tradejs-packages',
-            `${changedPackages.join('\n')}${changedPackages.length ? '\n' : ''}`,
-          );
           console.log(resolved.map(({ name, version }) => `${name}@${version}`).join('\n'));
           NODE
-          mapfile -t changed_packages < .changed-tradejs-packages
-          if [ "${#changed_packages[@]}" -gt 0 ]; then
-            node ./scripts/bump-runtime-strategy-versions.mjs "${changed_packages[@]}"
-          fi
-          rm .changed-tradejs-packages
           yarn install --no-immutable
       - name: Detect composition change
         id: change
         run: |
-          if git diff --quiet -- package.json yarn.lock tradejs.config.ts config/runtime; then
+          if git diff --quiet -- package.json yarn.lock; then
             echo 'changed=false' >> "$GITHUB_OUTPUT"
           else
             echo 'changed=true' >> "$GITHUB_OUTPUT"
@@ -89,7 +75,7 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add package.json yarn.lock tradejs.config.ts config/runtime
+          git add package.json yarn.lock
           git commit -m 'Sync weekly stable TradeJS packages [skip ci]'
       - name: Verify one stable production composition
         if: steps.change.outputs.changed == 'true'
@@ -102,7 +88,7 @@ jobs:
           docker build \
             --build-arg "TRADEJS_PROJECT_SHA=$project_sha" \
             -t "tradejs-project-weekly:$GITHUB_SHA" .
-          bash ./scripts/beta-runtime-smoke.sh \
+          bash ./scripts/project-image-smoke.sh \
             "tradejs-project-weekly:$GITHUB_SHA" '@tradejs/node' \
             "$node_version" "$project_sha"
       - name: Push the verified stable composition

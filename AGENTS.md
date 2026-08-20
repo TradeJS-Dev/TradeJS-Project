@@ -104,8 +104,10 @@ is not the production source of truth.
   `config/runtime/`; do not copy engine or strategy source into this repository.
 - Own the complete production declaration under `runtime.deployments` in
   the declaration rooted at `tradejs.config.ts`. Each strategy has
-  `{ version, enabled, selection?, config }`; bump its version
-  whenever its production package, effective config, or runtime binding changes.
+  `{ generation?, enabled, selection?, config }`. `generation` is optional and
+  human-facing. Never add a manual runtime version: `strategyRevision` and
+  `deploymentCompositionId` are computed from verified packages, parsed
+  effective config, selections, and the deployment target.
 - Never read or write `users:<user>:strategies:*`, Redis deployment documents,
   per-strategy releases, result overlays, or research evidence as production
   config. Redis owns only accounts, optional pause overrides, audit events,
@@ -115,24 +117,33 @@ is not the production source of truth.
   controls fail closed.
 - Keep non-secret production values in `deploy/runtime.env`.
 - Keep credentials only in local `.env`, GitHub Actions secrets, or the target
-  server secret store. Never commit their values.
+  server secret store. Follow `docs/github-environment-ownership.md` for exact
+  repository and environment ownership. Never commit their values.
 - Treat `PG_PASSWORD` as a Deploy-owned production secret; the checked-in
   runtime defaults must not provide a fallback value.
 - Build the app from published `@tradejs/*` packages with an immutable lockfile.
-- Keep the committed Project composition stable-only. Prerelease dependencies
-  are allowed only in ephemeral beta validation with the explicit
-  `TRADEJS_ALLOW_PRERELEASE=true` flag and must never be pushed or deployed.
+- Require a full Project Git SHA in `runtime-package-manifest.json`; reject
+  incompatible TradeJS peer ranges and any Base/Kit/strategy package that
+  bundles a second TradeJS runtime under `dependencies`.
+- Keep every Project composition stable-only. Prerelease dependencies are
+  rejected by validation and image construction; package repositories validate
+  prerelease tarballs independently before stable promotion.
 - Batch all newly promoted stable TradeJS packages through the weekly Project
   sync so one release window produces one Project image rather than one image
   per package.
+- A push to `main` must not publish or deploy. Image publication and the
+  immutable Deploy handoff require an explicit `publish.yml` dispatch. The
+  dispatch is atomic: missing Deploy credentials fail before image publication;
+  there is no image-only fallback path.
 - Publish only `tradejs-project-app` from this repository.
 - Keep ML inference implementation and image publication owned by `TradeJS`;
   local orchestration consumes the published image from this repository and
   must not build or mount monorepo sources.
 - Run personal backtest, replay, AI, and research commands from this repository.
   `PROJECT_CWD` identifies this config/artifact root;
-  `TRADEJS_SOURCE_REPOSITORY_ROOT` optionally identifies a separate source
-  checkout for Git lineage and unreleased builds.
+  source-aware research must set `TRADEJS_SOURCE_REPOSITORY_ROOT` explicitly to
+  the exact engine or strategy checkout used for Git lineage and unreleased
+  builds. Never infer it from the artifact root.
 - Keep local `data/`, `notes/`, and `output/` here and ignored. Do not create
   symlinks back to an engine or strategy repository.
 - Dispatch an immutable project SHA and image tag to `TradeJS-Deploy`; Deploy
@@ -168,6 +179,13 @@ is not the production source of truth.
 
 ## Verification
 
-Run `yarn checks` before every commit. Validate `docker compose config` when
-changing local Compose. Validate a production Docker build when changing
-`Dockerfile`, `entrypoint.sh`, or package installation semantics.
+Run `yarn checks` before every commit. It must typecheck runtime declarations,
+generate the strict package manifest, and resolve the complete runtime
+composition. Validate `docker compose config` when changing local Compose.
+Validate a production Docker build when changing `Dockerfile`, `entrypoint.sh`,
+or package installation semantics.
+
+The stable Project image smoke may start the application and isolated
+Redis/Timescale services, but it must not start `signals-daemon`, `market-ws`,
+or any exchange-facing transport. Live runtime behavior is validated only by
+an explicit runtime workflow with the required credentials and network scope.

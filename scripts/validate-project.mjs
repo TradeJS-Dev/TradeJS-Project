@@ -35,16 +35,14 @@ const requiredFiles = [
   "scripts/research-notes-check.mjs",
   "scripts/runtime-entrypoint.test.mjs",
   "scripts/project-workflows.test.mjs",
-  "scripts/set-tradejs-version.mjs",
-  "scripts/set-tradejs-package-version.mjs",
-  "scripts/beta-runtime-smoke.sh",
-  "scripts/bump-runtime-strategy-versions.mjs",
-  "scripts/bump-runtime-strategy-versions.test.mjs",
+  "scripts/project-image-smoke.sh",
   "scripts/tradejs-version.mjs",
   "scripts/tradejs-version.test.mjs",
   "scripts/write-runtime-package-manifest.mjs",
   "scripts/runtime-package-manifest.test.mjs",
+  "scripts/validate-runtime-composition.mjs",
   "tradejs.config.ts",
+  "tsconfig.json",
   "yarn.lock",
 ];
 for (const relativePath of requiredFiles) {
@@ -64,9 +62,7 @@ assert(
   "TradeJS-Project must depend on @tradejs/base",
 );
 for (const [name, version] of tradejsDependencies) {
-  assertExactTradejsVersion(name, version, {
-    allowPrerelease: process.env.TRADEJS_ALLOW_PRERELEASE === "true",
-  });
+  assertExactTradejsVersion(name, version);
 }
 const strategyDependencies = Object.entries(packageJson.dependencies).filter(
   ([name]) =>
@@ -82,8 +78,13 @@ assert(
 );
 assert(
   packageJson.scripts.checks ===
-    "yarn format:check && yarn validate && yarn test && yarn notes:check && NODE_ENV=production yarn build",
+    "yarn format:check && yarn typecheck && yarn validate && yarn test && yarn notes:check && yarn runtime:manifest && yarn runtime:validate && NODE_ENV=production yarn build",
   "Unexpected checks contour",
+);
+assert(
+  packageJson.scripts.test ===
+    "node --test ./scripts/*.test.mjs ./.codex/skills/*/scripts/*.test.mjs",
+  "Project tests must include repository-owned skill tooling",
 );
 for (const scriptName of [
   "backtest",
@@ -95,6 +96,8 @@ for (const scriptName of [
   "research:core",
   "runtime-control",
   "runtime:manifest",
+  "runtime:validate",
+  "typecheck",
   "notes:check",
 ]) {
   assert(packageJson.scripts[scriptName], `Missing ${scriptName} script`);
@@ -130,8 +133,13 @@ for (const expectedRuntimeConfig of [
   );
 }
 assert(
-  /doubleTapRuntime = \{\s*version: [1-9][0-9]*,/m.test(runtimeConfig),
-  "DoubleTap runtime version must be a positive integer",
+  !/\bversion\s*:/.test(runtimeConfig),
+  "Runtime declarations must not contain manual versions",
+);
+assert(
+  (runtimeConfig.match(/satisfies RuntimeStrategyDeclaration/g) ?? [])
+    .length === 3,
+  "Every runtime strategy declaration must have a TypeScript contract",
 );
 assert(
   runtimeConfig.includes("selection: { tickers: trendFollowTickers }"),
@@ -220,7 +228,8 @@ assert(
 );
 assert(
   dockerfile.includes("runtime-package-manifest.json") &&
-    dockerfile.includes("yarn runtime:manifest"),
+    dockerfile.includes("yarn runtime:manifest") &&
+    !dockerfile.includes("TRADEJS_PROJECT_SHA=unknown"),
   "Docker image does not contain an installed-package manifest",
 );
 assert(
@@ -296,6 +305,10 @@ for (const relativePath of ["entrypoint.sh", "cronjob"]) {
 
 const workflow = read(".github/workflows/publish.yml");
 assert(
+  workflow.includes("workflow_dispatch:") && !/\non:\n\s+push:/.test(workflow),
+  "Project publication must require an explicit workflow dispatch",
+);
+assert(
   workflow.includes("ghcr.io/tradejs-dev/tradejs-project-app"),
   "Project image name is missing",
 );
@@ -319,8 +332,10 @@ assert(
   "Cross-repository dispatch must normalize the token and report API errors",
 );
 assert(
-  workflow.includes("if: env.DEPLOY_REPOSITORY_TOKEN != ''"),
-  "Project bootstrap must skip deploy dispatch until its token exists",
+  workflow.includes("DEPLOY_REPOSITORY_TOKEN is required") &&
+    !workflow.includes("if: env.DEPLOY_REPOSITORY_TOKEN != ''") &&
+    !workflow.includes("Report disabled deploy dispatch"),
+  "Project publication must fail before image push when Deploy handoff is unavailable",
 );
 
 const dependabot = read(".github/dependabot.yml");

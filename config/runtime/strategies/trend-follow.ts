@@ -1,3 +1,7 @@
+import type {
+  RuntimeStrategyDeclaration,
+  StrategyConfig,
+} from "@tradejs/types";
 import { trendFollowTickers } from "../ticker-sets/trend-follow-20260818";
 
 const trendFollowRuntimeConfig = {
@@ -64,11 +68,10 @@ const trendFollowRuntimeConfig = {
     minRiskRatio: 0.8,
   },
   UNIVERSE: "crypto",
-};
+} satisfies StrategyConfig;
 
 export const trendFollowRuntime = {
-  version: 4,
   enabled: true,
   selection: { tickers: trendFollowTickers },
   config: trendFollowRuntimeConfig,
-};
+} satisfies RuntimeStrategyDeclaration;

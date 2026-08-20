@@ -1,5 +1,6 @@
+import type { RuntimeStrategyDeclaration } from "@tradejs/types";
+
 export const doubleTapRuntime = {
-  version: 7,
   enabled: true,
   config: {
     INTERVAL: "15",
@@ -61,4 +62,4 @@ export const doubleTapRuntime = {
     UNIVERSE: "crypto",
     POLICY_PROFILE_ID: "crypto",
   },
-};
+} satisfies RuntimeStrategyDeclaration;

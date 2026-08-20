@@ -7,7 +7,6 @@ const input = (overrides = {}) => ({
   parameter: {
     name: "ENTRY_THRESHOLD",
     isolatedChange: true,
-    legacyFallbackSupported: true,
     resolution: "decision_time",
   },
   evidence: {
@@ -25,7 +24,7 @@ test("requires a LONG override for an opposing matched side effect", () => {
 
   assert.equal(result.required, true);
   assert.equal(result.targetDirection, "LONG");
-  assert.equal(result.implementationMode, "fallback_override");
+  assert.equal(result.implementationMode, "explicit_directional_fields");
   assert.equal(result.action, "FREEZE_DIRECTIONAL_PARAMETER_SPLIT");
 });
 
@@ -35,7 +34,6 @@ test("mirrors the target direction and requires detector state isolation", () =>
       parameter: {
         name: "ZONE_LOOKBACK",
         isolatedChange: true,
-        legacyFallbackSupported: true,
         resolution: "detector_state",
       },
       evidence: {
@@ -76,7 +74,6 @@ test("requires a single-parameter ablation before splitting a bundle", () => {
       parameter: {
         name: "ENTRY_THRESHOLD",
         isolatedChange: false,
-        legacyFallbackSupported: true,
         resolution: "decision_time",
       },
     }),
@@ -103,18 +100,19 @@ test("does not split under insufficient side support", () => {
   assert.equal(result.action, "COLLECT_DIRECTIONAL_EVIDENCE");
 });
 
-test("requires a backward-compatible fallback contract", () => {
-  const result = evaluateDirectionalParameterCheckpoint(
-    input({
-      parameter: {
-        name: "ENTRY_THRESHOLD",
-        isolatedChange: true,
-        legacyFallbackSupported: false,
-        resolution: "shared_lifecycle",
-      },
-    }),
+test("rejects fields outside the explicit directional schema", () => {
+  assert.throws(
+    () =>
+      evaluateDirectionalParameterCheckpoint(
+        input({
+          parameter: {
+            name: "ENTRY_THRESHOLD",
+            isolatedChange: true,
+            sharedField: "ENTRY_THRESHOLD",
+            resolution: "shared_lifecycle",
+          },
+        }),
+      ),
+    /Unsupported parameter fields: sharedField/,
   );
-
-  assert.equal(result.required, true);
-  assert.equal(result.action, "DESIGN_LEGACY_FALLBACK");
 });

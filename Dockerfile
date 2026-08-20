@@ -1,7 +1,6 @@
 # syntax=docker/dockerfile:1
 
-ARG TRADEJS_PROJECT_SHA=unknown
-ARG TRADEJS_ALLOW_PRERELEASE=false
+ARG TRADEJS_PROJECT_SHA
 
 FROM node:24-alpine AS dependencies
 
@@ -20,7 +19,6 @@ RUN --mount=type=cache,target=/root/.yarn/berry/cache \
 FROM dependencies AS builder
 
 ARG TRADEJS_PROJECT_SHA
-ARG TRADEJS_ALLOW_PRERELEASE
 
 COPY tradejs.config.ts ./tradejs.config.ts
 COPY config ./config
@@ -33,7 +31,6 @@ ENV NODE_ENV=production \
     NEXTAUTH_URL=http://localhost:3000
 
 RUN TRADEJS_PROJECT_SHA=${TRADEJS_PROJECT_SHA} \
-    TRADEJS_ALLOW_PRERELEASE=${TRADEJS_ALLOW_PRERELEASE} \
     yarn runtime:manifest && \
     test -s /app/runtime-package-manifest.json
 

@@ -57,7 +57,8 @@ Retain:
   statuses, trigger, five gate variants, raw-versus-approved ALL/LONG/SHORT,
   policy/config/result hashes, and selected/rejected reason;
 - every triggered directional-parameter checkpoint: one-field attribution,
-  side effects/support, resolution mode, classifier hashes, legacy fallback,
+  side effects/support, resolution mode, classifier hashes, explicit required
+  directional fields,
   target-only/combined ablations, config/state isolation tests, and non-target
   identity or occupancy-spillover evidence;
 - selected isolated-long finalist and final core-plus-gate composition;

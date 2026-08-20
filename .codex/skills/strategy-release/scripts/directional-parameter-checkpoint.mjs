@@ -32,11 +32,15 @@ export function evaluateDirectionalParameterCheckpoint(input) {
   if (!RESOLUTIONS.has(parameter.resolution)) {
     throw new Error("parameter.resolution is invalid");
   }
-  assertBoolean(parameter.isolatedChange, "parameter.isolatedChange");
-  assertBoolean(
-    parameter.legacyFallbackSupported,
-    "parameter.legacyFallbackSupported",
+  const unsupportedFields = Object.keys(parameter).filter(
+    (name) => !["name", "isolatedChange", "resolution"].includes(name),
   );
+  if (unsupportedFields.length > 0) {
+    throw new Error(
+      `Unsupported parameter fields: ${unsupportedFields.sort().join(", ")}`,
+    );
+  }
+  assertBoolean(parameter.isolatedChange, "parameter.isolatedChange");
   assertBoolean(evidence?.complete, "evidence.complete");
   assertBoolean(evidence?.reconciled, "evidence.reconciled");
   assertBoolean(
@@ -95,21 +99,12 @@ export function evaluateDirectionalParameterCheckpoint(input) {
         : null;
   if (!targetDirection) return result({});
 
-  if (!parameter.legacyFallbackSupported) {
-    return result({
-      required: true,
-      targetDirection,
-      action: "DESIGN_LEGACY_FALLBACK",
-      reason: "Directional overrides must preserve the original global field.",
-    });
-  }
-
   const implementationMode =
     parameter.resolution === "decision_time"
-      ? "fallback_override"
+      ? "explicit_directional_fields"
       : parameter.resolution === "detector_state"
         ? "separate_directional_state"
-        : "fallback_override_with_occupancy_audit";
+        : "explicit_directional_fields_with_occupancy_audit";
   const action =
     parameter.resolution === "detector_state"
       ? "DESIGN_DIRECTIONAL_STATE_ISOLATION"

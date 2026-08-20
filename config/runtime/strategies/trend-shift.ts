@@ -1,5 +1,6 @@
+import type { RuntimeStrategyDeclaration } from "@tradejs/types";
+
 export const trendShiftRuntime = {
-  version: 3,
   enabled: true,
   config: {
     INTERVAL: "15",
@@ -54,4 +55,4 @@ export const trendShiftRuntime = {
     UNIVERSE: "crypto",
     POLICY_PROFILE_ID: "crypto",
   },
-};
+} satisfies RuntimeStrategyDeclaration;
