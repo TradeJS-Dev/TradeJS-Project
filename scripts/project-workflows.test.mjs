@@ -53,7 +53,14 @@ test("Project image smoke is stable and exchange-independent", () => {
   const smoke = fs.readFileSync(smokePath, "utf8");
 
   assert.match(smoke, /tradejs-app start/);
+  assert.match(smoke, /saveTradingAccount/);
+  assert.match(smoke, /closeRedisConnection/);
+  assert.match(smoke, /--platform linux\/amd64/);
   assert.match(smoke, /runtime-control verify/);
+  assert.ok(
+    smoke.indexOf("saveTradingAccount") <
+      smoke.indexOf("runtime-control verify"),
+  );
   assert.match(smoke, /runtime-control pause/);
   assert.match(smoke, /runtime-control resume/);
   assert.doesNotMatch(smoke, /signals-daemon/);

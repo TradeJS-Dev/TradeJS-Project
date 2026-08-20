@@ -77,6 +77,7 @@ docker run -d \
   redis/redis-stack:7.4.0-v8 >/dev/null
 docker run -d \
   --name "$timescale_container" \
+  --platform linux/amd64 \
   --network "$network" \
   --network-alias timescale \
   -e POSTGRES_USER=app \
@@ -87,6 +88,30 @@ docker run -d \
 wait_for_command Redis docker exec "$redis_container" redis-cli ping
 wait_for_command Timescale docker exec "$timescale_container" \
   pg_isready -U app -d app
+
+docker run --rm \
+  --network "$network" \
+  -e REDIS_HOST=redis \
+  -e REDIS_PORT=6379 \
+  --entrypoint node \
+  "$image" --input-type=module -e '
+    import { saveTradingAccount } from "@tradejs/infra/tradingAccounts";
+    import { closeRedisConnection } from "@tradejs/infra/redis";
+    try {
+      await saveTradingAccount("root", {
+        id: "bybit-default",
+        label: "Project image smoke account",
+        provider: "bybit",
+        enabled: true,
+        universes: ["crypto"],
+        environment: "testnet",
+        apiKey: "project-image-smoke-key",
+        apiSecret: "project-image-smoke-secret",
+      });
+    } finally {
+      await closeRedisConnection();
+    }
+  '
 
 initial_verification="$(runtime_cli runtime-control verify \
   --user root --deployment production)"
