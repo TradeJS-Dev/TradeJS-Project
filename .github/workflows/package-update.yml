@@ -79,7 +79,7 @@ jobs:
       - name: Detect composition change
         id: change
         run: |
-          if git diff --quiet -- package.json yarn.lock tradejs.config.ts; then
+          if git diff --quiet -- package.json yarn.lock tradejs.config.ts config/runtime; then
             echo 'changed=false' >> "$GITHUB_OUTPUT"
           else
             echo 'changed=true' >> "$GITHUB_OUTPUT"
@@ -89,7 +89,7 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add package.json yarn.lock tradejs.config.ts
+          git add package.json yarn.lock tradejs.config.ts config/runtime
           git commit -m 'Sync weekly stable TradeJS packages [skip ci]'
       - name: Verify one stable production composition
         if: steps.change.outputs.changed == 'true'

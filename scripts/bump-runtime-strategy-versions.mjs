@@ -40,44 +40,57 @@ const STRATEGY_PACKAGE_NAMES = new Map([
   ["@tradejs/strategy-volume-divergence", ["VolumeDivergence"]],
 ]);
 
-const declarationPattern =
-  /^(\s+)([A-Za-z][A-Za-z0-9]*): \{\n(\s+)version: ([1-9][0-9]*),$/gm;
+const RUNTIME_STRATEGY_FILES = new Map([
+  ["DoubleTap", "config/runtime/strategies/double-tap.ts"],
+  ["TrendFollow", "config/runtime/strategies/trend-follow.ts"],
+  ["TrendShift", "config/runtime/strategies/trend-shift.ts"],
+]);
 
-export const bumpRuntimeStrategyVersions = ({ source, changedPackages }) => {
-  const declarations = [...source.matchAll(declarationPattern)].map(
-    (match) => ({
-      strategyName: match[2],
-      version: Number(match[4]),
-    }),
-  );
-  if (!declarations.length) {
-    throw new Error("No runtime strategy declarations found");
-  }
+const VERSION_PATTERN = /^(\s*)version: ([1-9][0-9]*),$/m;
 
+const resolveTargets = ({ changedPackages, strategyNames }) => {
+  const declared = new Set(strategyNames);
   const targets = new Set();
+
   if (changedPackages.some((name) => SHARED_RUNTIME_PACKAGES.has(name))) {
-    for (const { strategyName } of declarations) targets.add(strategyName);
+    for (const strategyName of declared) targets.add(strategyName);
   }
+
   for (const packageName of changedPackages) {
     for (const strategyName of STRATEGY_PACKAGE_NAMES.get(packageName) ?? []) {
-      if (declarations.some((item) => item.strategyName === strategyName)) {
-        targets.add(strategyName);
-      }
+      if (declared.has(strategyName)) targets.add(strategyName);
     }
   }
 
+  return targets;
+};
+
+export const bumpRuntimeStrategyVersions = ({ sources, changedPackages }) => {
+  const targets = resolveTargets({
+    changedPackages,
+    strategyNames: Object.keys(sources),
+  });
+  const nextSources = { ...sources };
   const bumped = [];
-  const nextSource = source.replace(
-    declarationPattern,
-    (match, indent, strategyName, versionIndent, versionText) => {
-      if (!targets.has(strategyName)) return match;
-      const previousVersion = Number(versionText);
-      const version = previousVersion + 1;
-      bumped.push({ strategyName, previousVersion, version });
-      return `${indent}${strategyName}: {\n${versionIndent}version: ${version},`;
-    },
-  );
-  return { source: nextSource, bumped };
+
+  for (const strategyName of [...targets].sort()) {
+    const source = sources[strategyName];
+    if (typeof source !== "string") continue;
+    const match = VERSION_PATTERN.exec(source);
+    if (!match) {
+      throw new Error(`No runtime version found for ${strategyName}`);
+    }
+
+    const previousVersion = Number(match[2]);
+    const version = previousVersion + 1;
+    nextSources[strategyName] = source.replace(
+      VERSION_PATTERN,
+      `$1version: ${version},`,
+    );
+    bumped.push({ strategyName, previousVersion, version });
+  }
+
+  return { sources: nextSources, bumped };
 };
 
 const isMain = process.argv[1]
@@ -92,13 +105,22 @@ if (isMain) {
       "Usage: bump-runtime-strategy-versions.mjs <changed-package> [...]",
     );
   }
-  const configPath = path.join(root, "tradejs.config.ts");
-  const result = bumpRuntimeStrategyVersions({
-    source: fs.readFileSync(configPath, "utf8"),
-    changedPackages,
-  });
-  if (result.bumped.length) {
-    fs.writeFileSync(configPath, result.source);
+
+  const sources = Object.fromEntries(
+    [...RUNTIME_STRATEGY_FILES].map(([strategyName, relativePath]) => [
+      strategyName,
+      fs.readFileSync(path.join(root, relativePath), "utf8"),
+    ]),
+  );
+  const result = bumpRuntimeStrategyVersions({ sources, changedPackages });
+
+  for (const { strategyName } of result.bumped) {
+    const relativePath = RUNTIME_STRATEGY_FILES.get(strategyName);
+    fs.writeFileSync(
+      path.join(root, relativePath),
+      result.sources[strategyName],
+    );
   }
+
   console.log(JSON.stringify(result.bumped));
 }

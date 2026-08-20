@@ -15,8 +15,9 @@ recreated as a monorepo clone.
 
 ## Ownership
 
-- `tradejs.config.ts` — installed plugins plus the complete production runtime
-  declaration.
+- `tradejs.config.ts` — small installed-plugin and runtime composition entrypoint.
+- `config/runtime/` — modular Git-owned deployments, strategy bindings, and
+  frozen ticker selections.
 - `package.json` and `yarn.lock` — exact TradeJS package composition.
 - `deploy/runtime.env` — secret-free production application settings.
 - `docker-compose.dev.yml` — local Timescale, Redis, optional pgAdmin, and
@@ -35,12 +36,15 @@ Compose plus ignored `data/`, `notes/`, and `output/`; these local artifact
 directories do not belong in the engine repository or Git.
 
 Production strategy configuration lives only in the committed
-`runtime.deployments` declaration in `tradejs.config.ts`. Each strategy owns a
-complete `{ version, enabled, config }` entry; `version` is incremented for that
-strategy whenever its production package or config changes. Exact npm versions
-remain in `package.json`, `yarn.lock`, and the image package manifest. The
-deployment declaration owns connector, account id, ticker/asset-class scope,
-and its strategy entries.
+`runtime.deployments` declaration rooted in `tradejs.config.ts` and assembled
+from `config/runtime/`. Each strategy owns a complete
+`{ version, enabled, selection?, config }` binding; `version` is
+incremented whenever its production package, effective config, or runtime
+binding changes. Exact npm versions remain in `package.json`, `yarn.lock`, and
+the image package manifest. A deployment owns its connector, account id,
+asset-class defaults, and strategy bindings. A strategy-owned `selection`
+narrows its ticker universe before core evaluation. Forward-test exposure is
+controlled by the strategy's `MAX_LOSS_VALUE`, not encoded in module names.
 
 Redis does not contain deployment documents, strategy config, releases, or
 result overlays. It retains the server-owned trading account, signals/trades,

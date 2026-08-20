@@ -8,8 +8,8 @@ readonly beta_version="${3:?Usage: beta-runtime-smoke.sh <image> <packages-csv> 
 readonly project_sha="${4:?Usage: beta-runtime-smoke.sh <image> <packages-csv> <version> <project-sha>}"
 readonly expected_runtime_version="${5:-$(node --input-type=module -e '
   import fs from "node:fs";
-  const source = fs.readFileSync("tradejs.config.ts", "utf8");
-  const match = /DoubleTap: \{\s*version: ([1-9][0-9]*),/.exec(source);
+  const source = fs.readFileSync("config/runtime/strategies/double-tap.ts", "utf8");
+  const match = /version: ([1-9][0-9]*),/.exec(source);
   if (!match) process.exit(1);
   process.stdout.write(match[1]);
 ')}"

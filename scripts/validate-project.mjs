@@ -23,6 +23,12 @@ const requiredFiles = [
   ".codex/skills/strategy-release/SKILL.md",
   "Dockerfile",
   "cronjob",
+  "config/runtime/index.ts",
+  "config/runtime/deployments/production.ts",
+  "config/runtime/strategies/double-tap.ts",
+  "config/runtime/strategies/trend-follow.ts",
+  "config/runtime/strategies/trend-shift.ts",
+  "config/runtime/ticker-sets/trend-follow-20260818.ts",
   "deploy/runtime.env",
   "docker-compose.dev.yml",
   "entrypoint.sh",
@@ -95,27 +101,41 @@ for (const scriptName of [
 }
 
 const config = read("tradejs.config.ts");
+const runtimeConfig = [
+  "config/runtime/index.ts",
+  "config/runtime/deployments/production.ts",
+  "config/runtime/strategies/double-tap.ts",
+  "config/runtime/strategies/trend-follow.ts",
+  "config/runtime/strategies/trend-shift.ts",
+]
+  .map(read)
+  .join("\n");
 assert(
-  config.includes("defineConfig(basePreset, {"),
+  config.includes("defineConfig(basePreset, { runtime })"),
   "basePreset is not active",
 );
 for (const expectedRuntimeConfig of [
-  "production:",
+  "production: productionDeployment",
   'accountId: "bybit-default"',
-  "DoubleTap:",
+  "DoubleTap: doubleTapRuntime",
+  "TrendFollow: trendFollowRuntime",
   "enabled: true",
   'INTERVAL: "15"',
   'UNIVERSE: "crypto"',
   'POLICY_PROFILE_ID: "crypto"',
 ]) {
   assert(
-    config.includes(expectedRuntimeConfig),
+    runtimeConfig.includes(expectedRuntimeConfig),
     `Missing production runtime declaration: ${expectedRuntimeConfig}`,
   );
 }
 assert(
-  /DoubleTap: \{\s*version: [1-9][0-9]*,/m.test(config),
+  /doubleTapRuntime = \{\s*version: [1-9][0-9]*,/m.test(runtimeConfig),
   "DoubleTap runtime version must be a positive integer",
+);
+assert(
+  runtimeConfig.includes("selection: { tickers: trendFollowTickers }"),
+  "TrendFollow must keep its frozen ticker selection",
 );
 for (const forbiddenRuntimeField of [
   "releaseVersion",
@@ -123,7 +143,7 @@ for (const forbiddenRuntimeField of [
   "ACCOUNT_ID:",
 ]) {
   assert(
-    !config.includes(forbiddenRuntimeField),
+    !`${config}\n${runtimeConfig}`.includes(forbiddenRuntimeField),
     `Legacy runtime field remains: ${forbiddenRuntimeField}`,
   );
 }
@@ -173,12 +193,12 @@ assert(
 
 const runtimeEnv = read("deploy/runtime.env");
 assert(
-  runtimeEnv.includes("SIGNALS_DAEMON_DEPLOYMENT_ID=production"),
+  /^SIGNALS_DAEMON_DEPLOYMENT_ID=production$/m.test(runtimeEnv),
   "Production signals daemon must select the canonical deployment explicitly",
 );
 assert(
-  runtimeEnv.includes("trendfollow-forward-loss-guard-20260818"),
-  "TrendFollow forward deployment must be included in the production daemon set",
+  !runtimeEnv.includes("trendfollow-forward-loss-guard-20260818"),
+  "Legacy TrendFollow deployment id must not remain in runtime.env",
 );
 for (const secretName of [
   "AUTH_SECRET",
@@ -202,6 +222,10 @@ assert(
   dockerfile.includes("runtime-package-manifest.json") &&
     dockerfile.includes("yarn runtime:manifest"),
   "Docker image does not contain an installed-package manifest",
+);
+assert(
+  dockerfile.includes("COPY config ./config"),
+  "Docker image does not include modular runtime config",
 );
 
 const entrypoint = read("entrypoint.sh");

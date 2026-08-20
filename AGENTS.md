@@ -100,11 +100,12 @@ is not the production source of truth.
 
 ## Boundaries
 
-- Configure installed plugins in `tradejs.config.ts`; do not copy engine or
-  strategy source into this repository.
+- Configure installed plugins in `tradejs.config.ts` and runtime composition in
+  `config/runtime/`; do not copy engine or strategy source into this repository.
 - Own the complete production declaration under `runtime.deployments` in
-  `tradejs.config.ts`. Each strategy has `{ version, enabled, config }`; bump
-  its version whenever its production package or config changes.
+  the declaration rooted at `tradejs.config.ts`. Each strategy has
+  `{ version, enabled, selection?, config }`; bump its version
+  whenever its production package, effective config, or runtime binding changes.
 - Never read or write `users:<user>:strategies:*`, Redis deployment documents,
   per-strategy releases, result overlays, or research evidence as production
   config. Redis owns only accounts, optional pause overrides, audit events,

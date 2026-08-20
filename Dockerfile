@@ -23,6 +23,7 @@ ARG TRADEJS_PROJECT_SHA
 ARG TRADEJS_ALLOW_PRERELEASE
 
 COPY tradejs.config.ts ./tradejs.config.ts
+COPY config ./config
 COPY scripts/tradejs-version.mjs ./scripts/tradejs-version.mjs
 COPY scripts/write-runtime-package-manifest.mjs ./scripts/write-runtime-package-manifest.mjs
 
