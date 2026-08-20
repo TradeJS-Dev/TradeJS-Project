@@ -1,5 +1,5 @@
 export const trendShiftRuntime = {
-  version: 2,
+  version: 3,
   enabled: true,
   config: {
     INTERVAL: "15",

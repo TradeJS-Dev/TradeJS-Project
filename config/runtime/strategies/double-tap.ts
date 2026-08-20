@@ -1,5 +1,5 @@
 export const doubleTapRuntime = {
-  version: 6,
+  version: 7,
   enabled: true,
   config: {
     INTERVAL: "15",

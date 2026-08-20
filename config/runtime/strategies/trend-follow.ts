@@ -67,7 +67,7 @@ const trendFollowRuntimeConfig = {
 };
 
 export const trendFollowRuntime = {
-  version: 3,
+  version: 4,
   enabled: true,
   selection: { tickers: trendFollowTickers },
   config: trendFollowRuntimeConfig,
