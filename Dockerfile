@@ -38,8 +38,6 @@ RUN --mount=type=cache,target=/app/.tradejs/app/.next/cache yarn build
 
 FROM node:24-alpine AS runner
 
-ARG TRADEJS_PROJECT_SHA
-
 LABEL org.opencontainers.image.source="https://github.com/TradeJS-Dev/TradeJS-Project" \
       org.opencontainers.image.description="TradeJS project runtime" \
       org.opencontainers.image.licenses="BUSL-1.1"
@@ -56,6 +54,8 @@ RUN apk add --no-cache \
     tzdata
 
 WORKDIR /app
+
+ARG TRADEJS_PROJECT_SHA
 
 ENV NODE_ENV=production \
     TRADEJS_PROJECT_SHA=${TRADEJS_PROJECT_SHA} \

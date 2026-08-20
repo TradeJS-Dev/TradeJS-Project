@@ -24,6 +24,21 @@ test("production image publication rejects prerelease dependencies", () => {
   );
 });
 
+test("Project SHA does not invalidate the runner system layer", () => {
+  const dockerfile = fs.readFileSync(path.join(root, "Dockerfile"), "utf8");
+  const runner = dockerfile.slice(
+    dockerfile.indexOf("FROM node:24-alpine AS runner"),
+  );
+
+  assert.ok(
+    runner.indexOf("RUN apk add") < runner.indexOf("ARG TRADEJS_PROJECT_SHA"),
+  );
+  assert.ok(
+    runner.indexOf("ARG TRADEJS_PROJECT_SHA") <
+      runner.indexOf("TRADEJS_PROJECT_SHA=${TRADEJS_PROJECT_SHA}"),
+  );
+});
+
 test("weekly stable package sync is batched into one Project image", () => {
   const workflow = read("package-update.yml");
   assert.doesNotMatch(workflow, /environment: npm-production/);
