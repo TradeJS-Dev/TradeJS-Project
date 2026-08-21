@@ -16,6 +16,13 @@ test("production image publication rejects prerelease dependencies", () => {
   assert.match(workflow, /workflow_dispatch:/);
   assert.doesNotMatch(workflow, /\non:\n\s+push:/);
   assert.doesNotMatch(workflow, /environment:/);
+  assert.match(workflow, /docker\/setup-buildx-action@v4/);
+  assert.match(workflow, /docker\/login-action@v4/);
+  assert.match(workflow, /docker\/build-push-action@v7/);
+  assert.doesNotMatch(
+    workflow,
+    /docker\/(?:setup-buildx-action|login-action)@v3|docker\/build-push-action@v6/,
+  );
   assert.match(workflow, /DEPLOY_REPOSITORY_TOKEN is required/);
   assert.match(workflow, /project_sha: process\.env\.PROJECT_SHA/);
   assert.doesNotMatch(
