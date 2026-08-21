@@ -17,6 +17,11 @@ test("production image publication rejects prerelease dependencies", () => {
   assert.doesNotMatch(workflow, /\non:\n\s+push:/);
   assert.doesNotMatch(workflow, /environment:/);
   assert.match(workflow, /DEPLOY_REPOSITORY_TOKEN is required/);
+  assert.match(workflow, /project_sha: process\.env\.PROJECT_SHA/);
+  assert.doesNotMatch(
+    workflow,
+    /image_tag:|app_changed:|agent_changed:|ml_infer_changed:/,
+  );
   assert.doesNotMatch(workflow, /Report disabled deploy dispatch/);
   assert.doesNotMatch(
     workflow,

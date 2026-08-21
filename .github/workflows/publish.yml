@@ -70,7 +70,6 @@ jobs:
           cache-to: type=gha,mode=max,scope=project-app,ignore-error=true
       - name: Dispatch immutable release to TradeJS-Deploy
         env:
-          IMAGE_TAG: ${{ github.sha }}
           PROJECT_SHA: ${{ github.sha }}
         run: |
           node <<'NODE'
@@ -88,11 +87,7 @@ jobs:
               body: JSON.stringify({
                 event_type: 'tradejs-project-image-published',
                 client_payload: {
-                  image_tag: process.env.IMAGE_TAG,
                   project_sha: process.env.PROJECT_SHA,
-                  app_changed: true,
-                  agent_changed: false,
-                  ml_infer_changed: false,
                 },
               }),
             },
