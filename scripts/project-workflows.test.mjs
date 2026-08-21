@@ -15,7 +15,7 @@ test("production image publication rejects prerelease dependencies", () => {
   assert.match(workflow, /run: yarn checks/);
   assert.match(workflow, /workflow_dispatch:/);
   assert.doesNotMatch(workflow, /\non:\n\s+push:/);
-  assert.match(workflow, /environment: production/);
+  assert.doesNotMatch(workflow, /environment:/);
   assert.match(workflow, /DEPLOY_REPOSITORY_TOKEN is required/);
   assert.doesNotMatch(workflow, /Report disabled deploy dispatch/);
   assert.doesNotMatch(

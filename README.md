@@ -164,15 +164,14 @@ while live process behavior belongs to explicit runtime validation.
 Pushing `main` only updates source. Publishing is an explicit
 `workflow_dispatch` of `publish.yml`; it verifies the committed composition,
 publishes `ghcr.io/tradejs-dev/tradejs-project-app:<commit-sha>`, and dispatches
-that exact SHA to `TradeJS-Deploy`. The protected `production` GitHub
-environment must contain `DEPLOY_REPOSITORY_TOKEN`; a missing handoff credential
-fails the workflow before image publication. The protected weekly package
-update invokes the same workflow after its stable composition passes checks and
-Docker smoke.
+that exact SHA to `TradeJS-Deploy`. The Project repository secret
+`DEPLOY_REPOSITORY_TOKEN` authorizes that handoff; a missing credential fails
+the workflow before image publication. The weekly package update invokes the
+same workflow after its stable composition passes checks and Docker smoke.
 
 The complete repository-to-repository ownership and migration commands for
 GitHub Actions configuration are documented in
-[`docs/github-environment-ownership.md`](docs/github-environment-ownership.md).
+[`docs/github-secret-ownership.md`](docs/github-secret-ownership.md).
 The workflow needs only the cross-repository `DEPLOY_REPOSITORY_TOKEN`;
 application and server secrets remain in Deploy. Without that token the
 workflow fails before publishing an image or dispatching a production rollout.

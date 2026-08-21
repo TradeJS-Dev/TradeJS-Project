@@ -36,7 +36,6 @@ jobs:
     needs: verify
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    environment: production
     env:
       DEPLOY_REPOSITORY_TOKEN: ${{ secrets.DEPLOY_REPOSITORY_TOKEN }}
     steps:

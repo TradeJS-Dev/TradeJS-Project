@@ -117,8 +117,8 @@ is not the production source of truth.
   controls fail closed.
 - Keep non-secret production values in `deploy/runtime.env`.
 - Keep credentials only in local `.env`, GitHub Actions secrets, or the target
-  server secret store. Follow `docs/github-environment-ownership.md` for exact
-  repository and environment ownership. Never commit their values.
+  server secret store. Follow `docs/github-secret-ownership.md` for exact
+  repository and organization ownership. Never commit their values.
 - Treat `PG_PASSWORD` as a Deploy-owned production secret; the checked-in
   runtime defaults must not provide a fallback value.
 - Build the app from published `@tradejs/*` packages with an immutable lockfile.
