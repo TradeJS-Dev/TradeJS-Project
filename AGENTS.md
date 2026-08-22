@@ -91,6 +91,11 @@ matching `SKILL.md` before acting:
 - Core research: `data/research/core/<researchId>/`.
 - Runtime evidence:
   `data/runtime-evidence/{inbox,artifacts,receipts}/`.
+- Runtime evidence accepts only embedded deployment snapshot schema v2 and
+  runtime lineage schema v3 on every evaluation, signal, trade, and persisted
+  scope. Do not translate another runtime schema or infer composition from
+  `strategyConfigs`, mutable Redis, evaluation names, or current source
+  metadata.
 - Strategy release evidence: `data/strategy-release/`.
 - Notes: `notes/<Strategy>/`, `notes/Shared/`, and
   `notes/CrossStrategy/`; validate with `yarn notes:check`.
