@@ -1095,18 +1095,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/app@npm:3.1.15":
-  version: 3.1.15
-  resolution: "@tradejs/app@npm:3.1.15"
+"@tradejs/app@npm:3.1.16":
+  version: 3.1.16
+  resolution: "@tradejs/app@npm:3.1.16"
   dependencies:
     "@chakra-ui/charts": "npm:3.36.1"
     "@chakra-ui/react": "npm:3.36.1"
     "@emotion/react": "npm:^11.14.0"
-    "@tradejs/core": "npm:^3.1.15"
-    "@tradejs/indicators": "npm:^3.1.15"
-    "@tradejs/infra": "npm:^3.1.15"
-    "@tradejs/node": "npm:^3.1.15"
-    "@tradejs/types": "npm:^3.1.15"
+    "@tradejs/core": "npm:^3.1.16"
+    "@tradejs/indicators": "npm:^3.1.16"
+    "@tradejs/infra": "npm:^3.1.16"
+    "@tradejs/node": "npm:^3.1.16"
+    "@tradejs/types": "npm:^3.1.16"
     "@types/bcryptjs": "npm:2.4.6"
     "@types/lodash": "npm:4.17.24"
     "@types/node": "npm:24.13.3"
@@ -1135,7 +1135,7 @@ __metadata:
     zustand: "npm:5.0.14"
   bin:
     tradejs-app: ./bin/tradejs-app.mjs
-  checksum: 10c0/11360ee4ab0fc408c16928b2e379c2ec30a9575f2f7f77859d4d35e75099097d4316300d9d1b937b1c6cd53bbf1de39251eee68dde5c6ddc0e9624259e00e3c3
+  checksum: 10c0/2fff31d687a2af0cff1cdae933e01b03909f3111759afab3fa20938185ba30c8cef27dbef54c65fdf30d27c2a9d4e57d4db1953782fc405402785e49d468c184
   languageName: node
   linkType: hard
 
@@ -1171,17 +1171,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/cli@npm:3.1.15":
-  version: 3.1.15
-  resolution: "@tradejs/cli@npm:3.1.15"
+"@tradejs/cli@npm:3.1.16":
+  version: 3.1.16
+  resolution: "@tradejs/cli@npm:3.1.16"
   dependencies:
-    "@tradejs/connectors": "npm:^3.1.15"
-    "@tradejs/core": "npm:^3.1.15"
-    "@tradejs/indicators": "npm:^3.1.15"
-    "@tradejs/infra": "npm:^3.1.15"
-    "@tradejs/node": "npm:^3.1.15"
+    "@tradejs/connectors": "npm:^3.1.16"
+    "@tradejs/core": "npm:^3.1.16"
+    "@tradejs/indicators": "npm:^3.1.16"
+    "@tradejs/infra": "npm:^3.1.16"
+    "@tradejs/node": "npm:^3.1.16"
     "@tradejs/strategy-kit": "npm:3.0.3"
-    "@tradejs/types": "npm:^3.1.15"
+    "@tradejs/types": "npm:^3.1.16"
     args: "npm:^5.0.3"
     bcryptjs: "npm:^2.4.3"
     chalk: "npm:4.1.2"
@@ -1195,74 +1195,74 @@ __metadata:
     ws: "npm:^8.21.1"
   bin:
     tradejs: dist/cli.js
-  checksum: 10c0/9156b7c9474918e1b24cfbc1208fc75691ec514d2edd2d45ab77bf20ae8810424609be71fd356b935cb9eb5aa02b3614fdc32e622601e2acfad3dae4ef5861ef
+  checksum: 10c0/aec28f06b7eaa9e66ac1fe117e79e4876149761338f3d7bfee2b326932b7e12a1e40064ec12946ed1f2583190545a2d020420f9618ed63e19328d7460597d8c6
   languageName: node
   linkType: hard
 
-"@tradejs/connectors@npm:3.1.15, @tradejs/connectors@npm:^3.1.15":
-  version: 3.1.15
-  resolution: "@tradejs/connectors@npm:3.1.15"
+"@tradejs/connectors@npm:3.1.16, @tradejs/connectors@npm:^3.1.16":
+  version: 3.1.16
+  resolution: "@tradejs/connectors@npm:3.1.16"
   dependencies:
-    "@tradejs/core": "npm:^3.1.15"
-    "@tradejs/types": "npm:^3.1.15"
+    "@tradejs/core": "npm:^3.1.16"
+    "@tradejs/types": "npm:^3.1.16"
     bybit-api: "npm:^4.7.1"
     chalk: "npm:4.1.2"
     lodash: "npm:^4.18.1"
-  checksum: 10c0/e4fb27abad14e1ebb413b95d38c737fd26d427f8d92d321f9c3ec9ef9c56b2dc108d1558673a0af34e3348b61f47670175ba02b07ae43aab1e35c7b2d5f400d9
+  checksum: 10c0/7f26aa4ccc3d7a10f806e4216166e0a62bb3b1ac0327e6c877d1335008cf488029ff5c6178eebbf1193a5f3cc89cd41122fc265861dfd49a36b3835abf04c73b
   languageName: node
   linkType: hard
 
-"@tradejs/core@npm:3.1.15, @tradejs/core@npm:^3.1.15":
-  version: 3.1.15
-  resolution: "@tradejs/core@npm:3.1.15"
+"@tradejs/core@npm:3.1.16, @tradejs/core@npm:^3.1.16":
+  version: 3.1.16
+  resolution: "@tradejs/core@npm:3.1.16"
   dependencies:
-    "@tradejs/types": "npm:^3.1.15"
+    "@tradejs/types": "npm:^3.1.16"
     date-fns: "npm:^3.6.0"
     fast-technical-indicators: "npm:^1.1.4"
     klinecharts: "npm:10.0.0-alpha9"
     lodash: "npm:^4.18.1"
-  checksum: 10c0/5d303bbd6e96b9ce833fcd3d82afaecb841fa542dbe4ec3f554f3be34a54a19982533458148855a84698bb2240511156ca01b350999bd4fe515e89120a8284ac
+  checksum: 10c0/b8020754477395d9bc1125b1a6de0f7a7d9f084e7df98e8253fdb661a769a3dd1b35e9731b92cb9c751111a06cce9ce3075db5b5be144c592b60e3354a1ffd40
   languageName: node
   linkType: hard
 
-"@tradejs/indicators@npm:3.1.15, @tradejs/indicators@npm:^3.1.15":
-  version: 3.1.15
-  resolution: "@tradejs/indicators@npm:3.1.15"
+"@tradejs/indicators@npm:3.1.16, @tradejs/indicators@npm:^3.1.16":
+  version: 3.1.16
+  resolution: "@tradejs/indicators@npm:3.1.16"
   dependencies:
-    "@tradejs/core": "npm:^3.1.15"
-    "@tradejs/types": "npm:^3.1.15"
+    "@tradejs/core": "npm:^3.1.16"
+    "@tradejs/types": "npm:^3.1.16"
     fast-technical-indicators: "npm:^1.1.4"
     klinecharts: "npm:10.0.0-alpha9"
     technicalindicators: "npm:^3.1.0"
-  checksum: 10c0/18775c44e0b17b471c52e15cda6a33643e2ac06cf5bbf5be72c6051583f6fb64a6d3c092ef2fc3378655d3886184c4ebdaae17d8d895122a39963920c88eb97e
+  checksum: 10c0/bfc92a816dfa42baf5fdbc942af2000ae1c20a0f363737fdb3cf4eaf3cb3fcaabe8461eb87772398a2f1e5f83d0ac51482ef617d8ef65f2a153a099efc1c5fde
   languageName: node
   linkType: hard
 
-"@tradejs/infra@npm:3.1.15, @tradejs/infra@npm:^3.1.15":
-  version: 3.1.15
-  resolution: "@tradejs/infra@npm:3.1.15"
+"@tradejs/infra@npm:3.1.16, @tradejs/infra@npm:^3.1.16":
+  version: 3.1.16
+  resolution: "@tradejs/infra@npm:3.1.16"
   dependencies:
     "@grpc/grpc-js": "npm:^1.14.4"
     "@grpc/proto-loader": "npm:^0.8.1"
-    "@tradejs/types": "npm:^3.1.15"
+    "@tradejs/types": "npm:^3.1.16"
     chalk: "npm:4.1.2"
     date-fns: "npm:^3.6.0"
     ioredis: "npm:5.11.1"
     pg: "npm:8.22.0"
     winston: "npm:3.19.0"
-  checksum: 10c0/a5f81b8722bdd72f9386b1d73dd7a3258593d960b82f9a131bb03edcb5a12f4ccb1f134579571ebb326007e6fc6641869160b6cd8955b5c30fb1679064f2063c
+  checksum: 10c0/246a9b4011de7b2124f23aa6640feb9fd300b7a148a153059030e44c1aef0ef1e8062f450b711b44250e337b34971a6c3068de8f010cce370530f1da5de38538
   languageName: node
   linkType: hard
 
-"@tradejs/node@npm:3.1.15, @tradejs/node@npm:^3.1.15":
-  version: 3.1.15
-  resolution: "@tradejs/node@npm:3.1.15"
+"@tradejs/node@npm:3.1.16, @tradejs/node@npm:^3.1.16":
+  version: 3.1.16
+  resolution: "@tradejs/node@npm:3.1.16"
   dependencies:
     "@langchain/core": "npm:^1.2.3"
     "@langchain/openai": "npm:^1.5.5"
-    "@tradejs/core": "npm:^3.1.15"
-    "@tradejs/infra": "npm:^3.1.15"
-    "@tradejs/types": "npm:^3.1.15"
+    "@tradejs/core": "npm:^3.1.16"
+    "@tradejs/infra": "npm:^3.1.16"
+    "@tradejs/types": "npm:^3.1.16"
     "@types/node": "npm:^24"
     chalk: "npm:4.1.2"
     ioredis: "npm:5.11.1"
@@ -1273,7 +1273,7 @@ __metadata:
     ts-node: "npm:^10.9.2"
     tsconfig-paths: "npm:^4.2.0"
     typescript: "npm:^5.9"
-  checksum: 10c0/c944a51d542a876ae22b2b50cf9422c4d2463211edee11dcc19cf51f98e0507a42aa1572c2a2220ee1637daa0818a1de399965deb5af9f5d5a75c0d65d88dc1c
+  checksum: 10c0/093c49b30a01b4d88c31f6153e8dce2f3b6618a8d63542c92469c64986308c664be2baf6ec9c48ee63b64d17141dda4953339cdb379a2525e244e50ad34a67be
   languageName: node
   linkType: hard
 
@@ -1512,10 +1512,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/types@npm:3.1.15, @tradejs/types@npm:^3.1.15":
-  version: 3.1.15
-  resolution: "@tradejs/types@npm:3.1.15"
-  checksum: 10c0/628f023799d6deb908860f7f5f8fcb17c81537bb1d4b2fa9387ad07d99242b4179d37e2d586f54a9a8961d4e0c8fbddd49bf0e5032b1e04919d60ad9e1e8c8fc
+"@tradejs/types@npm:3.1.16, @tradejs/types@npm:^3.1.16":
+  version: 3.1.16
+  resolution: "@tradejs/types@npm:3.1.16"
+  checksum: 10c0/cb2f6302dbf3858af98135ba5da130599c79cb2059a9cfa7bb3e9309157e2768ff8aa5261e7512fa2de545f571ab249b4c7b7228e9cdb2794fad3b61ed96d441
   languageName: node
   linkType: hard
 
@@ -5518,14 +5518,14 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "tradejs-project@workspace:."
   dependencies:
-    "@tradejs/app": "npm:3.1.15"
+    "@tradejs/app": "npm:3.1.16"
     "@tradejs/base": "npm:3.1.1"
-    "@tradejs/cli": "npm:3.1.15"
-    "@tradejs/connectors": "npm:3.1.15"
-    "@tradejs/core": "npm:3.1.15"
-    "@tradejs/indicators": "npm:3.1.15"
-    "@tradejs/infra": "npm:3.1.15"
-    "@tradejs/node": "npm:3.1.15"
+    "@tradejs/cli": "npm:3.1.16"
+    "@tradejs/connectors": "npm:3.1.16"
+    "@tradejs/core": "npm:3.1.16"
+    "@tradejs/indicators": "npm:3.1.16"
+    "@tradejs/infra": "npm:3.1.16"
+    "@tradejs/node": "npm:3.1.16"
     "@tradejs/strategy-adaptive-momentum-ribbon": "npm:3.0.2"
     "@tradejs/strategy-adaptive-trend-channel": "npm:3.0.2"
     "@tradejs/strategy-breakout": "npm:3.0.2"
@@ -5547,7 +5547,7 @@ __metadata:
     "@tradejs/strategy-trend-shift": "npm:3.0.3"
     "@tradejs/strategy-volatility-compression-breakout": "npm:3.0.2"
     "@tradejs/strategy-volume-divergence": "npm:3.0.2"
-    "@tradejs/types": "npm:3.1.15"
+    "@tradejs/types": "npm:3.1.16"
     "@types/node": "npm:^24.0.0"
     "@types/semver": "npm:^7"
     prettier: "npm:^3.6.2"
