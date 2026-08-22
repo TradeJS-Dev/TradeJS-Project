@@ -54,6 +54,11 @@ Historical research defaults to `--cacheOnly`. A forward test is a
 it requires explicit authorization, an exact runtime binding, the deployed
 stable package, `START_MICRO_FORWARD`, and `MAX_LOSS_VALUE=1`.
 
+The local daily `tradejs-runtime-feedback` automation is the narrow exception:
+its runtime-evidence replay runs without `--cacheOnly` so missing candle history
+is refreshed automatically. The embedded immutable deployment snapshot remains
+the only source of runtime composition.
+
 `yarn signals:daemon` is long-running, and `--makeOrders` enables order
 placement. Start it only for an explicitly requested runtime task with an exact
 deployment/account binding. `yarn research:auto` may notify Telegram and
