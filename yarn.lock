@@ -1648,7 +1648,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:>=13.7.0":
+"@types/node@npm:*, @types/node@npm:>=13.7.0, @types/node@npm:^26.2.0":
   version: 26.2.0
   resolution: "@types/node@npm:26.2.0"
   dependencies:
@@ -1657,7 +1657,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:24.13.3, @types/node@npm:^24, @types/node@npm:^24.0.0":
+"@types/node@npm:24.13.3, @types/node@npm:^24":
   version: 24.13.3
   resolution: "@types/node@npm:24.13.3"
   dependencies:
@@ -5548,7 +5548,7 @@ __metadata:
     "@tradejs/strategy-volatility-compression-breakout": "npm:3.0.2"
     "@tradejs/strategy-volume-divergence": "npm:3.0.2"
     "@tradejs/types": "npm:3.1.20"
-    "@types/node": "npm:^24.0.0"
+    "@types/node": "npm:^26.2.0"
     "@types/semver": "npm:^7"
     prettier: "npm:^3.6.2"
     semver: "npm:^7.8.5"
