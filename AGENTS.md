@@ -95,7 +95,8 @@ matching `SKILL.md` before acting:
   runtime lineage schema v3 on every evaluation, signal, trade, and persisted
   scope. Do not translate another runtime schema or infer composition from
   `strategyConfigs`, mutable Redis, evaluation names, or current source
-  metadata.
+  metadata. Lineage-less `evaluationStatsBuckets` are debug telemetry and must
+  not be published, replayed, or scored as immutable runtime evidence.
 - Strategy release evidence: `data/strategy-release/`.
 - Notes: `notes/<Strategy>/`, `notes/Shared/`, and
   `notes/CrossStrategy/`; validate with `yarn notes:check`.
