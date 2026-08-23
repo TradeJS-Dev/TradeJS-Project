@@ -66,7 +66,7 @@
     "@tradejs/strategy-liquidity-tails": "3.0.2",
     "@tradejs/strategy-liquidity-zones": "3.0.2",
     "@tradejs/strategy-ma-strategy": "3.0.2",
-    "@tradejs/strategy-market-flush-reversal": "3.0.2",
+    "@tradejs/strategy-market-flush-reversal": "3.0.4",
     "@tradejs/strategy-relative-rotation": "3.0.2",
     "@tradejs/strategy-structure-zones": "3.0.2",
     "@tradejs/strategy-trend-follow": "3.0.3",

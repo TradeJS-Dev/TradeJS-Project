@@ -1421,14 +1421,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/strategy-market-flush-reversal@npm:3.0.2":
-  version: 3.0.2
-  resolution: "@tradejs/strategy-market-flush-reversal@npm:3.0.2"
+"@tradejs/strategy-market-flush-reversal@npm:3.0.4":
+  version: 3.0.4
+  resolution: "@tradejs/strategy-market-flush-reversal@npm:3.0.4"
   peerDependencies:
     "@tradejs/core": ^3.0.1
     "@tradejs/strategy-kit": ^3.0.1
     "@tradejs/types": ^3.0.1
-  checksum: 10c0/2005ade15251210cbe4f4bad80e18f5984ea7ca44956e2e3081a32f02358a651904e7619781fb5114e87608a4dcc01d4f66a909fbe9376a35924e60ed55c567d
+  checksum: 10c0/9b68fe3965b5ce3fef88e283cedd692b662cf1636531e77454425a8c42674aba8959dba95e4b001099f47b7974e527fd24422689dffaffbfe0500d86d06b633f
   languageName: node
   linkType: hard
 
@@ -5539,7 +5539,7 @@ __metadata:
     "@tradejs/strategy-liquidity-tails": "npm:3.0.2"
     "@tradejs/strategy-liquidity-zones": "npm:3.0.2"
     "@tradejs/strategy-ma-strategy": "npm:3.0.2"
-    "@tradejs/strategy-market-flush-reversal": "npm:3.0.2"
+    "@tradejs/strategy-market-flush-reversal": "npm:3.0.4"
     "@tradejs/strategy-relative-rotation": "npm:3.0.2"
     "@tradejs/strategy-structure-zones": "npm:3.0.2"
     "@tradejs/strategy-trend-follow": "npm:3.0.3"
