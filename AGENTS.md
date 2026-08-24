@@ -45,6 +45,7 @@ profile|create|verify|decide|diagnose|retention`. The Project wrapper uses a
 - One-shot signals/parity/evidence: `yarn exec tradejs signals`,
   `yarn exec tradejs runtime-parity`, `yarn exec tradejs runtime-evidence`,
   `yarn exec tradejs runtime-evidence-sync`,
+  `yarn exec tradejs runtime-feedback-sync`,
   `yarn exec tradejs replay-runtime-evidence`, and
   `yarn exec tradejs execution-calibration`, and
   `yarn exec tradejs runtime-scorecard`.
@@ -54,10 +55,13 @@ Historical research defaults to `--cacheOnly`. A forward test is a
 backtest; it requires explicit authorization, an exact runtime binding, the
 deployed stable package, `START_MICRO_FORWARD`, and `MAX_LOSS_VALUE=1`.
 
-The local daily `tradejs-runtime-feedback` automation is the narrow exception:
-its runtime-evidence replay runs without `--cacheOnly` so missing candle history
-is refreshed automatically. The embedded immutable deployment snapshot remains
-the only source of runtime composition.
+The daily production runtime-feedback replay is produced on the runtime server
+from the exact image digest embedded in sealed runtime evidence. The local
+`tradejs-runtime-feedback` automation syncs both immutable evidence streams,
+then performs calibration, scorecards, and the bound processing receipt. It
+must not rerun production evidence locally or refresh history for that window.
+The embedded immutable deployment snapshot remains the only source of runtime
+composition.
 
 `yarn signals:daemon` is long-running, and `--makeOrders` enables order
 placement. Start it only for an explicitly requested runtime task with an exact
