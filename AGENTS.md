@@ -24,6 +24,9 @@ the immutable handoff to `TradeJS-Deploy`.
   belong in `tradejs-docs` and `tradejs-site`.
 - When external source is under study, keep this directory as `PROJECT_CWD` and
   point `TRADEJS_SOURCE_REPOSITORY_ROOT` at that exact source repository.
+  When it is a standalone strategy, also point
+  `TRADEJS_FRAMEWORK_REPOSITORY_ROOT` at the exact framework checkout that
+  supplies the built Node/CLI research runtime.
 
 ## Operational Entry Points
 
@@ -73,7 +76,7 @@ requested.
 
 This Project carries its installed workflow definitions under `.codex/skills`;
 their single editable source is owned by
-`~/dev/tradejs/investing/.codex/skills`. The installed focused-workflow
+`~/dev/tradejs/investing/.codex/skills`. The complete installed TradeJS skill
 snapshot is bound by `.codex/tradejs-skill-bundle.json`; do not hand-copy or
 edit its managed files. In the canonical workspace, rebuild `create-tradejs`
 and run its `--update-skills` command against this Project, then inspect the
@@ -174,7 +177,10 @@ is not the production source of truth.
   `PROJECT_CWD` identifies this config/artifact root;
   source-aware research must set `TRADEJS_SOURCE_REPOSITORY_ROOT` explicitly to
   the exact engine or strategy checkout used for Git lineage and unreleased
-  builds. Never infer it from the artifact root.
+  builds. When that root is a standalone strategy, set
+  `TRADEJS_FRAMEWORK_REPOSITORY_ROOT` separately to the exact framework checkout
+  that supplies the built runtime. Never infer either root from the artifact
+  root.
 - Keep local `data/`, `notes/`, and `output/` here and ignored. Do not create
   symlinks back to an engine or strategy repository.
 - Dispatch an immutable project SHA and image tag to `TradeJS-Deploy`; Deploy
