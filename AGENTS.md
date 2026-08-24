@@ -50,9 +50,9 @@ profile|create|verify|decide|diagnose|retention`. The Project wrapper uses a
   `yarn exec tradejs runtime-scorecard`.
 
 Historical research defaults to `--cacheOnly`. A forward test is a
-`$strategy-release` rollout of one verified candidate, not a generic backtest;
-it requires explicit authorization, an exact runtime binding, the deployed
-stable package, `START_MICRO_FORWARD`, and `MAX_LOSS_VALUE=1`.
+`$strategy-forward-start` rollout of one exact candidate, not a generic
+backtest; it requires explicit authorization, an exact runtime binding, the
+deployed stable package, `START_MICRO_FORWARD`, and `MAX_LOSS_VALUE=1`.
 
 The local daily `tradejs-runtime-feedback` automation is the narrow exception:
 its runtime-evidence replay runs without `--cacheOnly` so missing candle history
@@ -67,15 +67,26 @@ requested.
 
 ## TradeJS Skills
 
-Skills live under `~/dev/tradejs/investing/.codex/skills`. Read the complete
-matching `SKILL.md` before acting:
+This Project carries its installed workflow definitions under `.codex/skills`;
+their canonical templates are owned by
+`~/dev/tradejs/investing/packages/create-tradejs/templates/.codex/skills`.
+Read the complete matching Project-local `SKILL.md` before acting:
 
 - `$strategy-backtest-research` — strategy implementation, figures, backtest
   configs/sweeps, and core export preparation.
 - `$ai-train-local-research` — deterministic gate research, qN+ metrics,
   pocket discovery, stability, and gate-vs-LLM analysis.
-- `$strategy-release` — release research, authorized micro-forward rollout,
-  and live diagnosis.
+- `$strategy-candidate-report` and `$strategy-candidate-compare` — read-only
+  candidate reporting and production comparison.
+- `$strategy-improvement-plan` and `$strategy-improvement-research` — causal
+  planning and bounded new research without production changes.
+- `$strategy-period-revalidate` — frozen-candidate evaluation on new data.
+- `$strategy-forward-start` — explicitly authorized risk-1 rollout, including
+  an operator-directed reproducible historical candidate when named exactly.
+- `$strategy-forward-status` — read-only prospective runtime inspection.
+- `$strategy-risk-scale` — an explicit risk-only change for the same deployed
+  composition.
+- `$strategy-release` — deprecated compatibility router to one focused skill.
 - `$backtest-config-redis` — read a named RedisJSON backtest config.
 - `$save-strategy-config-from-backtest` — explicitly promote a backtest grid
   into this repository's Git-owned runtime declaration.

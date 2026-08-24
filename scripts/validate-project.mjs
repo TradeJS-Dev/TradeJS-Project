@@ -10,6 +10,17 @@ const assert = (condition, message) => {
   if (!condition) throw new Error(message);
 };
 
+const focusedStrategySkills = [
+  "strategy-candidate-report",
+  "strategy-candidate-compare",
+  "strategy-improvement-plan",
+  "strategy-improvement-research",
+  "strategy-period-revalidate",
+  "strategy-forward-start",
+  "strategy-forward-status",
+  "strategy-risk-scale",
+];
+
 const requiredFiles = [
   ".env.example",
   ".github/workflows/publish.yml",
@@ -20,7 +31,11 @@ const requiredFiles = [
   ".codex/skills/runtime-parity-mismatch-analysis/SKILL.md",
   ".codex/skills/save-strategy-config-from-backtest/SKILL.md",
   ".codex/skills/strategy-backtest-research/SKILL.md",
+  ...focusedStrategySkills.map(
+    (skillName) => `.codex/skills/${skillName}/SKILL.md`,
+  ),
   ".codex/skills/strategy-release/SKILL.md",
+  ".codex/skills/strategy-release/agents/openai.yaml",
   "Dockerfile",
   "cronjob",
   "config/runtime/index.ts",
@@ -169,34 +184,87 @@ for (const artifactDirectory of [
   );
 }
 
+const focusedSkillContents = new Map(
+  focusedStrategySkills.map((skillName) => [
+    skillName,
+    read(`.codex/skills/${skillName}/SKILL.md`),
+  ]),
+);
+for (const [skillName, skill] of focusedSkillContents) {
+  assert(
+    skill.includes(`name: ${skillName}`),
+    `${skillName} must keep its skill identity`,
+  );
+}
+
 const strategyReleaseSkill = read(".codex/skills/strategy-release/SKILL.md");
 assert(
-  strategyReleaseSkill.includes("/Users/aleksnick/dev/tradejs/tradejs-project"),
-  "strategy-release skill must run from TradeJS-Project",
+  strategyReleaseSkill.includes("Strategy Release (Deprecated)") &&
+    focusedStrategySkills.every((skillName) =>
+      strategyReleaseSkill.includes(`$${skillName}`),
+    ),
+  "strategy-release must remain a deprecated focused-skill router",
+);
+
+const improvementResearchSkill = focusedSkillContents.get(
+  "strategy-improvement-research",
 );
 assert(
-  strategyReleaseSkill.includes("PROJECT_CWD") &&
-    strategyReleaseSkill.includes("TRADEJS_SOURCE_REPOSITORY_ROOT"),
-  "strategy-release skill must separate project and source roots",
+  improvementResearchSkill.includes("PROJECT_CWD") &&
+    improvementResearchSkill.includes("TRADEJS_SOURCE_REPOSITORY_ROOT") &&
+    improvementResearchSkill.includes("Do not push") &&
+    improvementResearchSkill.includes("$strategy-forward-start"),
+  "strategy-improvement-research must separate research from runtime mutation",
+);
+
+const forwardStartSkill = focusedSkillContents.get("strategy-forward-start");
+for (const requiredForwardContract of [
+  "MAX_LOSS_VALUE=1",
+  "operator-directed prospective mode",
+  "commit and push the complete accumulated release range",
+  "Git-owned Project runtime configuration",
+  "Run strict Project checks and runtime-control verification",
+  "strategyRevision",
+  "deploymentCompositionId",
+]) {
+  assert(
+    forwardStartSkill.includes(requiredForwardContract),
+    `strategy-forward-start is missing: ${requiredForwardContract}`,
+  );
+}
+assert(
+  /never start an interactive\s+authentication flow/.test(forwardStartSkill),
+  "strategy-forward-start must prohibit interactive authentication",
 );
 assert(
-  strategyReleaseSkill.includes("tradejs.config.ts") &&
-    strategyReleaseSkill.includes("runtime-control verify") &&
-    !strategyReleaseSkill.includes("runtime-config") &&
-    !strategyReleaseSkill.includes("releaseVersion"),
-  "strategy-release skill must use the Git-owned runtime config flow",
+  !forwardStartSkill.includes("runtime-config") &&
+    !forwardStartSkill.includes("releaseVersion"),
+  "strategy-forward-start must use the Git-owned runtime config flow",
+);
+
+const forwardStatusSkill = focusedSkillContents.get("strategy-forward-status");
+assert(
+  forwardStatusSkill.includes("This skill is read-only") &&
+    forwardStatusSkill.includes("Do not edit source/config") &&
+    forwardStatusSkill.includes("deploymentCompositionId"),
+  "strategy-forward-status must remain read-only and composition-aware",
+);
+
+const riskScaleSkill = focusedSkillContents.get("strategy-risk-scale");
+assert(
+  riskScaleSkill.includes("Change only `MAX_LOSS_VALUE`") &&
+    riskScaleSkill.includes("currently deployed composition only") &&
+    riskScaleSkill.includes("complete Project release range"),
+  "strategy-risk-scale must preserve composition and change only risk",
+);
+
+const strategyReleaseAgent = read(
+  ".codex/skills/strategy-release/agents/openai.yaml",
 );
 assert(
-  strategyReleaseSkill.includes(
-    "commit and push every strategy-owned source/gate change",
-  ) &&
-    strategyReleaseSkill.includes(
-      "production-like Project smoke to move the npm `beta` tag",
-    ) &&
-    strategyReleaseSkill.includes("weekly Project sync to batch") &&
-    strategyReleaseSkill.includes("matching Project publish workflow") &&
-    strategyReleaseSkill.includes("runtime-control inspect"),
-  "strategy-release skill must preserve the complete forward-test rollout handshake",
+  strategyReleaseAgent.includes("Strategy Release (Deprecated)") &&
+    strategyReleaseAgent.includes("compatibility router"),
+  "strategy-release agent metadata must advertise deprecation",
 );
 
 const runtimeEnv = read("deploy/runtime.env");
