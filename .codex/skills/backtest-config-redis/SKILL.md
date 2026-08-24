@@ -5,12 +5,6 @@ description: Fetch a TradeJS backtest or strategy configuration from the local R
 
 # Backtest Config from Redis
 
-## Repository roots
-
-Run this skill from `/Users/aleksnick/dev/tradejs/tradejs-project`. Treat that
-directory as `PROJECT_CWD`; it owns the local Docker Compose/Redis environment
-and the project scripts. Do not infer that local Redis is production runtime.
-
 ## Use
 
 - Ask for the config name if not provided.

@@ -17,6 +17,10 @@ causal findings, limitations, and approval-safe next action.
   contract, and every selected untested historical behavior has a recorded
   disposition. Do not call a weaker new search exhaustive while comparable
   prior evidence remains unexplained.
+- Bind the verdict to one `tradejs-release-objective/v2` fingerprint. Complete
+  the historical-candidate revalidation board under that fingerprint and retain
+  every distinct old/new behavior in the global trial ledger before ranking a
+  finalist.
 - A current gate that approves zero/negligible rows from a profitable raw side
   is incomplete evidence. Do not return a final market-unsuitable verdict until
   the mandatory five-variant side-rescue round has been executed and recorded.
@@ -42,6 +46,12 @@ causal findings, limitations, and approval-safe next action.
   authorized handoff before forward execution.
 - Use aggregate portfolio MaxDD for ALL and side-only realized MaxDD for each
   direction.
+- Report every terminal row, but apply the support classes from
+  [research-objective.md](research-objective.md). An underpowered row is `n/a`
+  and a diagnostic row cannot reject a composition by itself. A selection-grade
+  row may limit historical readiness and candidate rank, but no terminal
+  calendar row blocks an otherwise valid risk-1 prospective test. Empty recent
+  windows are cadence evidence, not losses.
 - A complete release verdict, including `UNSUITABLE_FOR_CURRENT_MARKET`,
   requires the full window matrix and the complete `$ai-train-local-research`
   report. A negative verdict cannot replace omitted statistics with an artifact
@@ -79,17 +89,22 @@ Use only when all conditions hold:
 - full, terminal, cold-start/reset, concentration, capacity, causality, and
   current-market evidence satisfy the release contract;
 - no unresolved runtime-parity or data-lineage blocker remains.
+- the progress decision, selected-composition artifact, objective fingerprint,
+  historical matrix, and chart all identify the same candidate/composition.
 
-Meaning: the composition is ready for a user-authorized runtime review. Do not
-write runtime config, change `MAX_LOSS_VALUE`, deploy, start a daemon, promote,
-or place orders.
+Meaning: the composition supports the strongest historical claim. The verdict
+alone is not mutation authority; a `release`-mode invocation separately
+authorizes the exact risk-1 rollout unless it explicitly forbids runtime
+changes. Never place, cancel, or close orders manually.
 
 ### `UNSUITABLE_FOR_CURRENT_MARKET`
 
-Use when evidence is complete and valid, but the final composition fails the
-preregistered current-market or release economics/robustness rule. Typical
-evidence includes terminal regime decay, failed side metrics, unacceptable
-portfolio DD/capacity, or no qualifying isolated finalist.
+Use when evidence is complete and valid, but no composition satisfies the
+prospective rule: positive maximum-covered economics for every active approved
+side plus frozen drawdown/tail/cost/concentration/support guardrails. A recent
+calendar loss alone is not sufficient. Typical evidence includes failed active
+side economics, unacceptable portfolio DD/capacity, or no qualifying isolated
+finalist.
 
 Do not use this verdict merely because the first three rounds produced no
 eligible finalist. It requires the historical bridge and all available rescue
@@ -180,6 +195,6 @@ LIMITATIONS: <material limitations or none>
 NEXT ACTION: <REPAIR_RECENT_DIRECTION|START_MICRO_FORWARD|MICRO_FORWARD_READY|FORWARD_BLOCKED|STOP_RESEARCH> — <bounded reason>
 ```
 
-Also cite the immutable `tradejs-release-progress/v1` artifact. If it reports
+Also cite the immutable `tradejs-release-progress/v2` artifact. If it reports
 `verdictAllowed=false`, do not emit this final shape yet; perform its next
 action first.

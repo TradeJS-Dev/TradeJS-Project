@@ -1,15 +1,22 @@
 ---
 name: ai-train-local-research
-description: Run strategy-neutral TradeJS AI-gate research with `yarn ai-train --localOnly`, `yarn ai-pocket-search`, and the reusable gate-ablation tool for qN+ metrics, causal filter hypotheses, drawdown/winrate analysis, stability checks, and gate-vs-LLM comparison.
+description: Execute deterministic AI-gate research for a frozen TradeJS core/export with ai-train, ai-pocket-search, and the reusable gate-ablation tool. Use strategy-improvement-research instead to choose or retune core candidates and orchestrate the full improvement lineage.
 ---
 
 # AI Train Local Research
 
-Run project commands from `/Users/aleksnick/dev/tradejs/tradejs-project` and
-treat it as `PROJECT_CWD`; it owns `data/`, `notes/`, `.env`, and
-`tradejs.config.ts`. Set `TRADEJS_SOURCE_REPOSITORY_ROOT` to the source
-repository whose current build and Git lineage are under study. Never infer one
-root from the other, and run source workspace builds only in the source root.
+Run these commands with `PROJECT_CWD` pointing to `TradeJS-Project`, which owns
+`data/`, `notes/`, `.env`, and `tradejs.config.ts`. Set
+`TRADEJS_SOURCE_REPOSITORY_ROOT` to the exact framework or standalone strategy
+Git checkout whose build and lineage are under study. When that source is a
+standalone strategy, also set `TRADEJS_FRAMEWORK_REPOSITORY_ROOT` to the exact
+framework checkout that provides the built `@tradejs/node` and `@tradejs/cli`
+research runtime. Never infer either source root from `PROJECT_CWD`.
+
+This is a gate-stage specialist. It does not select core hypothesis families,
+run multi-round core tuning, or replace the raw-core verdict. Use
+`$strategy-improvement-research` for the complete lineage; invoke this skill
+only after the core/export identity is frozen.
 
 Use this skill when the user asks to:
 
@@ -235,8 +242,13 @@ Mandatory validation sections for gate work:
   rounded thresholds rather than raw optimizer cutoffs.
 - **Passive rollout**: add new or changed gate logic in observation mode first.
   Log old decision, new decision, reason deltas, and per-timestamp fan-out. Do
-  not enforce a candidate that fails independent-event support or capacity
-  gates.
+  not present or enforce a candidate that fails independent-event support or
+  capacity gates as historically production-ready. The sole exception is an
+  operator-directed prospective test explicitly authorized through
+  `$strategy-forward-start` for one checksum-reproducible candidate at
+  `MAX_LOSS_VALUE=1`; keep its classification `research-only`, retain contrary
+  evidence, and let that skill enforce the immutable target, package, runtime,
+  and rollback boundaries.
 - **Old-gate cleanup**: when an old pocket is replaced or disabled, remove dead
   constants/prompt fields/tests, update notes, and explain the migration path.
 

@@ -15,13 +15,6 @@ Use this skill when the user asks to:
 
 This skill is for reading the mismatch JSON artifact first. Do not rerun parity unless the user explicitly asks for a new replay.
 
-## Repository roots
-
-Start from artifacts under `/Users/aleksnick/dev/tradejs/tradejs-project`
-(`PROJECT_CWD`) or from the pasted JSON. When code inspection is needed, resolve
-the `packages/...` paths under `TRADEJS_SOURCE_REPOSITORY_ROOT`, not under the
-project artifact root.
-
 ## Expected input
 
 Prefer one of these:

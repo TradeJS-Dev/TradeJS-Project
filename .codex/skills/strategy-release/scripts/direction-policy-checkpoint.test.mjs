@@ -1,7 +1,7 @@
-import assert from "node:assert/strict";
-import test from "node:test";
+import assert from 'node:assert/strict';
+import test from 'node:test';
 
-import { evaluateDirectionPolicyCheckpoint } from "./direction-policy-checkpoint.mjs";
+import { evaluateDirectionPolicyCheckpoint } from './direction-policy-checkpoint.mjs';
 
 const rule = {
   minimumTrades: 144,
@@ -19,7 +19,7 @@ const metric = (trades, pnl, pnlPerTrade, profitFactor, cadencePerDay) => ({
   cadencePerDay,
 });
 
-test("requires LONG-only containment for the RelativeRotation control profile", () => {
+test('requires LONG-only containment for the RelativeRotation control profile', () => {
   const decision = evaluateDirectionPolicyCheckpoint({
     usefulSideRule: rule,
     raw: {
@@ -30,12 +30,12 @@ test("requires LONG-only containment for the RelativeRotation control profile", 
   });
 
   assert.equal(decision.required, true);
-  assert.equal(decision.trigger, "losing_side_contamination");
-  assert.equal(decision.retainedSide, "LONG");
-  assert.equal(decision.proposedPolicy, "long_only");
+  assert.equal(decision.trigger, 'losing_side_contamination');
+  assert.equal(decision.retainedSide, 'LONG');
+  assert.equal(decision.proposedPolicy, 'long_only');
 });
 
-test("requires recovery when a useful raw side has negligible gate approvals", () => {
+test('requires recovery when a useful raw side has negligible gate approvals', () => {
   const decision = evaluateDirectionPolicyCheckpoint({
     usefulSideRule: rule,
     raw: {
@@ -50,11 +50,11 @@ test("requires recovery when a useful raw side has negligible gate approvals", (
   });
 
   assert.equal(decision.required, true);
-  assert.equal(decision.trigger, "profitable_side_hidden");
-  assert.equal(decision.proposedPolicy, "long_pass_through");
+  assert.equal(decision.trigger, 'profitable_side_hidden');
+  assert.equal(decision.proposedPolicy, 'long_pass_through');
 });
 
-test("does not manufacture a side policy when neither side passes the frozen rule", () => {
+test('does not manufacture a side policy when neither side passes the frozen rule', () => {
   const decision = evaluateDirectionPolicyCheckpoint({
     usefulSideRule: rule,
     raw: {
@@ -65,11 +65,11 @@ test("does not manufacture a side policy when neither side passes the frozen rul
   });
 
   assert.equal(decision.required, false);
-  assert.equal(decision.trigger, "no_side_salvage");
-  assert.equal(decision.proposedPolicy, "both");
+  assert.equal(decision.trigger, 'no_side_salvage');
+  assert.equal(decision.proposedPolicy, 'both');
 });
 
-test("rejects incomplete metric inputs instead of guessing", () => {
+test('rejects incomplete metric inputs instead of guessing', () => {
   assert.throws(
     () =>
       evaluateDirectionPolicyCheckpoint({

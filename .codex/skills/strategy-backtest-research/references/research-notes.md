@@ -12,8 +12,7 @@ Redis/export reconciliation, setup-identity fallback rate, and evidence matrix
 in the immutable note. Record the explicit spec stage (`screen`,
 `isolated_long`, or `confirmation`); never infer it from elapsed days or file
 names. For later stages include parent research IDs and the family stage-index
-lineage. Iterative `$strategy-improvement-research` child screens also include
-their direct
+lineage. Iterative `$strategy-improvement-research` child screens also include their direct
 parent research IDs, round number, hashed causal-handoff payload, eligible
 carried control, parent result hashes, mechanism verdict, predicted-versus-
 observed trace/metric effect, remaining failure mode, and preregistered child
@@ -51,9 +50,9 @@ Every file starts with:
 ```yaml
 ---
 schema: tradejs-research/v1
-strategy: "<Strategy|Shared|CrossStrategy>"
-date: "YYYY-MM-DD"
-kind: "<backtest|ai-gate|ml|architecture|runtime-parity>"
+strategy: '<Strategy|Shared|CrossStrategy>'
+date: 'YYYY-MM-DD'
+kind: '<backtest|ai-gate|ml|architecture|runtime-parity>'
 status: <implemented|observe|research-only|rollback|blocked|historical>
 reproduction: <complete|partial|blocked|legacy-partial>
 ---

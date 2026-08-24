@@ -1,22 +1,22 @@
 #!/usr/bin/env node
 
-import fs from "node:fs/promises";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-import { calculateAdvancedTradeMetrics } from "@tradejs/core/backtest";
+import { calculateAdvancedTradeMetrics } from '@tradejs/core/backtest';
 import {
   closeRedisConnection,
   getData,
   getHashJsonValues,
   redisKeys,
-} from "@tradejs/infra/redis";
+} from '@tradejs/infra/redis';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const DEFAULT_PERIODS = [365, 180, 90, 30, 7];
 const ARTIFACT_READ_CONCURRENCY = 8;
 const WORST_SYMBOL_DRAWDOWN_WARNING =
-  "worstSymbolMaxDrawdownPct is the maximum stat.maxDrawdown across individual results/symbols; it is not portfolio MaxDD.";
+  'worstSymbolMaxDrawdownPct is the maximum stat.maxDrawdown across individual results/symbols; it is not portfolio MaxDD.';
 
 const resolveProjectRoot = () =>
   path.resolve(String(process.env.PROJECT_CWD || process.cwd()));
@@ -24,17 +24,17 @@ const resolveProjectRoot = () =>
 const readCachedOrderLog = async ({ orderLogId, userName }) => {
   const filePath = path.join(
     resolveProjectRoot(),
-    "data",
-    "backtests",
-    "cache",
+    'data',
+    'backtests',
+    'cache',
     encodeURIComponent(userName),
-    "orders",
+    'orders',
     `${encodeURIComponent(orderLogId)}.json`,
   );
   try {
-    return JSON.parse(await fs.readFile(filePath, "utf8"));
+    return JSON.parse(await fs.readFile(filePath, 'utf8'));
   } catch (error) {
-    if (error?.code === "ENOENT") return null;
+    if (error?.code === 'ENOENT') return null;
     throw error;
   }
 };
@@ -45,35 +45,35 @@ const toFiniteNumber = (value, fallback = 0) => {
 };
 
 const normalizeExitReason = (type) => {
-  const normalized = String(type ?? "").toUpperCase();
-  if (normalized.startsWith("TAKE_PROFIT")) return "take_profit";
-  if (normalized.startsWith("STOP_LOSS")) return "stop_loss";
-  return "exit";
+  const normalized = String(type ?? '').toUpperCase();
+  if (normalized.startsWith('TAKE_PROFIT')) return 'take_profit';
+  if (normalized.startsWith('STOP_LOSS')) return 'stop_loss';
+  return 'exit';
 };
 
 const isOpenOrder = (order) =>
-  String(order?.type ?? "")
+  String(order?.type ?? '')
     .toUpperCase()
-    .startsWith("OPEN_");
+    .startsWith('OPEN_');
 
 const isExitOrder = (order) => {
-  const type = String(order?.type ?? "").toUpperCase();
+  const type = String(order?.type ?? '').toUpperCase();
   return (
-    type.startsWith("TAKE_PROFIT") ||
-    type.startsWith("STOP_LOSS") ||
-    type.startsWith("CLOSE_") ||
-    type.startsWith("EXIT_") ||
-    type.startsWith("LIQUIDATION")
+    type.startsWith('TAKE_PROFIT') ||
+    type.startsWith('STOP_LOSS') ||
+    type.startsWith('CLOSE_') ||
+    type.startsWith('EXIT_') ||
+    type.startsWith('LIQUIDATION')
   );
 };
 
 const isTerminalExitOrder = (order) => {
-  const type = String(order?.type ?? "").toUpperCase();
+  const type = String(order?.type ?? '').toUpperCase();
   return (
-    type.startsWith("STOP_LOSS") ||
-    type.startsWith("CLOSE_") ||
-    type.startsWith("EXIT_") ||
-    type.startsWith("LIQUIDATION")
+    type.startsWith('STOP_LOSS') ||
+    type.startsWith('CLOSE_') ||
+    type.startsWith('EXIT_') ||
+    type.startsWith('LIQUIDATION')
   );
 };
 
@@ -92,7 +92,7 @@ export const reconstructTrades = (orderLogs) => {
       const profit = toFiniteNumber(order.profit);
 
       if (isOpenOrder(order)) {
-        if (order.positionIntent === "increase") {
+        if (order.positionIntent === 'increase') {
           if (!cycle) continue;
           cycle.pnl += profit;
           cycle.increases += 1;
@@ -175,7 +175,7 @@ const getLosingMonths = (trades) => {
     const date = new Date(trade.timestamp);
     const key = `${date.getUTCFullYear()}-${String(
       date.getUTCMonth() + 1,
-    ).padStart(2, "0")}`;
+    ).padStart(2, '0')}`;
     monthly.set(key, (monthly.get(key) ?? 0) + trade.pnl);
   }
 
@@ -288,7 +288,7 @@ export const summarizeResultStats = ({
       : null;
 
   return {
-    source: "redis-result-stat",
+    source: 'redis-result-stat',
     authoritativeAggregate: true,
     resultCount,
     startTimestamp,
@@ -308,13 +308,13 @@ export const summarizeResultStats = ({
 };
 
 const normalizeConfigId = (test) => {
-  const configId = String(test?.configId ?? "").trim();
-  return configId || "<missing-config-id>";
+  const configId = String(test?.configId ?? '').trim();
+  return configId || '<missing-config-id>';
 };
 
 const uniqueSymbolCount = (tests) =>
   new Set(
-    tests.map((test) => String(test?.symbol ?? "").trim()).filter(Boolean),
+    tests.map((test) => String(test?.symbol ?? '').trim()).filter(Boolean),
   ).size;
 
 export const buildConfigStatSummaries = ({
@@ -346,7 +346,7 @@ export const buildConfigStatSummaries = ({
   const configIds = [
     ...new Set([...plannedByConfig.keys(), ...resultsByConfig.keys()]),
   ].sort((left, right) => left.localeCompare(right));
-  const manifestStatus = String(manifest?.status ?? "missing");
+  const manifestStatus = String(manifest?.status ?? 'missing');
   const statSummariesByConfig = Object.fromEntries(
     configIds.map((configId) => {
       const configResults = resultsByConfig.get(configId) ?? [];
@@ -356,12 +356,12 @@ export const buildConfigStatSummaries = ({
       const missing = Math.max(0, planned - completed);
       const extra = Math.max(0, completed - planned);
       const authoritativeAggregate =
-        planned > 0 && completed === planned && manifestStatus === "completed";
+        planned > 0 && completed === planned && manifestStatus === 'completed';
       const completionWarning = authoritativeAggregate
         ? null
         : `Config ${configId} is not an authoritative complete aggregate: manifest status=${manifestStatus}, completed=${completed}, planned=${planned}.`;
       const errorPersistenceWarning =
-        "Worker error counts are not persisted in the backtest run manifest; inspect the terminal/report log for actual worker errors.";
+        'Worker error counts are not persisted in the backtest run manifest; inspect the terminal/report log for actual worker errors.';
       const summary = summarizeResultStats({
         results: configResults,
         startTimestamp,
@@ -376,7 +376,7 @@ export const buildConfigStatSummaries = ({
           configId,
           authoritativeAggregate,
           completion: {
-            status: authoritativeAggregate ? "complete" : "partial",
+            status: authoritativeAggregate ? 'complete' : 'partial',
             manifestStatus,
             planned,
             completed,
@@ -387,7 +387,7 @@ export const buildConfigStatSummaries = ({
               configResults.map((result) => result.test),
             ),
             errors: null,
-            errorStatus: "not_persisted",
+            errorStatus: 'not_persisted',
           },
           warnings: [
             ...summary.warnings,
@@ -400,7 +400,7 @@ export const buildConfigStatSummaries = ({
   );
   const multipleConfigsWarning =
     configIds.length > 1
-      ? `Run contains multiple configId buckets (${configIds.join(", ")}); top-level statSummary is null and config metrics are reported separately.`
+      ? `Run contains multiple configId buckets (${configIds.join(', ')}); top-level statSummary is null and config metrics are reported separately.`
       : null;
 
   return {
@@ -415,7 +415,7 @@ export const buildConfigStatSummaries = ({
 const parseArgs = (argv) => {
   const parsed = {
     runId: null,
-    userName: "root",
+    userName: 'root',
     periods: DEFAULT_PERIODS,
     projectedUniverse: null,
     json: false,
@@ -423,35 +423,35 @@ const parseArgs = (argv) => {
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
-    if (arg === "--run") parsed.runId = argv[++index] ?? null;
-    else if (arg === "--user") parsed.userName = argv[++index] ?? "root";
-    else if (arg === "--periods") {
-      parsed.periods = String(argv[++index] ?? "")
-        .split(",")
+    if (arg === '--run') parsed.runId = argv[++index] ?? null;
+    else if (arg === '--user') parsed.userName = argv[++index] ?? 'root';
+    else if (arg === '--periods') {
+      parsed.periods = String(argv[++index] ?? '')
+        .split(',')
         .map((value) => Number.parseInt(value.trim(), 10))
         .filter((value) => Number.isFinite(value) && value > 0);
-    } else if (arg === "--projected-universe") {
-      const projectedUniverse = Number(argv[++index] ?? "");
+    } else if (arg === '--projected-universe') {
+      const projectedUniverse = Number(argv[++index] ?? '');
       if (!Number.isInteger(projectedUniverse) || projectedUniverse <= 0) {
-        throw new Error("--projected-universe must be a positive integer");
+        throw new Error('--projected-universe must be a positive integer');
       }
       parsed.projectedUniverse = projectedUniverse;
-    } else if (arg === "--json") parsed.json = true;
+    } else if (arg === '--json') parsed.json = true;
   }
 
   if (!parsed.runId) {
-    throw new Error("Usage: backtest-run-metrics.mjs --run <run-id>");
+    throw new Error('Usage: backtest-run-metrics.mjs --run <run-id>');
   }
   return parsed;
 };
 
 const formatNumber = (value, digits = 2) =>
-  value == null || !Number.isFinite(value) ? "n/a" : value.toFixed(digits);
+  value == null || !Number.isFinite(value) ? 'n/a' : value.toFixed(digits);
 
 const formatSummaryTable = (report) => {
   const rows = [
-    "| Period | Trades | WR | PF | PnL | MaxDD | Strict loss | Loss streak | Losing months | Trades/day | L2/L3/L4 |",
-    "| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+    '| Period | Trades | WR | PF | PnL | MaxDD | Strict loss | Loss streak | Losing months | Trades/day | L2/L3/L4 |',
+    '| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |',
   ];
 
   for (const period of report.periods) {
@@ -461,16 +461,16 @@ const formatSummaryTable = (report) => {
     );
   }
 
-  return rows.join("\n");
+  return rows.join('\n');
 };
 
 const formatStatSummary = (statSummary) => {
   const projected = statSummary.projectedCadence
     ? `${formatNumber(statSummary.projectedCadence.tradesPerDay)} trades/day (${statSummary.projectedCadence.label}; scale=${formatNumber(statSummary.projectedCadence.scaleFactor, 4)})`
-    : "not requested";
+    : 'not requested';
 
   return [
-    `Redis result.stat aggregate for config ${statSummary.configId ?? "<unknown>"} (${statSummary.authoritativeAggregate ? "authoritative" : "partial"}, including --fast runs):`,
+    `Redis result.stat aggregate for config ${statSummary.configId ?? '<unknown>'} (${statSummary.authoritativeAggregate ? 'authoritative' : 'partial'}, including --fast runs):`,
     ...(statSummary.completion
       ? [
           `completion: ${statSummary.completion.completed}/${statSummary.completion.planned} tests; missing=${statSummary.completion.missing}; symbols=${statSummary.completion.completedSymbols}/${statSummary.completion.plannedSymbols}; manifest=${statSummary.completion.manifestStatus}; errors=${statSummary.completion.errorStatus}`,
@@ -482,12 +482,12 @@ const formatStatSummary = (statSummary) => {
     `observed cadence: ${formatNumber(statSummary.observedCadenceTradesPerDay)} trades/day`,
     `projected cadence: ${projected}`,
     `worst symbol MaxDD: ${formatNumber(statSummary.worstSymbolMaxDrawdownPct)}% (not portfolio MaxDD)`,
-  ].join("\n");
+  ].join('\n');
 };
 
 export const buildRunReport = async ({
   runId,
-  userName = "root",
+  userName = 'root',
   periods = DEFAULT_PERIODS,
   projectedUniverse = null,
 }) => {
@@ -563,7 +563,7 @@ export const buildRunReport = async ({
   const artifactMetricsWarning = artifactMetricsAvailable
     ? null
     : configStats.configIds.length > 1
-      ? `Artifact-derived periods are disabled for grid runs with multiple configId buckets (${configStats.configIds.join(", ")}) to avoid aggregating configs.`
+      ? `Artifact-derived periods are disabled for grid runs with multiple configId buckets (${configStats.configIds.join(', ')}) to avoid aggregating configs.`
       : `Artifact-derived periods are incomplete (${availableArtifacts.length}/${results.length} order logs); for --fast --ai runs use fast-ai-export-metrics.mjs instead.`;
 
   return {
@@ -618,16 +618,16 @@ const main = async () => {
           ? [formatStatSummary(report.statSummary)]
           : Object.values(report.statSummariesByConfig).map(formatStatSummary)),
         ...report.statSummaryWarnings,
-        "",
+        '',
         `results/artifacts: ${report.results}/${report.artifacts} (missing=${report.missingArtifacts}, incomplete=${report.incompleteCycles})`,
         `trades/increases: ${report.trades}/${report.increases}`,
         ...(report.artifactMetricsWarning
           ? [report.artifactMetricsWarning]
           : []),
-        "",
+        '',
         formatSummaryTable(report),
-        "",
-      ].join("\n"),
+        '',
+      ].join('\n'),
     );
   } finally {
     await closeRedisConnection();

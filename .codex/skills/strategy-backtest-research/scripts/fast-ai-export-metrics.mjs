@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
-import { createHash } from "node:crypto";
-import { createReadStream } from "node:fs";
-import path from "node:path";
-import readline from "node:readline";
-import { fileURLToPath } from "node:url";
+import { createHash } from 'node:crypto';
+import { createReadStream } from 'node:fs';
+import path from 'node:path';
+import readline from 'node:readline';
+import { fileURLToPath } from 'node:url';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 export const DEFAULT_PERIODS = [1100, 365, 180, 90, 30];
-export const CORE_COHORT_ORDER = ["ALL", "LONG", "SHORT"];
+export const CORE_COHORT_ORDER = ['ALL', 'LONG', 'SHORT'];
 const PNL_EPSILON = 1e-9;
 
 const toFiniteNumber = (value) => {
@@ -17,15 +17,15 @@ const toFiniteNumber = (value) => {
 };
 
 const normalizeDirection = (value) => {
-  const direction = String(value ?? "")
+  const direction = String(value ?? '')
     .trim()
     .toUpperCase();
-  return direction === "LONG" || direction === "SHORT" ? direction : "UNKNOWN";
+  return direction === 'LONG' || direction === 'SHORT' ? direction : 'UNKNOWN';
 };
 
 const normalizeConfigId = (value) => {
-  const configId = String(value ?? "").trim();
-  return configId || "<missing-config-id>";
+  const configId = String(value ?? '').trim();
+  return configId || '<missing-config-id>';
 };
 
 const compareText = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
@@ -52,31 +52,31 @@ const normalizeCompletedTrade = ({ filePath, lineNumber, row }) => {
 
   return {
     backtestRunId:
-      typeof row.backtestRunId === "string" ? row.backtestRunId : null,
+      typeof row.backtestRunId === 'string' ? row.backtestRunId : null,
     configId: normalizeConfigId(row.configId),
     direction: normalizeDirection(row.direction ?? row.tradeResult.direction),
     exitTimestamp,
     netProfit,
-    signalId: String(row.signalId ?? row.tradeResult.signalId ?? ""),
+    signalId: String(row.signalId ?? row.tradeResult.signalId ?? ''),
     sourceFile: filePath,
     sourceLine: lineNumber,
-    symbol: String(row.symbol ?? ""),
+    symbol: String(row.symbol ?? ''),
   };
 };
 
 const tradeIdentity = (trade) =>
   [
-    trade.backtestRunId ?? "",
+    trade.backtestRunId ?? '',
     trade.configId,
     trade.signalId,
     trade.symbol,
-  ].join(":");
+  ].join(':');
 
 const readOneExportFile = async ({ filePath, runId }) => {
   const resolvedPath = path.resolve(filePath);
-  const input = createReadStream(resolvedPath, { encoding: "utf8" });
-  const sha256 = createHash("sha256");
-  input.on("data", (chunk) => sha256.update(chunk));
+  const input = createReadStream(resolvedPath, { encoding: 'utf8' });
+  const sha256 = createHash('sha256');
+  input.on('data', (chunk) => sha256.update(chunk));
   const lines = readline.createInterface({ input, crlfDelay: Infinity });
   const trades = [];
   let rowsRead = 0;
@@ -119,7 +119,7 @@ const readOneExportFile = async ({ filePath, runId }) => {
 
   return {
     file: resolvedPath,
-    sha256: sha256.digest("hex"),
+    sha256: sha256.digest('hex'),
     rowsRead,
     blankLines,
     rowsWithoutTradeResult,
@@ -216,10 +216,10 @@ const summarizeSelectedTrades = ({ trades, periodDays }) => {
   const completedTrades = sorted.length;
   const profitFactorStatus =
     grossLoss > 0
-      ? "finite"
+      ? 'finite'
       : grossProfit > 0
-        ? "infinite_no_gross_loss"
-        : "undefined_no_gross_profit_or_loss";
+        ? 'infinite_no_gross_loss'
+        : 'undefined_no_gross_profit_or_loss';
 
   return {
     completedTrades,
@@ -252,7 +252,7 @@ export const summarizeTerminalWindow = ({
       trade.exitTimestamp < endTimestamp,
   );
   const byDirection = Object.fromEntries(
-    ["LONG", "SHORT"].map((direction) => [
+    ['LONG', 'SHORT'].map((direction) => [
       direction,
       summarizeSelectedTrades({
         trades: selected.filter((trade) => trade.direction === direction),
@@ -261,7 +261,7 @@ export const summarizeTerminalWindow = ({
     ]),
   );
   const unknownDirection = selected.filter(
-    (trade) => trade.direction === "UNKNOWN",
+    (trade) => trade.direction === 'UNKNOWN',
   );
   if (unknownDirection.length) {
     byDirection.UNKNOWN = summarizeSelectedTrades({
@@ -277,13 +277,13 @@ export const summarizeTerminalWindow = ({
     startIso: new Date(startTimestamp).toISOString(),
     endTimestamp,
     endIso: new Date(endTimestamp).toISOString(),
-    interval: "[start, end)",
+    interval: '[start, end)',
     coverage:
       coverageStartTimestamp == null
-        ? "unknown_without_run_manifest_start"
+        ? 'unknown_without_run_manifest_start'
         : startTimestamp >= coverageStartTimestamp
-          ? "complete_within_run_manifest"
-          : "partial_before_run_manifest_start",
+          ? 'complete_within_run_manifest'
+          : 'partial_before_run_manifest_start',
     metrics: summarizeSelectedTrades({ trades: selected, periodDays }),
     directions: byDirection,
   };
@@ -332,9 +332,9 @@ export const aggregateRedisResultStatsByConfig = (envelopes) => {
 export const buildRedisReconciliation = ({ redisAggregate, exportMetrics }) => {
   if (!redisAggregate || redisAggregate.resultCount === 0) {
     return {
-      source: "redis-result-stat",
-      status: "unavailable",
-      reason: "No Redis checkpoint result.stat rows were found for the run.",
+      source: 'redis-result-stat',
+      status: 'unavailable',
+      reason: 'No Redis checkpoint result.stat rows were found for the run.',
     };
   }
 
@@ -354,10 +354,10 @@ export const buildRedisReconciliation = ({ redisAggregate, exportMetrics }) => {
   };
 
   return {
-    source: "redis-result-stat",
-    status: Object.values(matches).every(Boolean) ? "match" : "mismatch",
+    source: 'redis-result-stat',
+    status: Object.values(matches).every(Boolean) ? 'match' : 'mismatch',
     semantics:
-      "Redis supplies aggregate N/W/L/PnL only; PF and aggregate portfolio MaxDD remain export-derived.",
+      'Redis supplies aggregate N/W/L/PnL only; PF and aggregate portfolio MaxDD remain export-derived.',
     pnlTolerance,
     redis: redisAggregate,
     export: {
@@ -419,10 +419,10 @@ export const buildConfigExportReports = ({
           reconciliation:
             runWindowMetrics == null
               ? {
-                  source: "redis-result-stat",
-                  status: "not_requested",
+                  source: 'redis-result-stat',
+                  status: 'not_requested',
                   reason:
-                    "Pass --run to reconcile export N/W/L/PnL with Redis.",
+                    'Pass --run to reconcile export N/W/L/PnL with Redis.',
                 }
               : buildRedisReconciliation({
                   redisAggregate,
@@ -434,7 +434,7 @@ export const buildConfigExportReports = ({
   );
 
 const loadRunContextFromRedis = async ({ runId, userName }) => {
-  const redis = await import("@tradejs/infra/redis");
+  const redis = await import('@tradejs/infra/redis');
   try {
     const [manifest, envelopes] = await Promise.all([
       redis.getData(redis.redisKeys.backtestRun(userName, runId), null),
@@ -478,7 +478,7 @@ const loadRunContextFromRedis = async ({ runId, userName }) => {
 };
 
 export const parseEndTimestamp = (value) => {
-  if (value == null || String(value).trim() === "") return null;
+  if (value == null || String(value).trim() === '') return null;
   const text = String(value).trim();
   const numeric = /^\d+$/.test(text) ? Number(text) : Number.NaN;
   const timestamp = Number.isFinite(numeric) ? numeric : Date.parse(text);
@@ -492,15 +492,15 @@ export const parseEndTimestamp = (value) => {
 };
 
 const parsePeriods = (value) => {
-  const periods = String(value ?? "")
-    .split(",")
+  const periods = String(value ?? '')
+    .split(',')
     .map((part) => Number(part.trim()));
   if (
     periods.length === 0 ||
     periods.some((period) => !Number.isInteger(period) || period <= 0)
   ) {
     throw new Error(
-      "--periods must be a comma-separated list of positive days",
+      '--periods must be a comma-separated list of positive days',
     );
   }
   return [...new Set(periods)];
@@ -513,24 +513,24 @@ export const parseArgs = (argv) => {
     json: false,
     periods: DEFAULT_PERIODS,
     runId: null,
-    userName: "root",
+    userName: 'root',
   };
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
-    if (arg === "--file") {
+    if (arg === '--file') {
       const filePath = argv[++index];
-      if (!filePath) throw new Error("--file requires a JSONL path");
+      if (!filePath) throw new Error('--file requires a JSONL path');
       flags.filePaths.push(filePath);
-    } else if (arg === "--end") {
+    } else if (arg === '--end') {
       flags.endTimestamp = parseEndTimestamp(argv[++index]);
-    } else if (arg === "--run") {
+    } else if (arg === '--run') {
       flags.runId = argv[++index] ?? null;
-    } else if (arg === "--user") {
-      flags.userName = argv[++index] ?? "root";
-    } else if (arg === "--periods") {
+    } else if (arg === '--user') {
+      flags.userName = argv[++index] ?? 'root';
+    } else if (arg === '--periods') {
       flags.periods = parsePeriods(argv[++index]);
-    } else if (arg === "--json") {
+    } else if (arg === '--json') {
       flags.json = true;
     } else {
       throw new Error(`Unknown argument: ${arg}`);
@@ -539,7 +539,7 @@ export const parseArgs = (argv) => {
 
   if (!flags.filePaths.length || (!flags.runId && flags.endTimestamp == null)) {
     throw new Error(
-      "Usage: fast-ai-export-metrics.mjs --file <export.jsonl> [--file <part.jsonl>] (--end <epoch-ms|ISO> | --run <run-id>) [--user root] [--periods 1100,365,180,90,30] [--json]",
+      'Usage: fast-ai-export-metrics.mjs --file <export.jsonl> [--file <part.jsonl>] (--end <epoch-ms|ISO> | --run <run-id>) [--user root] [--periods 1100,365,180,90,30] [--json]',
     );
   }
   return flags;
@@ -550,7 +550,7 @@ export const buildExportReport = async ({
   filePaths,
   periods = DEFAULT_PERIODS,
   runId = null,
-  userName = "root",
+  userName = 'root',
   runContextLoader = loadRunContextFromRedis,
 }) => {
   const runContext = runId ? await runContextLoader({ runId, userName }) : null;
@@ -566,7 +566,7 @@ export const buildExportReport = async ({
   }
   const endTimestamp = manifestEndTimestamp ?? explicitEndTimestamp;
   if (endTimestamp == null) {
-    throw new Error("An explicit --end or a Redis --run manifest is required");
+    throw new Error('An explicit --end or a Redis --run manifest is required');
   }
 
   const { trades, scan } = await readExportFiles({ filePaths, runId });
@@ -597,11 +597,11 @@ export const buildExportReport = async ({
 
   return {
     schemaVersion: 1,
-    reportType: "fast-ai-export-terminal-core-metrics",
+    reportType: 'fast-ai-export-terminal-core-metrics',
     source: {
-      kind: "ai-export-jsonl-completed-trades",
-      pnlField: "tradeResult.netProfit",
-      timestampField: "tradeResult.exitTimestamp",
+      kind: 'ai-export-jsonl-completed-trades',
+      pnlField: 'tradeResult.netProfit',
+      timestampField: 'tradeResult.exitTimestamp',
       gateDecisionsUsed: false,
       runFilterApplied: Boolean(runId),
       files: fileReports,
@@ -609,37 +609,37 @@ export const buildExportReport = async ({
     semantics: {
       cohortOrder: CORE_COHORT_ORDER,
       deterministicSort:
-        "tradeResult.exitTimestamp, then signalId, symbol, direction, source file, source line",
+        'tradeResult.exitTimestamp, then signalId, symbol, direction, source file, source line',
       terminalWindow:
-        "[manifestEnd - periodDays * 24h, manifestEnd), using UTC epoch milliseconds",
-      cadence: "completed trades / exact requested calendar days",
+        '[manifestEnd - periodDays * 24h, manifestEnd), using UTC epoch milliseconds',
+      cadence: 'completed trades / exact requested calendar days',
       deduplication:
-        "exact duplicate run/config/signal/symbol identities are counted once; conflicting direction, exit timestamp, or outcome fails the report",
-      loss: "tradeResult.netProfit <= 0 (zero is a loss, matching Redis stat)",
+        'exact duplicate run/config/signal/symbol identities are counted once; conflicting direction, exit timestamp, or outcome fails the report',
+      loss: 'tradeResult.netProfit <= 0 (zero is a loss, matching Redis stat)',
       pnlPerTrade:
-        "cohort total PnL / cohort completed trades; ALL uses aggregate PnL / aggregate N and is never an unweighted average of LONG/SHORT means",
+        'cohort total PnL / cohort completed trades; ALL uses aggregate PnL / aggregate N and is never an unweighted average of LONG/SHORT means',
       portfolioMaxDrawdown:
-        "backward-compatible JSON field: metrics.portfolioMaxDrawdown is ALL aggregate portfolio realized MaxDD; directions.<side>.portfolioMaxDrawdown is side-only realized MaxDD after filtering to that direction; both use the chronological completed-trade net-PnL equity curve",
-      profitFactor: "gross positive PnL / absolute gross negative PnL",
+        'backward-compatible JSON field: metrics.portfolioMaxDrawdown is ALL aggregate portfolio realized MaxDD; directions.<side>.portfolioMaxDrawdown is side-only realized MaxDD after filtering to that direction; both use the chronological completed-trade net-PnL equity curve',
+      profitFactor: 'gross positive PnL / absolute gross negative PnL',
     },
     metricSchema: {
       compatibility:
-        "schemaVersion 1 field names are retained; scope is clarified additively",
+        'schemaVersion 1 field names are retained; scope is clarified additively',
       pnlPerTrade: {
-        jsonField: "pnlPerTrade",
-        humanLabel: "Avg PnL/trade (cohort PnL/N)",
-        aggregateFormula: "ALL.pnl / ALL.completedTrades",
+        jsonField: 'pnlPerTrade',
+        humanLabel: 'Avg PnL/trade (cohort PnL/N)',
+        aggregateFormula: 'ALL.pnl / ALL.completedTrades',
         aggregateIsUnweightedAverageOfSideMeans: false,
       },
       realizedMaxDrawdown: {
-        jsonField: "portfolioMaxDrawdown",
-        allScope: "aggregate portfolio",
-        longScope: "side-only LONG",
-        shortScope: "side-only SHORT",
+        jsonField: 'portfolioMaxDrawdown',
+        allScope: 'aggregate portfolio',
+        longScope: 'side-only LONG',
+        shortScope: 'side-only SHORT',
       },
     },
     anchor: {
-      source: runContext ? "redis-backtest-run-manifest" : "explicit-end",
+      source: runContext ? 'redis-backtest-run-manifest' : 'explicit-end',
       runId,
       endTimestamp,
       endIso: new Date(endTimestamp).toISOString(),
@@ -653,7 +653,7 @@ export const buildExportReport = async ({
     configReports,
     configAggregationWarning:
       configIds.length > 1
-        ? `Multiple configId buckets found (${configIds.join(", ")}); top-level windows, runWindowMetrics, and reconciliation are null. Use configReports.`
+        ? `Multiple configId buckets found (${configIds.join(', ')}); top-level windows, runWindowMetrics, and reconciliation are null. Use configReports.`
         : null,
     windows: singleConfigReport?.windows ?? [],
     runWindowMetrics: singleConfigReport?.runWindowMetrics ?? null,
@@ -662,35 +662,35 @@ export const buildExportReport = async ({
 };
 
 const formatNumber = (value, digits = 2) =>
-  value == null || !Number.isFinite(value) ? "n/a" : value.toFixed(digits);
+  value == null || !Number.isFinite(value) ? 'n/a' : value.toFixed(digits);
 
 const formatProfitFactor = (metrics) => {
   if (metrics.profitFactor != null)
     return formatNumber(metrics.profitFactor, 3);
-  return metrics.profitFactorStatus === "infinite_no_gross_loss" ? "∞" : "n/a";
+  return metrics.profitFactorStatus === 'infinite_no_gross_loss' ? '∞' : 'n/a';
 };
 
 const formatPercent = (value) =>
-  value == null || !Number.isFinite(value) ? "n/a" : `${formatNumber(value)}%`;
+  value == null || !Number.isFinite(value) ? 'n/a' : `${formatNumber(value)}%`;
 
 const reportCohorts = (window) => {
   const required = [
-    ["ALL", window.metrics, "aggregate portfolio"],
-    ["LONG", window.directions.LONG, "side-only LONG"],
-    ["SHORT", window.directions.SHORT, "side-only SHORT"],
+    ['ALL', window.metrics, 'aggregate portfolio'],
+    ['LONG', window.directions.LONG, 'side-only LONG'],
+    ['SHORT', window.directions.SHORT, 'side-only SHORT'],
   ];
   return window.directions.UNKNOWN
     ? [
         ...required,
-        ["UNKNOWN", window.directions.UNKNOWN, "direction-filtered diagnostic"],
+        ['UNKNOWN', window.directions.UNKNOWN, 'direction-filtered diagnostic'],
       ]
     : required;
 };
 
 export const formatReport = (report) => {
   const rows = [
-    "| Config | Period | Cohort | N | W | L | WR | PF | PnL | Avg PnL/trade (cohort PnL/N) | Realized MaxDD | MaxDD scope | Cadence/day | Coverage |",
-    "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | ---: | --- |",
+    '| Config | Period | Cohort | N | W | L | WR | PF | PnL | Avg PnL/trade (cohort PnL/N) | Realized MaxDD | MaxDD scope | Cadence/day | Coverage |',
+    '| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | ---: | --- |',
   ];
   for (const configReport of Object.values(report.configReports)) {
     for (const window of configReport.windows) {
@@ -704,23 +704,23 @@ export const formatReport = (report) => {
 
   const reconciliationLines = Object.values(report.configReports).map(
     ({ configId, reconciliation }) =>
-      `Redis reconciliation [${configId}]: ${reconciliation.status}${reconciliation.status === "match" || reconciliation.status === "mismatch" ? `; ΔN=${reconciliation.delta.completedTrades}, ΔW=${reconciliation.delta.wins}, ΔL=${reconciliation.delta.losses}, ΔPnL=${formatNumber(reconciliation.delta.pnl, 4)}` : `; ${reconciliation.reason}`}`,
+      `Redis reconciliation [${configId}]: ${reconciliation.status}${reconciliation.status === 'match' || reconciliation.status === 'mismatch' ? `; ΔN=${reconciliation.delta.completedTrades}, ΔW=${reconciliation.delta.wins}, ΔL=${reconciliation.delta.losses}, ΔPnL=${formatNumber(reconciliation.delta.pnl, 4)}` : `; ${reconciliation.reason}`}`,
   );
   return [
     `source: ${report.source.kind} (${report.source.pnlField}, ${report.source.timestampField}; gate decisions used: no)`,
-    `anchor: ${report.anchor.endIso} (${report.anchor.source}${report.anchor.runId ? `, run=${report.anchor.runId}` : ""})`,
+    `anchor: ${report.anchor.endIso} (${report.anchor.source}${report.anchor.runId ? `, run=${report.anchor.runId}` : ''})`,
     `rows: ${report.scan.selectedCompletedTrades} completed; filtered other run=${report.scan.rowsForDifferentRun}; missing tradeResult=${report.scan.rowsWithoutTradeResult}; duplicates dropped=${report.scan.duplicateRowsDropped}; after anchor=${report.scan.rowsAfterAnchor}`,
-    `cohort order: ${CORE_COHORT_ORDER.join(" -> ")}`,
-    "Avg PnL/trade: cohort total PnL / cohort N; ALL is aggregate PnL / aggregate N, never the unweighted average of LONG/SHORT means.",
-    "Realized MaxDD: ALL uses the aggregate portfolio equity curve; LONG/SHORT use side-only time-ordered equity curves after direction filtering.",
+    `cohort order: ${CORE_COHORT_ORDER.join(' -> ')}`,
+    'Avg PnL/trade: cohort total PnL / cohort N; ALL is aggregate PnL / aggregate N, never the unweighted average of LONG/SHORT means.',
+    'Realized MaxDD: ALL uses the aggregate portfolio equity curve; LONG/SHORT use side-only time-ordered equity curves after direction filtering.',
     ...(report.configAggregationWarning
       ? [report.configAggregationWarning]
       : []),
     ...reconciliationLines,
-    "",
-    rows.join("\n"),
-    "",
-  ].join("\n");
+    '',
+    rows.join('\n'),
+    '',
+  ].join('\n');
 };
 
 const main = async () => {

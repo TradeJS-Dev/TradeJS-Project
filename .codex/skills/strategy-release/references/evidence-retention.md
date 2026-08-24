@@ -23,8 +23,10 @@ inventory only.
 
 Retain:
 
-- every `tradejs-release-progress/v1` input/output pair, including evidence
-  ceiling and the next stage that prevented a premature final verdict;
+- every `tradejs-release-progress/v2` input/output pair, including objective,
+  historical-candidate revalidation, artifact-backed round/rescue evidence, and
+  selected-composition lineage, evidence ceiling, and the next stage that
+  prevented a premature final verdict;
 - the evidence-limitation classification (`hard invalidation`,
   `research-grade provenance`, or `operational`) and sensitivity results;
 - the trading thesis, opportunity map, hypothesis-role portfolio, and per-round
@@ -57,8 +59,7 @@ Retain:
   statuses, trigger, five gate variants, raw-versus-approved ALL/LONG/SHORT,
   policy/config/result hashes, and selected/rejected reason;
 - every triggered directional-parameter checkpoint: one-field attribution,
-  side effects/support, resolution mode, classifier hashes, explicit required
-  directional fields,
+  side effects/support, resolution mode, classifier hashes, legacy fallback,
   target-only/combined ablations, config/state isolation tests, and non-target
   identity or occupancy-spillover evidence;
 - selected isolated-long finalist and final core-plus-gate composition;

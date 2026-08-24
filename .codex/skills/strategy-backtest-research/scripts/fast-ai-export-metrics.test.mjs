@@ -1,8 +1,8 @@
-import assert from "node:assert/strict";
-import fs from "node:fs/promises";
-import os from "node:os";
-import path from "node:path";
-import test from "node:test";
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import test from 'node:test';
 
 import {
   aggregateRedisResultStatsByConfig,
@@ -15,54 +15,54 @@ import {
   parseArgs,
   readExportFiles,
   summarizeTerminalWindow,
-} from "./fast-ai-export-metrics.mjs";
+} from './fast-ai-export-metrics.mjs';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 const trade = ({
-  configId = "config-a",
-  direction = "LONG",
+  configId = 'config-a',
+  direction = 'LONG',
   exitTimestamp,
   netProfit,
   signalId,
-  symbol = "BTCUSDT",
+  symbol = 'BTCUSDT',
 }) => ({
   configId,
   direction,
   exitTimestamp,
   netProfit,
   signalId,
-  sourceFile: "fixture.jsonl",
+  sourceFile: 'fixture.jsonl',
   sourceLine: 1,
   symbol,
 });
 
-test("uses deterministic exit/signal/symbol ordering for portfolio MaxDD", () => {
+test('uses deterministic exit/signal/symbol ordering for portfolio MaxDD', () => {
   const endTimestamp = Date.UTC(2026, 7, 12);
   const trades = [
     trade({
       exitTimestamp: endTimestamp - DAY_MS,
       netProfit: -4,
-      signalId: "b",
-      symbol: "ETHUSDT",
+      signalId: 'b',
+      symbol: 'ETHUSDT',
     }),
     trade({
       exitTimestamp: endTimestamp - DAY_MS,
       netProfit: 5,
-      signalId: "a",
-      symbol: "BTCUSDT",
+      signalId: 'a',
+      symbol: 'BTCUSDT',
     }),
     trade({
-      direction: "SHORT",
+      direction: 'SHORT',
       exitTimestamp: endTimestamp - 1,
       netProfit: -3,
-      signalId: "c",
+      signalId: 'c',
     }),
   ];
 
   assert.deepEqual(
     [...trades].sort(compareCompletedTrades).map((item) => item.signalId),
-    ["a", "b", "c"],
+    ['a', 'b', 'c'],
   );
   const window = summarizeTerminalWindow({
     trades,
@@ -83,38 +83,38 @@ test("uses deterministic exit/signal/symbol ordering for portfolio MaxDD", () =>
   assert.equal(window.directions.SHORT.completedTrades, 1);
 });
 
-test("uses aggregate PnL/N and direction-filtered side-only drawdown", () => {
+test('uses aggregate PnL/N and direction-filtered side-only drawdown', () => {
   const endTimestamp = Date.UTC(2026, 7, 12);
   const trades = [
     trade({
-      direction: "LONG",
+      direction: 'LONG',
       exitTimestamp: endTimestamp - 5,
       netProfit: 10,
-      signalId: "long-win",
+      signalId: 'long-win',
     }),
     trade({
-      direction: "SHORT",
+      direction: 'SHORT',
       exitTimestamp: endTimestamp - 4,
       netProfit: 100,
-      signalId: "short-win",
+      signalId: 'short-win',
     }),
     trade({
-      direction: "LONG",
+      direction: 'LONG',
       exitTimestamp: endTimestamp - 3,
       netProfit: -6,
-      signalId: "long-loss",
+      signalId: 'long-loss',
     }),
     trade({
-      direction: "SHORT",
+      direction: 'SHORT',
       exitTimestamp: endTimestamp - 2,
       netProfit: -30,
-      signalId: "short-loss-1",
+      signalId: 'short-loss-1',
     }),
     trade({
-      direction: "SHORT",
+      direction: 'SHORT',
       exitTimestamp: endTimestamp - 1,
       netProfit: -10,
-      signalId: "short-loss-2",
+      signalId: 'short-loss-2',
     }),
   ];
 
@@ -138,21 +138,21 @@ test("uses aggregate PnL/N and direction-filtered side-only drawdown", () => {
   assert.equal(window.directions.SHORT.portfolioMaxDrawdown, 40);
 });
 
-test("human report fixes cohort order and labels PnL/trade and drawdown scope", () => {
+test('human report fixes cohort order and labels PnL/trade and drawdown scope', () => {
   const endTimestamp = Date.UTC(2026, 7, 12);
   const window = summarizeTerminalWindow({
     trades: [
       trade({
-        direction: "SHORT",
+        direction: 'SHORT',
         exitTimestamp: endTimestamp - 2,
         netProfit: 2,
-        signalId: "short",
+        signalId: 'short',
       }),
       trade({
-        direction: "LONG",
+        direction: 'LONG',
         exitTimestamp: endTimestamp - 1,
         netProfit: -1,
-        signalId: "long",
+        signalId: 'long',
       }),
     ],
     endTimestamp,
@@ -160,13 +160,13 @@ test("human report fixes cohort order and labels PnL/trade and drawdown scope", 
   });
   const humanReport = formatReport({
     source: {
-      kind: "fixture",
-      pnlField: "tradeResult.netProfit",
-      timestampField: "tradeResult.exitTimestamp",
+      kind: 'fixture',
+      pnlField: 'tradeResult.netProfit',
+      timestampField: 'tradeResult.exitTimestamp',
     },
     anchor: {
       endIso: new Date(endTimestamp).toISOString(),
-      source: "fixture",
+      source: 'fixture',
       runId: null,
     },
     scan: {
@@ -178,22 +178,22 @@ test("human report fixes cohort order and labels PnL/trade and drawdown scope", 
     },
     configAggregationWarning: null,
     configReports: {
-      "config-a": {
-        configId: "config-a",
+      'config-a': {
+        configId: 'config-a',
         windows: [window],
-        reconciliation: { status: "unavailable", reason: "fixture" },
+        reconciliation: { status: 'unavailable', reason: 'fixture' },
       },
     },
   });
 
-  assert.deepEqual(CORE_COHORT_ORDER, ["ALL", "LONG", "SHORT"]);
+  assert.deepEqual(CORE_COHORT_ORDER, ['ALL', 'LONG', 'SHORT']);
   assert.match(humanReport, /Avg PnL\/trade \(cohort PnL\/N\)/);
   assert.match(humanReport, /ALL is aggregate PnL \/ aggregate N/);
   assert.match(humanReport, /aggregate portfolio equity curve/);
   assert.match(humanReport, /side-only time-ordered equity curves/);
-  const allIndex = humanReport.indexOf("| config-a | 30d | ALL |");
-  const longIndex = humanReport.indexOf("| config-a | 30d | LONG |");
-  const shortIndex = humanReport.indexOf("| config-a | 30d | SHORT |");
+  const allIndex = humanReport.indexOf('| config-a | 30d | ALL |');
+  const longIndex = humanReport.indexOf('| config-a | 30d | LONG |');
+  const shortIndex = humanReport.indexOf('| config-a | 30d | SHORT |');
   assert.ok(allIndex >= 0 && allIndex < longIndex && longIndex < shortIndex);
   assert.match(
     humanReport,
@@ -209,34 +209,34 @@ test("human report fixes cohort order and labels PnL/trade and drawdown scope", 
   );
 });
 
-test("anchors terminal windows strictly to the supplied end and exact days", () => {
+test('anchors terminal windows strictly to the supplied end and exact days', () => {
   const endTimestamp = Date.UTC(2026, 7, 12);
   const window = summarizeTerminalWindow({
     trades: [
       trade({
         exitTimestamp: endTimestamp - 30 * DAY_MS,
         netProfit: 1,
-        signalId: "at-start",
+        signalId: 'at-start',
       }),
       trade({
         exitTimestamp: endTimestamp,
         netProfit: 2,
-        signalId: "at-end",
+        signalId: 'at-end',
       }),
       trade({
         exitTimestamp: endTimestamp - 1,
         netProfit: 2,
-        signalId: "before-end",
+        signalId: 'before-end',
       }),
       trade({
         exitTimestamp: endTimestamp - 30 * DAY_MS - 1,
         netProfit: 100,
-        signalId: "before-start",
+        signalId: 'before-start',
       }),
       trade({
         exitTimestamp: endTimestamp + 1,
         netProfit: 100,
-        signalId: "after-end",
+        signalId: 'after-end',
       }),
     ],
     endTimestamp,
@@ -249,19 +249,19 @@ test("anchors terminal windows strictly to the supplied end and exact days", () 
   assert.equal(window.metrics.completedTrades, 2);
   assert.equal(window.metrics.pnl, 3);
   assert.equal(window.metrics.observedCadenceTradesPerDay, 2 / 30);
-  assert.equal(window.coverage, "complete_within_run_manifest");
+  assert.equal(window.coverage, 'complete_within_run_manifest');
 });
 
-test("streams JSONL, filters the requested run, and drops duplicate trades", async () => {
+test('streams JSONL, filters the requested run, and drops duplicate trades', async () => {
   const temporaryDirectory = await fs.mkdtemp(
-    path.join(os.tmpdir(), "tradejs-fast-export-metrics-"),
+    path.join(os.tmpdir(), 'tradejs-fast-export-metrics-'),
   );
-  const filePath = path.join(temporaryDirectory, "export.jsonl");
+  const filePath = path.join(temporaryDirectory, 'export.jsonl');
   const completedRow = {
-    backtestRunId: "run-a",
-    direction: "LONG",
-    signalId: "signal-1",
-    symbol: "BTCUSDT",
+    backtestRunId: 'run-a',
+    direction: 'LONG',
+    signalId: 'signal-1',
+    symbol: 'BTCUSDT',
     tradeResult: { exitTimestamp: 100, netProfit: 3 },
   };
 
@@ -271,15 +271,15 @@ test("streams JSONL, filters the requested run, and drops duplicate trades", asy
       [
         JSON.stringify(completedRow),
         JSON.stringify(completedRow),
-        JSON.stringify({ ...completedRow, backtestRunId: "run-b" }),
-        JSON.stringify({ backtestRunId: "run-a", signalId: "open" }),
-        "",
-      ].join("\n"),
+        JSON.stringify({ ...completedRow, backtestRunId: 'run-b' }),
+        JSON.stringify({ backtestRunId: 'run-a', signalId: 'open' }),
+        '',
+      ].join('\n'),
     );
 
     const result = await readExportFiles({
       filePaths: [filePath],
-      runId: "run-a",
+      runId: 'run-a',
     });
 
     assert.equal(result.scan.rowsRead, 4);
@@ -295,17 +295,17 @@ test("streams JSONL, filters the requested run, and drops duplicate trades", asy
   }
 });
 
-test("rejects conflicting outcomes for the same run/config/signal/symbol identity", async () => {
+test('rejects conflicting outcomes for the same run/config/signal/symbol identity', async () => {
   const temporaryDirectory = await fs.mkdtemp(
-    path.join(os.tmpdir(), "tradejs-fast-export-conflict-"),
+    path.join(os.tmpdir(), 'tradejs-fast-export-conflict-'),
   );
-  const filePath = path.join(temporaryDirectory, "export.jsonl");
+  const filePath = path.join(temporaryDirectory, 'export.jsonl');
   const baseRow = {
-    backtestRunId: "run-a",
-    configId: "config-a",
-    direction: "LONG",
-    signalId: "signal-1",
-    symbol: "BTCUSDT",
+    backtestRunId: 'run-a',
+    configId: 'config-a',
+    direction: 'LONG',
+    signalId: 'signal-1',
+    symbol: 'BTCUSDT',
   };
 
   try {
@@ -320,11 +320,11 @@ test("rejects conflicting outcomes for the same run/config/signal/symbol identit
           ...baseRow,
           tradeResult: { exitTimestamp: 200, netProfit: 4 },
         }),
-      ].join("\n"),
+      ].join('\n'),
     );
 
     await assert.rejects(
-      readExportFiles({ filePaths: [filePath], runId: "run-a" }),
+      readExportFiles({ filePaths: [filePath], runId: 'run-a' }),
       /Conflicting completed-trade rows share identity/,
     );
   } finally {
@@ -332,7 +332,7 @@ test("rejects conflicting outcomes for the same run/config/signal/symbol identit
   }
 });
 
-test("reconciles export trade metrics with Redis stat aggregates", () => {
+test('reconciles export trade metrics with Redis stat aggregates', () => {
   const reconciliation = buildRedisReconciliation({
     redisAggregate: {
       resultCount: 2,
@@ -349,43 +349,43 @@ test("reconciles export trade metrics with Redis stat aggregates", () => {
     },
   });
 
-  assert.equal(reconciliation.status, "match");
+  assert.equal(reconciliation.status, 'match');
   assert.ok(Math.abs(reconciliation.delta.pnl + 0.004) < 1e-12);
   assert.equal(reconciliation.matches.pnl, true);
   assert.match(reconciliation.semantics, /PF and aggregate portfolio MaxDD/);
 });
 
-test("aggregates Redis result stats independently by result configId", () => {
+test('aggregates Redis result stats independently by result configId', () => {
   const summaries = aggregateRedisResultStatsByConfig([
     {
       result: {
-        test: { configId: "config-a" },
+        test: { configId: 'config-a' },
         stat: { orders: 2, wins: 1, losses: 1, netProfit: 3 },
       },
     },
     {
       result: {
-        test: { configId: "config-b" },
+        test: { configId: 'config-b' },
         stat: { orders: 5, wins: 2, losses: 3, netProfit: -7 },
       },
     },
     {
       result: {
-        test: { configId: "config-a" },
+        test: { configId: 'config-a' },
         stat: { orders: 1, wins: 1, losses: 0, profit: 2 },
       },
     },
   ]);
 
   assert.deepEqual(summaries, {
-    "config-a": {
+    'config-a': {
       resultCount: 2,
       completedTrades: 3,
       wins: 2,
       losses: 1,
       pnl: 5,
     },
-    "config-b": {
+    'config-b': {
       resultCount: 1,
       completedTrades: 5,
       wins: 2,
@@ -395,31 +395,31 @@ test("aggregates Redis result stats independently by result configId", () => {
   });
 });
 
-test("builds all default windows from the Redis manifest end, not export max", async () => {
+test('builds all default windows from the Redis manifest end, not export max', async () => {
   const temporaryDirectory = await fs.mkdtemp(
-    path.join(os.tmpdir(), "tradejs-fast-export-report-"),
+    path.join(os.tmpdir(), 'tradejs-fast-export-report-'),
   );
-  const filePath = path.join(temporaryDirectory, "export.jsonl");
+  const filePath = path.join(temporaryDirectory, 'export.jsonl');
   const endTimestamp = Date.UTC(2026, 7, 12);
 
   try {
     await fs.writeFile(
       filePath,
       `${JSON.stringify({
-        backtestRunId: "run-a",
-        direction: "SHORT",
-        signalId: "future",
-        symbol: "ETHUSDT",
+        backtestRunId: 'run-a',
+        direction: 'SHORT',
+        signalId: 'future',
+        symbol: 'ETHUSDT',
         tradeResult: { exitTimestamp: endTimestamp + DAY_MS, netProfit: 10 },
       })}\n`,
     );
     const report = await buildExportReport({
       filePaths: [filePath],
       periods: DEFAULT_PERIODS,
-      runId: "run-a",
+      runId: 'run-a',
       runContextLoader: async () => ({
         manifest: {
-          runId: "run-a",
+          runId: 'run-a',
           startTimestamp: endTimestamp - 1100 * DAY_MS,
           endTimestamp,
         },
@@ -441,12 +441,12 @@ test("builds all default windows from the Redis manifest end, not export max", a
     assert.equal(report.scan.rowsAfterAnchor, 1);
     assert.equal(report.windows[0].metrics.completedTrades, 0);
     assert.equal(report.source.gateDecisionsUsed, false);
-    assert.equal(report.reconciliation.status, "match");
+    assert.equal(report.reconciliation.status, 'match');
     assert.deepEqual(report.semantics.cohortOrder, CORE_COHORT_ORDER);
     assert.match(report.semantics.pnlPerTrade, /never an unweighted average/);
     assert.equal(
       report.metricSchema.realizedMaxDrawdown.jsonField,
-      "portfolioMaxDrawdown",
+      'portfolioMaxDrawdown',
     );
     assert.match(report.metricSchema.compatibility, /schemaVersion 1/);
   } finally {
@@ -454,11 +454,11 @@ test("builds all default windows from the Redis manifest end, not export max", a
   }
 });
 
-test("keeps export windows and Redis reconciliation separate for grid configs", async () => {
+test('keeps export windows and Redis reconciliation separate for grid configs', async () => {
   const temporaryDirectory = await fs.mkdtemp(
-    path.join(os.tmpdir(), "tradejs-fast-export-grid-report-"),
+    path.join(os.tmpdir(), 'tradejs-fast-export-grid-report-'),
   );
-  const filePath = path.join(temporaryDirectory, "export.jsonl");
+  const filePath = path.join(temporaryDirectory, 'export.jsonl');
   const endTimestamp = Date.UTC(2026, 7, 12);
 
   try {
@@ -466,45 +466,45 @@ test("keeps export windows and Redis reconciliation separate for grid configs", 
       filePath,
       [
         {
-          backtestRunId: "run-grid",
-          configId: "config-a",
-          direction: "LONG",
-          signalId: "same-signal",
-          symbol: "BTCUSDT",
+          backtestRunId: 'run-grid',
+          configId: 'config-a',
+          direction: 'LONG',
+          signalId: 'same-signal',
+          symbol: 'BTCUSDT',
           tradeResult: { exitTimestamp: endTimestamp - 1, netProfit: 4 },
         },
         {
-          backtestRunId: "run-grid",
-          configId: "config-b",
-          direction: "SHORT",
-          signalId: "same-signal",
-          symbol: "BTCUSDT",
+          backtestRunId: 'run-grid',
+          configId: 'config-b',
+          direction: 'SHORT',
+          signalId: 'same-signal',
+          symbol: 'BTCUSDT',
           tradeResult: { exitTimestamp: endTimestamp - 1, netProfit: -9 },
         },
       ]
         .map(JSON.stringify)
-        .join("\n"),
+        .join('\n'),
     );
     const report = await buildExportReport({
       filePaths: [filePath],
       periods: [30],
-      runId: "run-grid",
+      runId: 'run-grid',
       runContextLoader: async () => ({
         manifest: {
-          runId: "run-grid",
+          runId: 'run-grid',
           startTimestamp: endTimestamp - 30 * DAY_MS,
           endTimestamp,
-          configIds: ["config-a", "config-b"],
+          configIds: ['config-a', 'config-b'],
         },
         redisAggregatesByConfig: {
-          "config-a": {
+          'config-a': {
             resultCount: 1,
             completedTrades: 1,
             wins: 1,
             losses: 0,
             pnl: 4,
           },
-          "config-b": {
+          'config-b': {
             resultCount: 1,
             completedTrades: 1,
             wins: 0,
@@ -515,21 +515,21 @@ test("keeps export windows and Redis reconciliation separate for grid configs", 
       }),
     });
 
-    assert.deepEqual(report.configIds, ["config-a", "config-b"]);
+    assert.deepEqual(report.configIds, ['config-a', 'config-b']);
     assert.equal(report.scan.selectedCompletedTrades, 2);
     assert.equal(report.scan.duplicateRowsDropped, 0);
     assert.deepEqual(report.windows, []);
     assert.equal(report.runWindowMetrics, null);
     assert.equal(report.reconciliation, null);
-    assert.equal(report.configReports["config-a"].windows[0].metrics.pnl, 4);
-    assert.equal(report.configReports["config-b"].windows[0].metrics.pnl, -9);
+    assert.equal(report.configReports['config-a'].windows[0].metrics.pnl, 4);
+    assert.equal(report.configReports['config-b'].windows[0].metrics.pnl, -9);
     assert.equal(
-      report.configReports["config-a"].reconciliation.status,
-      "match",
+      report.configReports['config-a'].reconciliation.status,
+      'match',
     );
     assert.equal(
-      report.configReports["config-b"].reconciliation.status,
-      "match",
+      report.configReports['config-b'].reconciliation.status,
+      'match',
     );
     assert.match(report.configAggregationWarning, /Multiple configId buckets/);
   } finally {
@@ -537,17 +537,17 @@ test("keeps export windows and Redis reconciliation separate for grid configs", 
   }
 });
 
-test("parses repeated files and the requested default metric periods", () => {
+test('parses repeated files and the requested default metric periods', () => {
   const flags = parseArgs([
-    "--file",
-    "part1.jsonl",
-    "--file",
-    "part2.jsonl",
-    "--end",
-    "2026-08-12T00:00:00.000Z",
+    '--file',
+    'part1.jsonl',
+    '--file',
+    'part2.jsonl',
+    '--end',
+    '2026-08-12T00:00:00.000Z',
   ]);
 
-  assert.deepEqual(flags.filePaths, ["part1.jsonl", "part2.jsonl"]);
+  assert.deepEqual(flags.filePaths, ['part1.jsonl', 'part2.jsonl']);
   assert.deepEqual(flags.periods, DEFAULT_PERIODS);
   assert.equal(flags.endTimestamp, Date.UTC(2026, 7, 12));
 });

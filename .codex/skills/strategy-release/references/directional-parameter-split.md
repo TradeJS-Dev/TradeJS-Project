@@ -1,6 +1,6 @@
 # Directional parameter split
 
-Use this checkpoint when one isolated shared parameter change helps one
+Use this checkpoint when one isolated global parameter change helps one
 direction and harms the other. It converts a measured side conflict into a
 causal core experiment; it is not permission to duplicate every config field.
 
@@ -25,43 +25,43 @@ candidate changed several fields, run an ablation first.
 
 ## Implementation contract
 
-Replace the shared field with two required directional fields:
+Keep the original field as the backward-compatible fallback and add optional
+directional overrides:
 
 ```text
+PARAM
 PARAM_LONG
 PARAM_SHORT
 ```
 
-Both fields must be present in defaults, parser contracts, runtime config, and
-state/config identity. Symmetric behavior is represented by equal explicit
-values. Missing directional values are invalid configuration; do not infer them
-from a removed shared field. Values such as `0`, `false`, and an empty string
-remain valid when the field type permits them.
+Resolve only `undefined` to the fallback. Values such as `0`, `false`, and an
+empty string are valid explicit overrides. With both overrides absent, old
+configs, decisions, payloads, and state keys must remain exact.
 
 Choose the implementation according to where the value acts:
 
-- `decision_time`: select the required field only after direction is known.
+- `decision_time`: resolve after direction is known; use a normal fallback
+  override.
 - `detector_state`: a shared detector cannot simply switch values after a
   signal appears. Use isolated replay-safe LONG and SHORT detector state or
   reject the split as architecturally unsafe.
-- `shared_lifecycle`: add the explicit pair, but preregister occupancy/cooldown and
+- `shared_lifecycle`: add the override, but preregister occupancy/cooldown and
   opposite-side identity guardrails because one side can change the other's
   opportunity set.
 
 Include the effective LONG and SHORT values in detector/execution config
 identity wherever they can alter replay state or decisions. Add focused tests
-for required-field validation, explicit LONG/SHORT resolution, equal-value
-symmetry, zero/false values, config isolation, replay reconstruction, and
-same-timestamp behavior.
+for implicit fallback parity, explicit LONG/SHORT resolution, zero/false
+overrides, config isolation, replay reconstruction, and same-timestamp behavior.
 
 ## Minimal research ablation
 
 The global candidate is already evidence. Spend existing child/rescue slots,
 not extra trials, on the smallest discriminating set:
 
-1. exact control expressed as equal LONG/SHORT values;
-2. target-side-only change, keeping the opposite side at its control value;
-3. combined best-per-side pair only when both side values have independent
+1. exact legacy control with no overrides;
+2. target-side-only override, keeping the opposite side at control;
+3. combined best-per-side override only when both side values have independent
    prior evidence.
 
 Use an explicit equal-overrides parity case in unit tests; backtest it only when
@@ -76,17 +76,18 @@ non-regression rule. Keep aggregate portfolio DD as a separate guardrail.
 
 ## Interpretation
 
-- A successful target-only change supports a genuine directional parameter
+- A successful target-only override supports a genuine directional parameter
   asymmetry and may be carried forward as core behavior.
 - If the target side improves but the opposite side changes through occupancy,
   judge the whole causal composition rather than claiming isolation.
-- If equal explicit values do not reproduce the shared candidate, fix config
+- If equal explicit overrides do not reproduce the global candidate, fix config
   resolution/state identity before using any economics.
 - If a detector-state split needs duplicated engines whose state cannot be
   replayed exactly, retire the split rather than accepting runtime divergence.
-- Remove the superseded shared field in the same breaking config change. Keep
-  symmetric behavior available only through equal explicit directional values.
+- Preserve the original global parameter even after promotion so existing
+  configs remain reproducible and future configs can still choose symmetric
+  behavior.
 
-Persist the classifier input/output, parameter semantics, explicit directional
-config contract, resolved configs, implementation tests, side identities, and
-decision in the immutable family handoff.
+Persist the classifier input/output, parameter semantics, fallback contract,
+resolved configs, implementation tests, side identities, and decision in the
+immutable family handoff.

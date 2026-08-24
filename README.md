@@ -121,10 +121,31 @@ SHA/diff/remote and unreleased source builds resolve there without moving
 artifacts out of this project; tooling never infers the source repository from
 `PROJECT_CWD`.
 
+For AI-gate ablation against a standalone strategy checkout, also set
+`TRADEJS_FRAMEWORK_REPOSITORY_ROOT` to the exact framework checkout that
+provides the built `@tradejs/node` and `@tradejs/cli` research runtime. The tool
+imports `strategyEntries` from the strategy source build and does not replace
+that lineage with the published Project dependency.
+
 ```bash
 TRADEJS_SOURCE_REPOSITORY_ROOT=../tradejs-strategy-trend-line \
-  yarn research:auto
+TRADEJS_FRAMEWORK_REPOSITORY_ROOT=../investing \
+  node .codex/skills/ai-train-local-research/scripts/ai-gate-ablation.mjs \
+  --strategy TrendLine
 ```
+
+All official TradeJS skills in `.codex/skills` are one checksum-managed
+snapshot sourced from TradeJS. Never edit or copy that snapshot manually in
+this Project. Update it only through an explicitly selected generator build:
+
+```bash
+npx create-tradejs@<approved-version> --update-skills .
+```
+
+`$strategy-improvement-research` owns the complete bounded improvement
+lineage. It delegates one frozen core experiment at a time to
+`$strategy-backtest-research` and delegates the frozen deterministic-gate stage
+to `$ai-train-local-research`.
 
 Research notes are permanently ignored and use
 `notes/<Strategy>/YYYY-MM-DD-<short-kebab-slug>.md`. Shared records use

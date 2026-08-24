@@ -33,7 +33,7 @@ must never receive strategy config, deployment documents, or version pointers.
 5. Update the strategy entry under
    `runtime.deployments.<deployment>.strategies.<Strategy>` in
    `tradejs.config.ts`. Store exactly `{ generation?, enabled, selection?,
-config }`. `generation` is optional human metadata. Never add or increment a
+   config }`. `generation` is optional human metadata. Never add or increment a
    technical version: Project validation computes `strategyRevision` and
    `deploymentCompositionId`. Keep account, connector, tickers, and asset
    classes at deployment level.

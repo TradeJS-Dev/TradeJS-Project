@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 
-import fs from "node:fs";
-import fsp from "node:fs/promises";
-import path from "node:path";
-import readline from "node:readline";
-import { createRequire } from "node:module";
-import { pathToFileURL } from "node:url";
+import fs from 'node:fs';
+import fsp from 'node:fs/promises';
+import path from 'node:path';
+import readline from 'node:readline';
+import { execFileSync } from 'node:child_process';
+import { createRequire } from 'node:module';
+import { pathToFileURL } from 'node:url';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const MONTH_DAYS = 30.4375;
@@ -17,7 +18,7 @@ const DEFAULT_MA_PERIODS = Array.from(
   { length: 20 },
   (_, index) => (index + 1) * 5,
 );
-const VARIANT_MODES = new Set(["filter", "exclude", "add", "replace"]);
+const VARIANT_MODES = new Set(['filter', 'exclude', 'add', 'replace']);
 
 const usage = `Usage:
   node .codex/skills/ai-train-local-research/scripts/ai-gate-ablation.mjs [options]
@@ -71,8 +72,8 @@ const isDirectRun = () => {
 };
 
 const parseNumberList = (input, fallback) => {
-  const values = String(input ?? "")
-    .split(",")
+  const values = String(input ?? '')
+    .split(',')
     .map((value) => Number(value.trim()))
     .filter(Number.isFinite)
     .map((value) => Math.trunc(value))
@@ -82,7 +83,7 @@ const parseNumberList = (input, fallback) => {
 
 export const parseCliArgs = (argv) => {
   const options = {
-    outDir: "data/ai/export",
+    outDir: 'data/ai/export',
     minQuality: 4,
     qualityThresholds: DEFAULT_QUALITY_THRESHOLDS,
     terminalWindows: DEFAULT_WINDOWS,
@@ -115,20 +116,20 @@ export const parseCliArgs = (argv) => {
     help: false,
   };
   const booleanOptions = new Set([
-    "includeGateContext",
-    "movingAverageStudy",
-    "crossStrategy",
-    "json",
-    "list",
-    "help",
+    'includeGateContext',
+    'movingAverageStudy',
+    'crossStrategy',
+    'json',
+    'list',
+    'help',
   ]);
 
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
-    if (!argument.startsWith("--")) {
+    if (!argument.startsWith('--')) {
       throw new Error(`Unexpected argument: ${argument}`);
     }
-    const equalsIndex = argument.indexOf("=");
+    const equalsIndex = argument.indexOf('=');
     const name = argument.slice(2, equalsIndex >= 0 ? equalsIndex : undefined);
     if (booleanOptions.has(name)) {
       options[name] = true;
@@ -136,42 +137,42 @@ export const parseCliArgs = (argv) => {
     }
     const value =
       equalsIndex >= 0 ? argument.slice(equalsIndex + 1) : argv[++index];
-    if (value == null || value.startsWith("--")) {
+    if (value == null || value.startsWith('--')) {
       throw new Error(`Missing value for --${name}`);
     }
-    if (name === "variant") {
+    if (name === 'variant') {
       options.variants.push(value);
-    } else if (name === "minQuality") {
+    } else if (name === 'minQuality') {
       options.minQuality = Math.max(1, Math.trunc(Number(value) || 4));
-    } else if (name === "qualityThresholds") {
+    } else if (name === 'qualityThresholds') {
       options.qualityThresholds = parseNumberList(
         value,
         DEFAULT_QUALITY_THRESHOLDS,
       );
-    } else if (name === "terminalWindows") {
+    } else if (name === 'terminalWindows') {
       options.terminalWindows = parseNumberList(value, DEFAULT_WINDOWS);
-    } else if (name === "validationSplit") {
+    } else if (name === 'validationSplit') {
       const parsed = Number(value);
       options.validationSplit = Number.isFinite(parsed)
         ? Math.max(0, Math.min(0.9, parsed))
         : 0.25;
-    } else if (name === "testSplit") {
+    } else if (name === 'testSplit') {
       const parsed = Number(value);
       options.testSplit = Number.isFinite(parsed)
         ? Math.max(0, Math.min(0.9, parsed))
         : 0;
-    } else if (name === "capacities") {
+    } else if (name === 'capacities') {
       options.capacities = parseNumberList(value, DEFAULT_CAPACITIES);
-    } else if (name === "maxLossValue") {
+    } else if (name === 'maxLossValue') {
       const parsed = Number(value);
       options.maxLossValue =
         Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
-    } else if (name === "maPeriods") {
+    } else if (name === 'maPeriods') {
       options.maPeriods = parseNumberList(value, DEFAULT_MA_PERIODS).sort(
         (left, right) => left - right,
       );
     } else if (
-      ["minFeatureCoverage", "minBenchmarkFeatureCoverage"].includes(name)
+      ['minFeatureCoverage', 'minBenchmarkFeatureCoverage'].includes(name)
     ) {
       const parsed = Number(value);
       if (!Number.isFinite(parsed) || parsed <= 0 || parsed > 1) {
@@ -180,19 +181,19 @@ export const parseCliArgs = (argv) => {
       options[name] = parsed;
     } else if (
       [
-        "maxDepth",
-        "minSupport",
-        "minValidationSupport",
-        "maxAtomicPredicates",
-        "maxCombinations",
-        "top",
-        "maxRowsPerStrategy",
-        "maxRowsPerEvent",
-        "minFeatureStrategies",
-        "portfolioCapacity",
-        "maLookbackBars",
-        "maBatchSize",
-        "maSqlTimeoutMs",
+        'maxDepth',
+        'minSupport',
+        'minValidationSupport',
+        'maxAtomicPredicates',
+        'maxCombinations',
+        'top',
+        'maxRowsPerStrategy',
+        'maxRowsPerEvent',
+        'minFeatureStrategies',
+        'portfolioCapacity',
+        'maLookbackBars',
+        'maBatchSize',
+        'maSqlTimeoutMs',
       ].includes(name)
     ) {
       const parsed = Number(value);
@@ -202,12 +203,12 @@ export const parseCliArgs = (argv) => {
       options[name] = Math.trunc(parsed);
     } else if (
       [
-        "file",
-        "strategy",
-        "outDir",
-        "spec",
-        "featurePattern",
-        "output",
+        'file',
+        'strategy',
+        'outDir',
+        'spec',
+        'featurePattern',
+        'output',
       ].includes(name)
     ) {
       options[name] = value;
@@ -219,35 +220,99 @@ export const parseCliArgs = (argv) => {
   return options;
 };
 
-const findProjectRootFrom = (startPath) => {
-  let current = path.resolve(startPath);
-  while (true) {
-    if (
-      fs.existsSync(path.join(current, "package.json")) &&
-      fs.existsSync(path.join(current, "packages", "node")) &&
-      fs.existsSync(path.join(current, "packages", "cli"))
-    ) {
-      return current;
-    }
-    const parent = path.dirname(current);
-    if (parent === current) return null;
-    current = parent;
+const resolveExactGitCheckout = (input, environmentName) => {
+  const requestedRoot = path.resolve(input);
+  let exactRoot;
+  let gitRoot;
+  try {
+    exactRoot = fs.realpathSync(requestedRoot);
+    gitRoot = fs.realpathSync(
+      execFileSync('git', ['-C', exactRoot, 'rev-parse', '--show-toplevel'], {
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+      }).trim(),
+    );
+  } catch {
+    throw new Error(
+      `${environmentName} must identify an existing Git checkout: ${requestedRoot}`,
+    );
   }
+  if (gitRoot !== exactRoot) {
+    throw new Error(
+      `${environmentName} must point to the exact Git repository root, not a subdirectory: ${requestedRoot}`,
+    );
+  }
+  return exactRoot;
+};
+
+const readRepositoryPackage = (root) => {
+  try {
+    return JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+  } catch {
+    return null;
+  }
+};
+
+const isFrameworkRepositoryRoot = (root) =>
+  readRepositoryPackage(root) != null &&
+  fs.existsSync(path.join(root, 'packages', 'node')) &&
+  fs.existsSync(path.join(root, 'packages', 'cli'));
+
+const isStandaloneStrategyRepositoryRoot = (root) => {
+  const packageJson = readRepositoryPackage(root);
+  return (
+    /^@tradejs\/strategy-[a-z0-9-]+$/.test(String(packageJson?.name ?? '')) &&
+    packageJson.name !== '@tradejs/strategy-kit' &&
+    fs.existsSync(path.join(root, 'src'))
+  );
+};
+
+export const getSourceRepositoryKind = (root) => {
+  if (isFrameworkRepositoryRoot(root)) return 'framework';
+  if (isStandaloneStrategyRepositoryRoot(root)) return 'strategy';
+  return null;
 };
 
 export const findSourceRepositoryRoot = () => {
   const explicitSourceRoot = String(
-    process.env.TRADEJS_SOURCE_REPOSITORY_ROOT || "",
+    process.env.TRADEJS_SOURCE_REPOSITORY_ROOT || '',
   ).trim();
   if (!explicitSourceRoot) {
     throw new Error(
-      "TRADEJS_SOURCE_REPOSITORY_ROOT is required for AI-gate research.",
+      'TRADEJS_SOURCE_REPOSITORY_ROOT is required for AI-gate research.',
     );
   }
-  const root = findProjectRootFrom(explicitSourceRoot);
-  if (!root) {
+  const root = resolveExactGitCheckout(
+    explicitSourceRoot,
+    'TRADEJS_SOURCE_REPOSITORY_ROOT',
+  );
+  if (!getSourceRepositoryKind(root)) {
     throw new Error(
-      `TRADEJS_SOURCE_REPOSITORY_ROOT does not identify a TradeJS engine source repository: ${explicitSourceRoot}`,
+      `TRADEJS_SOURCE_REPOSITORY_ROOT must identify a TradeJS framework or standalone strategy repository: ${explicitSourceRoot}`,
+    );
+  }
+  return root;
+};
+
+export const findFrameworkRepositoryRoot = (sourceRepositoryRoot) => {
+  const explicitFrameworkRoot = String(
+    process.env.TRADEJS_FRAMEWORK_REPOSITORY_ROOT || '',
+  ).trim();
+  if (!explicitFrameworkRoot) {
+    if (getSourceRepositoryKind(sourceRepositoryRoot) === 'framework') {
+      return sourceRepositoryRoot;
+    }
+    throw new Error(
+      'TRADEJS_FRAMEWORK_REPOSITORY_ROOT is required when TRADEJS_SOURCE_REPOSITORY_ROOT is a standalone strategy checkout.',
+    );
+  }
+  const root = resolveExactGitCheckout(
+    explicitFrameworkRoot,
+    'TRADEJS_FRAMEWORK_REPOSITORY_ROOT',
+  );
+  if (!isFrameworkRepositoryRoot(root)) {
+    throw new Error(
+      `TRADEJS_FRAMEWORK_REPOSITORY_ROOT must identify a TradeJS framework repository with packages/node and packages/cli: ${explicitFrameworkRoot}`,
     );
   }
   return root;
@@ -324,9 +389,9 @@ export const latestDatasetGroupsByStrategy = (groups) => {
 };
 
 const normalizeStrategyToken = (value) =>
-  String(value ?? "")
+  String(value ?? '')
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "");
+    .replace(/[^a-z0-9]+/g, '');
 
 export const resolveDatasetFiles = async ({
   projectRoot,
@@ -381,7 +446,7 @@ const tokenizeExpression = (expression) => {
     }
     const operator = source.match(/^(?:&&|\|\||<=|>=|==|!=|<|>|\(|\))/);
     if (operator) {
-      tokens.push({ type: "operator", value: operator[0] });
+      tokens.push({ type: 'operator', value: operator[0] });
       index += operator[0].length;
       continue;
     }
@@ -392,24 +457,24 @@ const tokenizeExpression = (expression) => {
       for (; end < source.length; end += 1) {
         const character = source[end];
         if (!escaped && character === quote) break;
-        escaped = !escaped && character === "\\";
-        if (character !== "\\") escaped = false;
+        escaped = !escaped && character === '\\';
+        if (character !== '\\') escaped = false;
       }
       if (end >= source.length) {
         throw new Error(`Unterminated string in expression: ${expression}`);
       }
       const raw = source.slice(1, end);
       const value = raw.replace(/\\([\\'"nrt])/g, (_, escapedValue) => {
-        const replacements = { n: "\n", r: "\r", t: "\t" };
+        const replacements = { n: '\n', r: '\r', t: '\t' };
         return replacements[escapedValue] ?? escapedValue;
       });
-      tokens.push({ type: "value", value });
+      tokens.push({ type: 'value', value });
       index += end + 1;
       continue;
     }
     const number = source.match(/^-?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?/i);
     if (number) {
-      tokens.push({ type: "value", value: Number(number[0]) });
+      tokens.push({ type: 'value', value: Number(number[0]) });
       index += number[0].length;
       continue;
     }
@@ -417,14 +482,14 @@ const tokenizeExpression = (expression) => {
     if (identifier) {
       const raw = identifier[0];
       const literals = new Map([
-        ["true", true],
-        ["false", false],
-        ["null", null],
+        ['true', true],
+        ['false', false],
+        ['null', null],
       ]);
       tokens.push(
         literals.has(raw)
-          ? { type: "value", value: literals.get(raw) }
-          : { type: "identifier", value: raw },
+          ? { type: 'value', value: literals.get(raw) }
+          : { type: 'identifier', value: raw },
       );
       index += raw.length;
       continue;
@@ -444,36 +509,36 @@ export const parseRuleExpression = (expression) => {
     const token = tokens[index];
     if (!token || (value != null && token.value !== value)) {
       throw new Error(
-        `Expected ${value ?? "token"} at token ${index} in ${expression}`,
+        `Expected ${value ?? 'token'} at token ${index} in ${expression}`,
       );
     }
     index += 1;
     return token;
   };
   const parsePrimary = () => {
-    if (peek()?.value === "(") {
-      consume("(");
+    if (peek()?.value === '(') {
+      consume('(');
       const nested = parseOr();
-      consume(")");
+      consume(')');
       return nested;
     }
     const feature = consume();
-    if (feature.type === "value" && typeof feature.value === "boolean") {
-      return { kind: "constant", value: feature.value };
+    if (feature.type === 'value' && typeof feature.value === 'boolean') {
+      return { kind: 'constant', value: feature.value };
     }
-    if (feature.type !== "identifier") {
+    if (feature.type !== 'identifier') {
       throw new Error(`Expected feature path at token ${index - 1}`);
     }
     const operator = consume();
-    if (!["<=", ">=", "==", "!=", "<", ">"].includes(operator.value)) {
+    if (!['<=', '>=', '==', '!=', '<', '>'].includes(operator.value)) {
       throw new Error(`Unsupported comparison operator: ${operator.value}`);
     }
     const expected = consume();
-    if (!["value", "identifier"].includes(expected.type)) {
+    if (!['value', 'identifier'].includes(expected.type)) {
       throw new Error(`Expected comparison value at token ${index - 1}`);
     }
     return {
-      kind: "predicate",
+      kind: 'predicate',
       feature: feature.value,
       operator: operator.value,
       expected: expected.value,
@@ -481,21 +546,21 @@ export const parseRuleExpression = (expression) => {
   };
   const parseAnd = () => {
     let node = parsePrimary();
-    while (peek()?.value === "&&") {
-      consume("&&");
-      node = { kind: "and", left: node, right: parsePrimary() };
+    while (peek()?.value === '&&') {
+      consume('&&');
+      node = { kind: 'and', left: node, right: parsePrimary() };
     }
     return node;
   };
   const parseOr = () => {
     let node = parseAnd();
-    while (peek()?.value === "||") {
-      consume("||");
-      node = { kind: "or", left: node, right: parseAnd() };
+    while (peek()?.value === '||') {
+      consume('||');
+      node = { kind: 'or', left: node, right: parseAnd() };
     }
     return node;
   };
-  if (!tokens.length) throw new Error("Variant expression must not be empty");
+  if (!tokens.length) throw new Error('Variant expression must not be empty');
   const rule = parseOr();
   if (index !== tokens.length) {
     throw new Error(`Unexpected trailing token ${tokens[index].value}`);
@@ -504,13 +569,13 @@ export const parseRuleExpression = (expression) => {
 };
 
 export const evaluateRule = (rule, features) => {
-  if (rule.kind === "constant") return rule.value;
-  if (rule.kind === "and") {
+  if (rule.kind === 'constant') return rule.value;
+  if (rule.kind === 'and') {
     return (
       evaluateRule(rule.left, features) && evaluateRule(rule.right, features)
     );
   }
-  if (rule.kind === "or") {
+  if (rule.kind === 'or') {
     return (
       evaluateRule(rule.left, features) || evaluateRule(rule.right, features)
     );
@@ -522,18 +587,18 @@ export const evaluateRule = (rule, features) => {
   if (!hasFeature) return false;
   const actual = features[rule.feature];
   const expected = rule.expected;
-  if (rule.operator === "==") return actual === expected;
-  if (rule.operator === "!=") return actual !== expected;
-  if (typeof actual !== "number" || typeof expected !== "number") return false;
-  if (rule.operator === "<=") return actual <= expected;
-  if (rule.operator === ">=") return actual >= expected;
-  if (rule.operator === "<") return actual < expected;
+  if (rule.operator === '==') return actual === expected;
+  if (rule.operator === '!=') return actual !== expected;
+  if (typeof actual !== 'number' || typeof expected !== 'number') return false;
+  if (rule.operator === '<=') return actual <= expected;
+  if (rule.operator === '>=') return actual >= expected;
+  if (rule.operator === '<') return actual < expected;
   return actual > expected;
 };
 
 export const parseVariant = (input) => {
-  const firstSeparator = input.indexOf("::");
-  const secondSeparator = input.indexOf("::", firstSeparator + 2);
+  const firstSeparator = input.indexOf('::');
+  const secondSeparator = input.indexOf('::', firstSeparator + 2);
   if (firstSeparator <= 0 || secondSeparator <= firstSeparator + 2) {
     throw new Error(
       `Invalid variant ${JSON.stringify(input)}. Use name::mode[@quality]::expression`,
@@ -544,15 +609,15 @@ export const parseVariant = (input) => {
   const expression = input.slice(secondSeparator + 2).trim();
   const directionMatch = modeInput.match(/\[(LONG|SHORT|[^\]]+)\]$/);
   const direction = directionMatch?.[1] ?? null;
-  if (direction != null && direction !== "LONG" && direction !== "SHORT") {
+  if (direction != null && direction !== 'LONG' && direction !== 'SHORT') {
     throw new Error(`Invalid direction scope in variant ${name}`);
   }
   const scopedModeInput = directionMatch
     ? modeInput.slice(0, directionMatch.index)
     : modeInput;
-  const [mode, qualityInput] = scopedModeInput.split("@");
+  const [mode, qualityInput] = scopedModeInput.split('@');
   if (!name || !expression) {
-    throw new Error("Variant name and expression must not be empty");
+    throw new Error('Variant name and expression must not be empty');
   }
   if (!VARIANT_MODES.has(mode)) {
     throw new Error(`Unsupported variant mode ${JSON.stringify(mode)}`);
@@ -577,21 +642,21 @@ export const parseVariant = (input) => {
 const loadVariants = async (inlineVariants, specPath) => {
   const variants = inlineVariants.map(parseVariant);
   if (!specPath) return variants;
-  const parsed = JSON.parse(await fsp.readFile(path.resolve(specPath), "utf8"));
+  const parsed = JSON.parse(await fsp.readFile(path.resolve(specPath), 'utf8'));
   const entries = Array.isArray(parsed) ? parsed : parsed.variants;
   if (!Array.isArray(entries)) {
     throw new Error(
-      "Variant spec must be an array or contain a variants array",
+      'Variant spec must be an array or contain a variants array',
     );
   }
   for (const entry of entries) {
-    if (!entry || typeof entry !== "object") {
-      throw new Error("Each variant spec entry must be an object");
+    if (!entry || typeof entry !== 'object') {
+      throw new Error('Each variant spec entry must be an object');
     }
     const qualitySuffix =
-      entry.quality == null ? "" : `@${Math.trunc(Number(entry.quality))}`;
+      entry.quality == null ? '' : `@${Math.trunc(Number(entry.quality))}`;
     const directionSuffix =
-      entry.direction == null ? "" : `[${String(entry.direction)}]`;
+      entry.direction == null ? '' : `[${String(entry.direction)}]`;
     variants.push(
       parseVariant(
         `${entry.name}::${entry.mode}${qualitySuffix}${directionSuffix}::${entry.expression}`,
@@ -859,11 +924,11 @@ export const isVariantSelected = ({
   if (variant.direction != null && variant.direction !== direction) {
     return baselineSelected;
   }
-  if (variant.mode === "filter") return baselineSelected && matches;
-  if (variant.mode === "exclude") return baselineSelected && !matches;
+  if (variant.mode === 'filter') return baselineSelected && matches;
+  if (variant.mode === 'exclude') return baselineSelected && !matches;
   const variantQuality = variant.quality ?? defaultQuality;
   const ruleSelected = matches && variantQuality >= threshold;
-  if (variant.mode === "add") return baselineSelected || ruleSelected;
+  if (variant.mode === 'add') return baselineSelected || ruleSelected;
   return ruleSelected;
 };
 
@@ -959,7 +1024,7 @@ const summarizeSplit = (rows, selector, summaryOptions) =>
 
 const summarizeDirections = (rows, selector, summaryOptions) =>
   Object.fromEntries(
-    ["LONG", "SHORT"].map((direction) => [
+    ['LONG', 'SHORT'].map((direction) => [
       direction,
       summarizeRows(
         selectRows(rows, (row) => row.direction === direction && selector(row)),
@@ -1034,7 +1099,7 @@ const updateFeatureInventory = (inventory, features, pattern) => {
     stat.count += 1;
     if (value == null) {
       stat.nulls += 1;
-    } else if (typeof value === "number") {
+    } else if (typeof value === 'number') {
       stat.numericCount += 1;
       stat.min = stat.min == null ? value : Math.min(stat.min, value);
       stat.max = stat.max == null ? value : Math.max(stat.max, value);
@@ -1093,24 +1158,87 @@ const newestSourceMtime = async (sourcePath) => {
   const entries = await fsp.readdir(sourcePath, { withFileTypes: true });
   const mtimes = await Promise.all(
     entries
-      .filter((entry) => entry.name !== "__tests__")
+      .filter((entry) => entry.name !== '__tests__')
       .map((entry) => newestSourceMtime(path.join(sourcePath, entry.name))),
   );
   return Math.max(0, ...mtimes);
 };
 
-export const ensureRuntimeBuild = async (sourceRepositoryRoot) => {
-  const aiModulePath = path.join(
+const resolveStandaloneStrategyEntrypoint = (sourceRepositoryRoot) => {
+  const packageJson = readRepositoryPackage(sourceRepositoryRoot);
+  const rootExport = packageJson?.exports?.['.'];
+  const relativeEntrypoint =
+    (typeof rootExport === 'string'
+      ? rootExport
+      : rootExport?.import ?? rootExport?.default) ??
+    packageJson?.module ??
+    packageJson?.main;
+  if (!relativeEntrypoint) {
+    throw new Error(
+      `Standalone strategy ${packageJson?.name ?? sourceRepositoryRoot} has no importable package entrypoint. Run yarn build first.`,
+    );
+  }
+  const entrypoint = path.resolve(sourceRepositoryRoot, relativeEntrypoint);
+  if (!entrypoint.startsWith(`${sourceRepositoryRoot}${path.sep}`)) {
+    throw new Error(
+      `Standalone strategy entrypoint escapes its repository: ${relativeEntrypoint}`,
+    );
+  }
+  return { entrypoint, packageJson };
+};
+
+export const loadStandaloneStrategyEntries = async (sourceRepositoryRoot) => {
+  if (getSourceRepositoryKind(sourceRepositoryRoot) !== 'strategy') {
+    throw new Error(
+      `Expected a standalone TradeJS strategy repository: ${sourceRepositoryRoot}`,
+    );
+  }
+  const { entrypoint, packageJson } = resolveStandaloneStrategyEntrypoint(
     sourceRepositoryRoot,
-    "packages/node/dist/ai.mjs",
+  );
+  let outputStat;
+  try {
+    outputStat = await fsp.stat(entrypoint);
+  } catch {
+    throw new Error(
+      `Missing ${path.relative(sourceRepositoryRoot, entrypoint)} for ${packageJson.name}. Run yarn build in TRADEJS_SOURCE_REPOSITORY_ROOT first.`,
+    );
+  }
+  const sourceMtime = await newestSourceMtime(
+    path.join(sourceRepositoryRoot, 'src'),
+  );
+  if (sourceMtime > outputStat.mtimeMs) {
+    throw new Error(
+      `Stale ${path.relative(sourceRepositoryRoot, entrypoint)} for ${packageJson.name}. Run yarn build in TRADEJS_SOURCE_REPOSITORY_ROOT first.`,
+    );
+  }
+  const pluginModule = await import(pathToFileURL(entrypoint).href);
+  const strategyEntries =
+    pluginModule.strategyEntries ?? pluginModule.default?.strategyEntries;
+  if (!Array.isArray(strategyEntries) || strategyEntries.length === 0) {
+    throw new Error(
+      `${packageJson.name} must export a non-empty strategyEntries array from ${path.relative(sourceRepositoryRoot, entrypoint)}.`,
+    );
+  }
+  return {
+    entrypoint,
+    packageName: packageJson.name,
+    strategyEntries,
+  };
+};
+
+export const ensureRuntimeBuild = async (frameworkRepositoryRoot) => {
+  const aiModulePath = path.join(
+    frameworkRepositoryRoot,
+    'packages/node/dist/ai.mjs',
   );
   const registryModulePath = path.join(
-    sourceRepositoryRoot,
-    "packages/node/dist/registry.mjs",
+    frameworkRepositoryRoot,
+    'packages/node/dist/registry.mjs',
   );
   const pocketModulePath = path.join(
-    sourceRepositoryRoot,
-    "packages/cli/dist/lib/aiPocketSearch.js",
+    frameworkRepositoryRoot,
+    'packages/cli/dist/lib/aiPocketSearch.js',
   );
   const required = [aiModulePath, registryModulePath, pocketModulePath];
   for (const filePath of required) {
@@ -1118,7 +1246,7 @@ export const ensureRuntimeBuild = async (sourceRepositoryRoot) => {
       await fsp.access(filePath);
     } catch {
       throw new Error(
-        `Missing ${path.relative(sourceRepositoryRoot, filePath)}. Run yarn build first.`,
+        `Missing ${path.relative(frameworkRepositoryRoot, filePath)}. Build the framework runtime in TRADEJS_FRAMEWORK_REPOSITORY_ROOT first.`,
       );
     }
   }
@@ -1127,27 +1255,29 @@ export const ensureRuntimeBuild = async (sourceRepositoryRoot) => {
     {
       output: aiModulePath,
       sources: [
-        path.join(sourceRepositoryRoot, "packages/node/src/ai.ts"),
-        path.join(sourceRepositoryRoot, "packages/node/src/aiMarketContext.ts"),
-        path.join(sourceRepositoryRoot, "packages/node/src/aiShared.ts"),
-        path.join(sourceRepositoryRoot, "packages/node/src/strategyAdapters"),
+        path.join(frameworkRepositoryRoot, 'packages/node/src/ai.ts'),
+        path.join(frameworkRepositoryRoot, 'packages/node/src/aiMarketContext.ts'),
+        path.join(frameworkRepositoryRoot, 'packages/node/src/aiShared.ts'),
+        path.join(frameworkRepositoryRoot, 'packages/node/src/strategyAdapters'),
       ],
-      command: "yarn workspace @tradejs/node build",
+      command: 'yarn workspace @tradejs/node build',
     },
     {
       output: registryModulePath,
-      sources: [path.join(sourceRepositoryRoot, "packages/node/src/strategy")],
-      command: "yarn workspace @tradejs/node build",
+      sources: [
+        path.join(frameworkRepositoryRoot, 'packages/node/src/strategy'),
+      ],
+      command: 'yarn workspace @tradejs/node build',
     },
     {
       output: pocketModulePath,
       sources: [
         path.join(
-          sourceRepositoryRoot,
-          "packages/cli/src/lib/aiPocketSearch.ts",
+          frameworkRepositoryRoot,
+          'packages/cli/src/lib/aiPocketSearch.ts',
         ),
       ],
-      command: "yarn workspace @tradejs/cli build",
+      command: 'yarn workspace @tradejs/cli build',
     },
   ];
   for (const check of freshnessChecks) {
@@ -1157,7 +1287,7 @@ export const ensureRuntimeBuild = async (sourceRepositoryRoot) => {
     ]);
     if (Math.max(0, ...sourceMtimes) > outputStat.mtimeMs) {
       throw new Error(
-        `Stale ${path.relative(sourceRepositoryRoot, check.output)} for current sources. Run ${check.command}.`,
+        `Stale ${path.relative(frameworkRepositoryRoot, check.output)} for current sources. Run ${check.command} in TRADEJS_FRAMEWORK_REPOSITORY_ROOT.`,
       );
     }
   }
@@ -1167,6 +1297,7 @@ export const ensureRuntimeBuild = async (sourceRepositoryRoot) => {
 const loadResearchRows = async ({
   projectRoot,
   sourceRepositoryRoot,
+  frameworkRepositoryRoot,
   filePaths,
   variants,
   minQuality,
@@ -1174,12 +1305,20 @@ const loadResearchRows = async ({
   featurePattern,
 }) => {
   const { aiModulePath, registryModulePath, pocketModulePath } =
-    await ensureRuntimeBuild(sourceRepositoryRoot);
+    await ensureRuntimeBuild(frameworkRepositoryRoot);
   const aiModule = await import(pathToFileURL(aiModulePath).href);
   const registryModule = await import(pathToFileURL(registryModulePath).href);
   const require = createRequire(import.meta.url);
   const { collectAiPocketFeatures } = require(pocketModulePath);
-  await registryModule.ensureStrategyPluginsLoaded();
+  if (getSourceRepositoryKind(sourceRepositoryRoot) === 'strategy') {
+    const { strategyEntries } = await loadStandaloneStrategyEntries(
+      sourceRepositoryRoot,
+    );
+    registryModule.resetStrategyRegistryCache(projectRoot);
+    registryModule.registerStrategyEntries(strategyEntries, projectRoot);
+  } else {
+    await registryModule.ensureStrategyPluginsLoaded(projectRoot);
+  }
 
   const rows = [];
   const featureInventory = new Map();
@@ -1202,9 +1341,9 @@ const loadResearchRows = async ({
           payload,
           gateContext,
           includeGateContext,
-          featureProfile: "all",
+          featureProfile: 'all',
         });
-        features["derived.direction"] = String(source.direction).toUpperCase();
+        features['derived.direction'] = String(source.direction).toUpperCase();
         updateFeatureInventory(featureInventory, features, featurePattern);
         const timestamp = Number(source.timestamp);
         const profit = Number(source.profit);
@@ -1231,7 +1370,7 @@ const loadResearchRows = async ({
             quality != null &&
             quality >= minQuality,
           movingAverageSource: {
-            provider: String(source.connectorName ?? "")
+            provider: String(source.connectorName ?? '')
               .trim()
               .toLowerCase(),
             interval: finiteOrNull(payload.signal?.interval),
@@ -1268,7 +1407,7 @@ const loadResearchRows = async ({
       left.sequence - right.sequence,
   );
   if (rows.some((row) => row.timestamp == null)) {
-    throw new Error("At least one evaluated row has no finite timestamp");
+    throw new Error('At least one evaluated row has no finite timestamp');
   }
   return {
     rows,
@@ -1277,7 +1416,7 @@ const loadResearchRows = async ({
   };
 };
 
-const MOVING_AVERAGE_FAMILIES = ["SMA", "EMA", "WMA"];
+const MOVING_AVERAGE_FAMILIES = ['SMA', 'EMA', 'WMA'];
 const MOVING_AVERAGE_SLOPE_BARS = 5;
 
 const buildMovingAverageSql = () => {
@@ -1296,12 +1435,12 @@ const buildMovingAverageSql = () => {
 };
 
 const movingAverageConnectionConfig = () => ({
-  host: process.env.PG_HOST || "127.0.0.1",
+  host: process.env.PG_HOST || '127.0.0.1',
   port: Number(process.env.PG_PORT ?? 5432),
-  user: process.env.PG_USER || "app",
-  password: String(process.env.PG_PASSWORD ?? "app"),
-  database: process.env.PG_DATABASE || process.env.PG_DB || "app",
-  application_name: "tradejs-ai-gate-ma-study",
+  user: process.env.PG_USER || 'app',
+  password: String(process.env.PG_PASSWORD ?? 'app'),
+  database: process.env.PG_DATABASE || process.env.PG_DB || 'app',
+  application_name: 'tradejs-ai-gate-ma-study',
 });
 
 const finiteArray = (value) =>
@@ -1400,7 +1539,7 @@ export const buildMovingAverageVariants = (periods) =>
       return [
         {
           name: `${family}${period}-side`,
-          mode: "filter",
+          mode: 'filter',
           quality: null,
           expression: `${feature}.directionalDistanceAtr >= 0`,
           match: (row) =>
@@ -1408,7 +1547,7 @@ export const buildMovingAverageVariants = (periods) =>
         },
         {
           name: `${family}${period}-side-slope`,
-          mode: "filter",
+          mode: 'filter',
           quality: null,
           expression: `${feature}.directionalDistanceAtr >= 0 && ${feature}.directionalSlopeAtr5 >= 0`,
           match: (row) => {
@@ -1421,7 +1560,7 @@ export const buildMovingAverageVariants = (periods) =>
         },
         {
           name: `${family}${period}-standalone`,
-          mode: "replace",
+          mode: 'replace',
           quality: null,
           expression: `${feature}.directionalDistanceAtr >= 0 && ${feature}.directionalSlopeAtr5 >= 0`,
           match: (row) => {
@@ -1485,7 +1624,7 @@ const summarizeCorrelations = (values) => ({
 });
 
 export const summarizeMovingAverageRedundancy = (rows, periods) => {
-  const series = (family, period, field = "directionalDistanceAtr") =>
+  const series = (family, period, field = 'directionalDistanceAtr') =>
     rows.map((row) => row.movingAverages?.[family]?.[period]?.[field] ?? null);
   const adjacent = [];
   for (const family of MOVING_AVERAGE_FAMILIES) {
@@ -1501,9 +1640,9 @@ export const summarizeMovingAverageRedundancy = (rows, periods) => {
   const crossFamily = [];
   for (const period of periods) {
     crossFamily.push(
-      pearsonCorrelation(series("SMA", period), series("EMA", period)),
-      pearsonCorrelation(series("SMA", period), series("WMA", period)),
-      pearsonCorrelation(series("EMA", period), series("WMA", period)),
+      pearsonCorrelation(series('SMA', period), series('EMA', period)),
+      pearsonCorrelation(series('SMA', period), series('WMA', period)),
+      pearsonCorrelation(series('EMA', period), series('WMA', period)),
     );
   }
   return {
@@ -1528,12 +1667,12 @@ export const loadMovingAverageStudyFeatures = async ({
   );
   if (sources.size !== 1) {
     throw new Error(
-      `Moving-average study requires one provider/interval, got: ${[...sources].join(", ")}`,
+      `Moving-average study requires one provider/interval, got: ${[...sources].join(', ')}`,
     );
   }
   const sample = rows[0].movingAverageSource;
   if (!sample?.provider || !Number.isFinite(sample.interval)) {
-    throw new Error("Moving-average study source provider/interval is missing");
+    throw new Error('Moving-average study source provider/interval is missing');
   }
   const maxPeriod = Math.max(...periods);
   if (lookbackBars < maxPeriod + MOVING_AVERAGE_SLOPE_BARS) {
@@ -1542,7 +1681,7 @@ export const loadMovingAverageStudyFeatures = async ({
     );
   }
   const require = createRequire(import.meta.url);
-  const { Client } = require("pg");
+  const { Client } = require('pg');
   const client = new Client(movingAverageConnectionConfig());
   const query = buildMovingAverageSql();
   const limit = lookbackBars + MOVING_AVERAGE_SLOPE_BARS;
@@ -1566,7 +1705,7 @@ export const loadMovingAverageStudyFeatures = async ({
       periods: [...new Set([...periods, 14, 49, 50])],
       lookbackBars,
     });
-    const directionSign = row.direction === "SHORT" ? -1 : 1;
+    const directionSign = row.direction === 'SHORT' ? -1 : 1;
     row.movingAverages = Object.fromEntries(
       MOVING_AVERAGE_FAMILIES.map((family) => [
         family,
@@ -1693,8 +1832,8 @@ export const summarizeMovingAverageStudy = ({
       tuning: variantReport.tuning,
       test: variantReport.test,
       full: variantReport.periods.full,
-      terminal30d: variantReport.periods["30d"],
-      terminal7d: variantReport.periods["7d"],
+      terminal30d: variantReport.periods['30d'],
+      terminal7d: variantReport.periods['7d'],
     }))
     .filter(
       (candidate) =>
@@ -1718,216 +1857,216 @@ export const summarizeMovingAverageStudy = ({
   };
 };
 
-const CROSS_BASE_PREFIX = "additionalIndicators.baseContext.";
+const CROSS_BASE_PREFIX = 'additionalIndicators.baseContext.';
 const CROSS_BASE_SECTIONS = new Set([
-  "derivatives",
-  "gateFeatures",
-  "mtf",
-  "participation",
-  "raw",
-  "regime",
-  "relative",
-  "structure",
+  'derivatives',
+  'gateFeatures',
+  'mtf',
+  'participation',
+  'raw',
+  'regime',
+  'relative',
+  'structure',
 ]);
 const CROSS_DERIVED_FEATURES = new Set([
-  "derived.maFastAligned",
-  "derived.maSlowAligned",
-  "derived.maStackAligned",
-  "derived.macdHistogramAligned",
-  "derived.macdHistogramSlopeAligned",
-  "derived.obvSlopeAligned",
-  "derived.obvTrendAligned",
-  "derived.priceMaFastDistanceBps",
-  "derived.priceMaSlowDistanceBps",
-  "derived.stopDistanceBps",
-  "derived.takeProfitDistanceBps",
+  'derived.maFastAligned',
+  'derived.maSlowAligned',
+  'derived.maStackAligned',
+  'derived.macdHistogramAligned',
+  'derived.macdHistogramSlopeAligned',
+  'derived.obvSlopeAligned',
+  'derived.obvTrendAligned',
+  'derived.priceMaFastDistanceBps',
+  'derived.priceMaSlowDistanceBps',
+  'derived.stopDistanceBps',
+  'derived.takeProfitDistanceBps',
 ]);
 const CROSS_DATA_QUALITY_LEAVES = new Set([
-  "available",
-  "availablecount",
-  "agems",
-  "asofts",
-  "coverage",
-  "coveragecount",
-  "coveragepct",
-  "coverageratio",
-  "coveragesufficient",
-  "coveredcount",
-  "coveredwhales",
-  "expectedcount",
-  "expectedwhales",
-  "intervalcount",
-  "latestindex",
-  "length",
-  "loadedcount",
-  "points",
-  "present",
-  "rowcount",
-  "rows",
-  "shardcount",
-  "sourcecount",
-  "stale",
-  "symbolscount",
-  "timestamp",
-  "windowendts",
+  'available',
+  'availablecount',
+  'agems',
+  'asofts',
+  'coverage',
+  'coveragecount',
+  'coveragepct',
+  'coverageratio',
+  'coveragesufficient',
+  'coveredcount',
+  'coveredwhales',
+  'expectedcount',
+  'expectedwhales',
+  'intervalcount',
+  'latestindex',
+  'length',
+  'loadedcount',
+  'points',
+  'present',
+  'rowcount',
+  'rows',
+  'shardcount',
+  'sourcecount',
+  'stale',
+  'symbolscount',
+  'timestamp',
+  'windowendts',
 ]);
 const CROSS_METADATA_LEAVES = new Set([
-  "compact",
-  "interval",
-  "primaryreferencesymbol",
-  "provider",
-  "referencesymbol",
-  "secondaryreferencesymbol",
-  "source",
-  "sourcesymbol",
-  "symbol",
-  "targetsymbol",
-  "universe",
-  "universefingerprint",
-  "whaleregistryfingerprint",
+  'compact',
+  'interval',
+  'primaryreferencesymbol',
+  'provider',
+  'referencesymbol',
+  'secondaryreferencesymbol',
+  'source',
+  'sourcesymbol',
+  'symbol',
+  'targetsymbol',
+  'universe',
+  'universefingerprint',
+  'whaleregistryfingerprint',
 ]);
 const CROSS_RAW_VALUE_LEAVES = new Set([
-  "atr",
-  "atrslope",
-  "baseline",
-  "bbbasis",
-  "bblower",
-  "bbmiddle",
-  "bbupper",
-  "bottom",
-  "buybasevolume",
-  "buyquotevolume",
-  "buyvolume",
-  "centerline",
-  "centerlineslope",
-  "close",
-  "current",
-  "currentprice",
-  "deltaslope",
-  "emafilter",
-  "fastma",
-  "floor",
-  "high",
-  "highlevel",
-  "highprice1h",
-  "highprice24h",
-  "last",
-  "lastpivothigh",
-  "lastpivotlow",
-  "lastprice",
-  "lastswinghigh",
-  "lastswinglow",
-  "level",
-  "liqlong",
-  "liqshort",
-  "liqtotal",
-  "low",
-  "lower",
-  "lowerboundary",
-  "lowlevel",
-  "lowprice1h",
-  "lowprice24h",
-  "mafast",
-  "mamedium",
-  "maslow",
-  "macd",
-  "macdhistogram",
-  "macdhistogramslope",
-  "macdsignal",
-  "mid",
-  "netbasedelta",
-  "open",
-  "openinterest",
-  "netdelta",
-  "netquotedelta",
-  "obv",
-  "obvslope",
-  "obvsma",
-  "pointofcontrol",
-  "pocindex",
-  "prevclose",
-  "price",
-  "roof",
-  "sellbasevolume",
-  "sellquotevolume",
-  "sellvolume",
-  "signedvolume",
-  "slowma",
-  "stepusd",
-  "top",
-  "totalmarketcapusd",
-  "trailstop",
-  "turnover",
-  "upper",
-  "upperboundary",
-  "volume",
-  "volume1h",
-  "volume24h",
-  "volumetrendslope",
+  'atr',
+  'atrslope',
+  'baseline',
+  'bbbasis',
+  'bblower',
+  'bbmiddle',
+  'bbupper',
+  'bottom',
+  'buybasevolume',
+  'buyquotevolume',
+  'buyvolume',
+  'centerline',
+  'centerlineslope',
+  'close',
+  'current',
+  'currentprice',
+  'deltaslope',
+  'emafilter',
+  'fastma',
+  'floor',
+  'high',
+  'highlevel',
+  'highprice1h',
+  'highprice24h',
+  'last',
+  'lastpivothigh',
+  'lastpivotlow',
+  'lastprice',
+  'lastswinghigh',
+  'lastswinglow',
+  'level',
+  'liqlong',
+  'liqshort',
+  'liqtotal',
+  'low',
+  'lower',
+  'lowerboundary',
+  'lowlevel',
+  'lowprice1h',
+  'lowprice24h',
+  'mafast',
+  'mamedium',
+  'maslow',
+  'macd',
+  'macdhistogram',
+  'macdhistogramslope',
+  'macdsignal',
+  'mid',
+  'netbasedelta',
+  'open',
+  'openinterest',
+  'netdelta',
+  'netquotedelta',
+  'obv',
+  'obvslope',
+  'obvsma',
+  'pointofcontrol',
+  'pocindex',
+  'prevclose',
+  'price',
+  'roof',
+  'sellbasevolume',
+  'sellquotevolume',
+  'sellvolume',
+  'signedvolume',
+  'slowma',
+  'stepusd',
+  'top',
+  'totalmarketcapusd',
+  'trailstop',
+  'turnover',
+  'upper',
+  'upperboundary',
+  'volume',
+  'volume1h',
+  'volume24h',
+  'volumetrendslope',
 ]);
 const CROSS_RAW_ACTIVITY_COUNT_LEAVES = new Set([
-  "activecryptocurrencies",
-  "activeexchanges",
-  "activemarketpairs",
-  "advancers",
-  "decliners",
-  "exchangescount",
-  "positionawarewhalesides",
-  "trades",
-  "unchanged",
-  "uniquewhales",
-  "whalesides",
+  'activecryptocurrencies',
+  'activeexchanges',
+  'activemarketpairs',
+  'advancers',
+  'decliners',
+  'exchangescount',
+  'positionawarewhalesides',
+  'trades',
+  'unchanged',
+  'uniquewhales',
+  'whalesides',
 ]);
-const CROSS_SEARCH_PROFILE_NAMES = ["universal", "benchmarkReference"];
+const CROSS_SEARCH_PROFILE_NAMES = ['universal', 'benchmarkReference'];
 const CROSS_AUDIT_PROFILE_NAMES = [
-  "dataQuality",
-  "rawNonstationary",
-  "derivedPolicy",
-  "metadata",
+  'dataQuality',
+  'rawNonstationary',
+  'derivedPolicy',
+  'metadata',
 ];
 const CROSS_OUTCOME_SEGMENTS = new Set([
-  "actual",
-  "aiapproved",
-  "approvalallowednow",
-  "backtestexecution",
-  "closedat",
-  "closedpnl",
-  "deterministicquality",
-  "entrydelaybars",
-  "entrydelaymovebps",
-  "executionprice",
-  "exitprice",
-  "exitreason",
-  "exittimestamp",
-  "fillprice",
-  "future",
-  "futuremove",
-  "futureprofit",
-  "hardblockreasons",
-  "label",
-  "maxallowedquality",
-  "maxquality",
-  "modeldirection",
-  "modeldirectionmatches",
-  "outcome",
-  "pnl",
-  "profit",
-  "profitabletrade",
-  "quality",
-  "rawaiapproved",
-  "rejectreason",
-  "result",
-  "traderesult",
+  'actual',
+  'aiapproved',
+  'approvalallowednow',
+  'backtestexecution',
+  'closedat',
+  'closedpnl',
+  'deterministicquality',
+  'entrydelaybars',
+  'entrydelaymovebps',
+  'executionprice',
+  'exitprice',
+  'exitreason',
+  'exittimestamp',
+  'fillprice',
+  'future',
+  'futuremove',
+  'futureprofit',
+  'hardblockreasons',
+  'label',
+  'maxallowedquality',
+  'maxquality',
+  'modeldirection',
+  'modeldirectionmatches',
+  'outcome',
+  'pnl',
+  'profit',
+  'profitabletrade',
+  'quality',
+  'rawaiapproved',
+  'rejectreason',
+  'result',
+  'traderesult',
 ]);
 
 const inferCrossFeatureScope = (feature) => {
   const normalized = feature.toLowerCase();
-  if (normalized.startsWith("derived.")) return "target-setup";
-  if (normalized.includes(".derivatives.targetcontext.")) return "target";
-  if (normalized.includes(".derivatives.targetderived.")) {
+  if (normalized.startsWith('derived.')) return 'target-setup';
+  if (normalized.includes('.derivatives.targetcontext.')) return 'target';
+  if (normalized.includes('.derivatives.targetderived.')) {
     return /referencepressure|referencedirectionaligned/.test(normalized)
-      ? "benchmark"
-      : "target-vs-benchmark";
+      ? 'benchmark'
+      : 'target-vs-benchmark';
   }
   if (
     /\.relative\.(?:cmc|marketbreadth|marketbreadths|btcaltregime)/.test(
@@ -1937,190 +2076,190 @@ const inferCrossFeatureScope = (feature) => {
       normalized,
     )
   ) {
-    return "global";
+    return 'global';
   }
   if (
-    normalized.includes(".derivatives.") ||
-    normalized.includes(".relative.referencetradeflow.") ||
-    normalized.includes(".relative.referencepsychologicallevels.") ||
-    normalized.includes(".relative.execution.") ||
-    normalized.includes(".gatefeatures.execution.") ||
-    normalized.includes(".participation.referencetradeflow")
+    normalized.includes('.derivatives.') ||
+    normalized.includes('.relative.referencetradeflow.') ||
+    normalized.includes('.relative.referencepsychologicallevels.') ||
+    normalized.includes('.relative.execution.') ||
+    normalized.includes('.gatefeatures.execution.') ||
+    normalized.includes('.participation.referencetradeflow')
   ) {
-    return "benchmark";
+    return 'benchmark';
   }
   if (/targetvsbtc|targetvseth|relativestrength/.test(normalized)) {
-    return "target-vs-benchmark";
+    return 'target-vs-benchmark';
   }
-  return "target-setup";
+  return 'target-setup';
 };
 
 const crossRawTransform = (feature) => {
   const normalized = feature.toLowerCase();
   if (/openinterest/.test(normalized))
-    return "pct-change / acceleration / z-score";
+    return 'pct-change / acceleration / z-score';
   if (/liq(?:long|short|total)/.test(normalized))
-    return "imbalance / spike ratio";
+    return 'imbalance / spike ratio';
   if (/marketcap|volumeusd|reportedusd/.test(normalized)) {
-    return "change / dominance / share / ratio";
+    return 'change / dominance / share / ratio';
   }
-  if (/notionalusd/.test(normalized)) return "turnover ratio / rolling z-score";
+  if (/notionalusd/.test(normalized)) return 'turnover ratio / rolling z-score';
   if (/volume|delta|obv/.test(normalized))
-    return "relative share / z-score / direction";
+    return 'relative share / z-score / direction';
   if (
     /price|level|pointofcontrol|boundary|trailstop|pivot|swing/.test(normalized)
   ) {
-    return "BPS / ATR distance / return / range position";
+    return 'BPS / ATR distance / return / range position';
   }
   if (/cmc(?:20|100)value/.test(normalized))
-    return "index change / relative ratio";
-  return "causal normalized sibling computed from full signal-time history";
+    return 'index change / relative ratio';
+  return 'causal normalized sibling computed from full signal-time history';
 };
 
 const isCrossRawNonstationary = (normalizedSegments) => {
   const section = normalizedSegments[0];
-  const leaf = normalizedSegments.at(-1) ?? "";
-  if (section === "raw") {
+  const leaf = normalizedSegments.at(-1) ?? '';
+  if (section === 'raw') {
     return ![
-      "atrpct",
-      "bbwidthpct",
-      "btccorrelation",
-      "price1hpct",
-      "price24hpct",
+      'atrpct',
+      'bbwidthpct',
+      'btccorrelation',
+      'price1hpct',
+      'price24hpct',
     ].includes(leaf);
   }
   return (
     CROSS_RAW_VALUE_LEAVES.has(leaf) ||
     CROSS_RAW_ACTIVITY_COUNT_LEAVES.has(leaf) ||
-    leaf.endsWith("marketcapusd") ||
-    leaf.endsWith("notionalusd") ||
-    leaf.endsWith("openinterestusd") ||
-    leaf.endsWith("reportedusd") ||
-    leaf.endsWith("volumeusd") ||
-    (normalizedSegments.includes("psar") && leaf === "value") ||
-    (normalizedSegments.includes("cmcindexes") && leaf.endsWith("value")) ||
-    (leaf.endsWith("price") &&
-      !leaf.endsWith("pricechange") &&
-      !leaf.endsWith("pricechangepct"))
+    leaf.endsWith('marketcapusd') ||
+    leaf.endsWith('notionalusd') ||
+    leaf.endsWith('openinterestusd') ||
+    leaf.endsWith('reportedusd') ||
+    leaf.endsWith('volumeusd') ||
+    (normalizedSegments.includes('psar') && leaf === 'value') ||
+    (normalizedSegments.includes('cmcindexes') && leaf.endsWith('value')) ||
+    (leaf.endsWith('price') &&
+      !leaf.endsWith('pricechange') &&
+      !leaf.endsWith('pricechangepct'))
   );
 };
 
 export const classifyCrossStrategyFeature = (feature) => {
   if (CROSS_DERIVED_FEATURES.has(feature)) {
     return {
-      profile: "universal",
-      scope: "target-setup",
-      role: "normalized-derived",
+      profile: 'universal',
+      scope: 'target-setup',
+      role: 'normalized-derived',
       searchable: true,
-      reason: "directional or BPS-normalized signal-time derivative",
+      reason: 'directional or BPS-normalized signal-time derivative',
     };
   }
   if (!feature.startsWith(CROSS_BASE_PREFIX)) return null;
   const relativePath = feature.slice(CROSS_BASE_PREFIX.length);
-  const segments = relativePath.split(".");
+  const segments = relativePath.split('.');
   if (!CROSS_BASE_SECTIONS.has(segments[0])) return null;
   const normalizedSegments = segments.map((segment) => segment.toLowerCase());
-  const normalizedPath = normalizedSegments.join(".");
-  const leaf = normalizedSegments.at(-1) ?? "";
+  const normalizedPath = normalizedSegments.join('.');
+  const leaf = normalizedSegments.at(-1) ?? '';
   const scope = inferCrossFeatureScope(feature);
 
   if (
     CROSS_DATA_QUALITY_LEAVES.has(leaf) ||
-    leaf.endsWith("stale") ||
-    leaf.endsWith("coveragepct") ||
-    leaf.endsWith("coveragesufficient") ||
-    leaf.endsWith("coveredcount") ||
-    leaf.endsWith("expectedcount") ||
-    leaf === "calcbars"
+    leaf.endsWith('stale') ||
+    leaf.endsWith('coveragepct') ||
+    leaf.endsWith('coveragesufficient') ||
+    leaf.endsWith('coveredcount') ||
+    leaf.endsWith('expectedcount') ||
+    leaf === 'calcbars'
   ) {
     return {
-      profile: "dataQuality",
+      profile: 'dataQuality',
       scope,
-      role: "eligibility-guard",
+      role: 'eligibility-guard',
       searchable: false,
-      reason: "freshness, coverage, or calculation-history evidence",
+      reason: 'freshness, coverage, or calculation-history evidence',
     };
   }
   if (
     CROSS_METADATA_LEAVES.has(leaf) ||
-    leaf.endsWith("symbol") ||
-    normalizedPath === "gatefeatures.direction"
+    leaf.endsWith('symbol') ||
+    normalizedPath === 'gatefeatures.direction'
   ) {
     return {
-      profile: "metadata",
+      profile: 'metadata',
       scope,
-      role: "lineage-metadata",
+      role: 'lineage-metadata',
       searchable: false,
-      reason: "provider, symbol, interval, universe, or stratifier metadata",
+      reason: 'provider, symbol, interval, universe, or stratifier metadata',
     };
   }
   if (isCrossRawNonstationary(normalizedSegments)) {
     return {
-      profile: "rawNonstationary",
+      profile: 'rawNonstationary',
       scope,
-      role: "transform-source",
+      role: 'transform-source',
       searchable: false,
       reason:
-        "causal but raw, scale-dependent, or slowly drifting absolute value",
+        'causal but raw, scale-dependent, or slowly drifting absolute value',
       transform: crossRawTransform(feature),
     };
   }
   if (
-    normalizedSegments[0] === "gatefeatures" &&
-    ["scores", "risk", "decisionhints", "confirmations", "conflicts"].includes(
+    normalizedSegments[0] === 'gatefeatures' &&
+    ['scores', 'risk', 'decisionhints', 'confirmations', 'conflicts'].includes(
       normalizedSegments[1],
     )
   ) {
     return {
-      profile: "derivedPolicy",
-      scope: "mixed",
-      role: "existing-policy-composite",
+      profile: 'derivedPolicy',
+      scope: 'mixed',
+      role: 'existing-policy-composite',
       searchable: false,
-      reason: "hard-coded composite can rediscover the current heuristic",
+      reason: 'hard-coded composite can rediscover the current heuristic',
     };
   }
 
-  let profile = "universal";
-  if (normalizedSegments[0] === "derivatives") {
+  let profile = 'universal';
+  if (normalizedSegments[0] === 'derivatives') {
     profile =
-      normalizedSegments[1] === "targetcontext" ||
-      (normalizedSegments[1] === "targetderived" &&
-        !["referencepressure", "referencedirectionaligned"].includes(leaf))
-        ? "universal"
-        : "benchmarkReference";
-  } else if (normalizedSegments[0] === "relative") {
+      normalizedSegments[1] === 'targetcontext' ||
+      (normalizedSegments[1] === 'targetderived' &&
+        !['referencepressure', 'referencedirectionaligned'].includes(leaf))
+        ? 'universal'
+        : 'benchmarkReference';
+  } else if (normalizedSegments[0] === 'relative') {
     profile =
-      normalizedSegments[1]?.startsWith("targetvs") ||
-      (normalizedSegments[1] === "benchmark" &&
+      normalizedSegments[1]?.startsWith('targetvs') ||
+      (normalizedSegments[1] === 'benchmark' &&
         /relativestrength|trendalignment/.test(leaf))
-        ? "universal"
-        : "benchmarkReference";
-  } else if (normalizedSegments[0] === "gatefeatures") {
+        ? 'universal'
+        : 'benchmarkReference';
+  } else if (normalizedSegments[0] === 'gatefeatures') {
     if (
-      normalizedSegments[1] === "execution" ||
-      (normalizedSegments[1] === "participation" &&
-        normalizedSegments[2]?.startsWith("referencetradeflow")) ||
-      (normalizedSegments[1] === "relative" &&
+      normalizedSegments[1] === 'execution' ||
+      (normalizedSegments[1] === 'participation' &&
+        normalizedSegments[2]?.startsWith('referencetradeflow')) ||
+      (normalizedSegments[1] === 'relative' &&
         !/targetvsbtc|targetvseth|relativestrength/.test(normalizedPath))
     ) {
-      profile = "benchmarkReference";
+      profile = 'benchmarkReference';
     }
   }
   return {
     profile,
     scope:
-      profile === "benchmarkReference" && scope === "target-setup"
-        ? "benchmark"
+      profile === 'benchmarkReference' && scope === 'target-setup'
+        ? 'benchmark'
         : scope,
     role:
-      profile === "universal"
-        ? "normalized-target-setup"
-        : "normalized-benchmark-reference",
+      profile === 'universal'
+        ? 'normalized-target-setup'
+        : 'normalized-benchmark-reference',
     searchable: true,
     reason:
-      profile === "universal"
-        ? "portable target/setup market state"
-        : "portable benchmark, reference, or global market state",
+      profile === 'universal'
+        ? 'portable target/setup market state'
+        : 'portable benchmark, reference, or global market state',
   };
 };
 
@@ -2129,12 +2268,12 @@ const CROSS_MISSING_VALUE =
 
 const isCrossSearchValue = (value) =>
   value != null &&
-  (typeof value !== "string" || !CROSS_MISSING_VALUE.test(value.trim()));
+  (typeof value !== 'string' || !CROSS_MISSING_VALUE.test(value.trim()));
 
 const isCrossFeatureFresh = (features, feature) => {
-  const segments = feature.split(".");
+  const segments = feature.split('.');
   for (let length = segments.length - 1; length >= 3; length -= 1) {
-    const prefix = segments.slice(0, length).join(".");
+    const prefix = segments.slice(0, length).join('.');
     if (features[`${prefix}.stale`] === true) return false;
     if (features[`${prefix}.available`] === false) return false;
     if (features[`${prefix}.coverageSufficient`] === false) return false;
@@ -2142,16 +2281,16 @@ const isCrossFeatureFresh = (features, feature) => {
   const gatePrefix = `${CROSS_BASE_PREFIX}gateFeatures`;
   const normalized = feature.toLowerCase();
   const namedGuards = [
-    ["cmcaltliquidity", `${gatePrefix}.relative.cmcAltLiquidityStale`],
-    ["cmcethbtc", `${gatePrefix}.relative.cmcEthBtcStale`],
+    ['cmcaltliquidity', `${gatePrefix}.relative.cmcAltLiquidityStale`],
+    ['cmcethbtc', `${gatePrefix}.relative.cmcEthBtcStale`],
     [
-      "cmcexchangeliquidity",
+      'cmcexchangeliquidity',
       `${gatePrefix}.relative.cmcExchangeLiquidityStale`,
     ],
-    ["cmcfeargreed", `${gatePrefix}.relative.cmcFearGreedStale`],
-    ["cmcindex", `${gatePrefix}.relative.cmcIndexStale`],
-    ["marketbreadth", `${gatePrefix}.relative.marketBreadthStale`],
-    ["btcaltregime", `${gatePrefix}.relative.btcAltRegimeStale`],
+    ['cmcfeargreed', `${gatePrefix}.relative.cmcFearGreedStale`],
+    ['cmcindex', `${gatePrefix}.relative.cmcIndexStale`],
+    ['marketbreadth', `${gatePrefix}.relative.marketBreadthStale`],
+    ['btcaltregime', `${gatePrefix}.relative.btcAltRegimeStale`],
   ];
   return !namedGuards.some(
     ([needle, guard]) =>
@@ -2198,16 +2337,16 @@ const flattenCrossFeatureBranch = ({ output, value, segments }) => {
   }
   if (
     value == null ||
-    typeof value === "string" ||
-    typeof value === "boolean" ||
-    (typeof value === "number" && Number.isFinite(value))
+    typeof value === 'string' ||
+    typeof value === 'boolean' ||
+    (typeof value === 'number' && Number.isFinite(value))
   ) {
-    output[segments.join(".")] = value;
+    output[segments.join('.')] = value;
     return;
   }
-  if (!value || typeof value !== "object") return;
+  if (!value || typeof value !== 'object') return;
   for (const [key, child] of Object.entries(value)) {
-    if (!key || key.startsWith("_")) continue;
+    if (!key || key.startsWith('_')) continue;
     flattenCrossFeatureBranch({
       output,
       value: child,
@@ -2219,33 +2358,33 @@ const flattenCrossFeatureBranch = ({ output, value, segments }) => {
 export const collectSavedCrossStrategyFeatures = (payload) => {
   const output = {};
   const baseContext = payload?.additionalIndicators?.baseContext;
-  if (!baseContext || typeof baseContext !== "object") return output;
+  if (!baseContext || typeof baseContext !== 'object') return output;
   for (const section of CROSS_BASE_SECTIONS) {
     if (!(section in baseContext)) continue;
     flattenCrossFeatureBranch({
       output,
       value: baseContext[section],
-      segments: ["additionalIndicators", "baseContext", section],
+      segments: ['additionalIndicators', 'baseContext', section],
     });
   }
 
   const signal = payload.signal ?? {};
   const finiteNumber = (value) =>
-    typeof value === "number" && Number.isFinite(value) ? value : null;
+    typeof value === 'number' && Number.isFinite(value) ? value : null;
   const currentPrice = finiteNumber(signal.prices?.currentPrice);
   const stopLossPrice = finiteNumber(signal.prices?.stopLossPrice);
   const takeProfitPrice = finiteNumber(signal.prices?.takeProfitPrice);
-  const direction = String(signal.direction ?? "").toUpperCase();
+  const direction = String(signal.direction ?? '').toUpperCase();
   const directionSign =
-    direction === "LONG" ? 1 : direction === "SHORT" ? -1 : 0;
+    direction === 'LONG' ? 1 : direction === 'SHORT' ? -1 : 0;
   if (currentPrice != null && currentPrice !== 0) {
     if (stopLossPrice != null) {
-      output["derived.stopDistanceBps"] =
+      output['derived.stopDistanceBps'] =
         (Math.abs(currentPrice - stopLossPrice) / Math.abs(currentPrice)) *
         10_000;
     }
     if (takeProfitPrice != null) {
-      output["derived.takeProfitDistanceBps"] =
+      output['derived.takeProfitDistanceBps'] =
         (Math.abs(takeProfitPrice - currentPrice) / Math.abs(currentPrice)) *
         10_000;
     }
@@ -2256,35 +2395,35 @@ export const collectSavedCrossStrategyFeatures = (payload) => {
         ((currentPrice - maFast) / Math.abs(currentPrice)) *
         10_000 *
         directionSign;
-      output["derived.maFastAligned"] = distance >= 0;
-      output["derived.priceMaFastDistanceBps"] = distance;
+      output['derived.maFastAligned'] = distance >= 0;
+      output['derived.priceMaFastDistanceBps'] = distance;
     }
     if (directionSign && maSlow != null) {
       const distance =
         ((currentPrice - maSlow) / Math.abs(currentPrice)) *
         10_000 *
         directionSign;
-      output["derived.maSlowAligned"] = distance >= 0;
-      output["derived.priceMaSlowDistanceBps"] = distance;
+      output['derived.maSlowAligned'] = distance >= 0;
+      output['derived.priceMaSlowDistanceBps'] = distance;
     }
     if (directionSign && maFast != null && maSlow != null) {
-      output["derived.maStackAligned"] = (maFast - maSlow) * directionSign >= 0;
+      output['derived.maStackAligned'] = (maFast - maSlow) * directionSign >= 0;
     }
   }
   const macdHistogram = finiteNumber(baseContext.raw?.momentum?.macdHistogram);
   if (directionSign && macdHistogram != null) {
-    output["derived.macdHistogramAligned"] = macdHistogram * directionSign >= 0;
+    output['derived.macdHistogramAligned'] = macdHistogram * directionSign >= 0;
   }
   const macdHistogramSlope = finiteNumber(
     baseContext.regime?.momentum?.macdHistogramSlope,
   );
   if (directionSign && macdHistogramSlope != null) {
-    output["derived.macdHistogramSlopeAligned"] =
+    output['derived.macdHistogramSlopeAligned'] =
       macdHistogramSlope * directionSign >= 0;
   }
   const obvSlope = finiteNumber(baseContext.participation?.volume?.obvSlope);
   if (directionSign && obvSlope != null) {
-    output["derived.obvSlopeAligned"] = obvSlope * directionSign >= 0;
+    output['derived.obvSlopeAligned'] = obvSlope * directionSign >= 0;
   }
   return output;
 };
@@ -2304,18 +2443,18 @@ const readFirstNonEmptyLine = async (filePath) => {
 };
 
 const readLastNonEmptyLine = async (filePath) => {
-  const handle = await fsp.open(filePath, "r");
+  const handle = await fsp.open(filePath, 'r');
   try {
     const { size } = await handle.stat();
     const chunkSize = 64 * 1024;
     let position = size;
-    let suffix = "";
+    let suffix = '';
     while (position > 0) {
       const bytes = Math.min(chunkSize, position);
       position -= bytes;
       const buffer = Buffer.allocUnsafe(bytes);
       await handle.read(buffer, 0, bytes, position);
-      suffix = `${buffer.toString("utf8")}${suffix}`;
+      suffix = `${buffer.toString('utf8')}${suffix}`;
       const lines = suffix.split(/\r?\n/).filter((line) => line.trim());
       if (lines.length >= 2 || position === 0) return lines.at(-1) ?? null;
     }
@@ -2377,9 +2516,9 @@ const getTimestampPartition = (timestamps, validationSplit, testSplit) => {
 };
 
 const getPartitionName = (timestamp, partition) => {
-  if (partition.train.has(timestamp)) return "train";
-  if (partition.tuning.has(timestamp)) return "tuning";
-  if (partition.test.has(timestamp)) return "test";
+  if (partition.train.has(timestamp)) return 'train';
+  if (partition.tuning.has(timestamp)) return 'tuning';
+  if (partition.test.has(timestamp)) return 'test';
   return null;
 };
 
@@ -2401,7 +2540,7 @@ const evenlySampleRows = (rows, limit) => {
 };
 
 const stableCrossRowHash = (row) => {
-  const input = `${row.timestamp ?? ""}|${row.signalId ?? ""}|${row.symbol ?? ""}|${row.sequence ?? ""}`;
+  const input = `${row.timestamp ?? ''}|${row.signalId ?? ''}|${row.symbol ?? ''}|${row.sequence ?? ''}`;
   let hash = 2166136261;
   for (let index = 0; index < input.length; index += 1) {
     hash ^= input.charCodeAt(index);
@@ -2455,9 +2594,9 @@ const matchesPocketPredicate = (features, predicate) => {
     return false;
   }
   const value = features[predicate.featureKey];
-  if (predicate.op === "==") return value === predicate.value;
-  if (typeof value !== "number" || !Number.isFinite(value)) return false;
-  return predicate.op === "<="
+  if (predicate.op === '==') return value === predicate.value;
+  if (typeof value !== 'number' || !Number.isFinite(value)) return false;
+  return predicate.op === '<='
     ? value <= predicate.threshold
     : value >= predicate.threshold;
 };
@@ -2767,11 +2906,11 @@ const scanCrossDataset = async ({
           const source = JSON.parse(line);
           const timestamp = Number(source.timestamp);
           const rawProfit = Number(source.profit);
-          const direction = String(source.direction ?? "").toUpperCase();
+          const direction = String(source.direction ?? '').toUpperCase();
           if (
             !Number.isFinite(timestamp) ||
             !Number.isFinite(rawProfit) ||
-            !["LONG", "SHORT"].includes(direction) ||
+            !['LONG', 'SHORT'].includes(direction) ||
             timestamp < minTimestamp ||
             timestamp > maxTimestamp ||
             !source.payload
@@ -2826,10 +2965,10 @@ const createCrossCoverageStore = () =>
     CROSS_SEARCH_PROFILE_NAMES.map((profile) => [
       profile,
       Object.fromEntries(
-        ["LONG", "SHORT"].map((direction) => [
+        ['LONG', 'SHORT'].map((direction) => [
           direction,
           Object.fromEntries(
-            ["train", "tuning", "test"].map((partition) => [
+            ['train', 'tuning', 'test'].map((partition) => [
               partition,
               new Map(),
             ]),
@@ -2847,10 +2986,10 @@ const incrementCrossFeatureCoverage = (store, feature, strategy) => {
 
 const createCrossPartitionRowsStore = () =>
   Object.fromEntries(
-    ["LONG", "SHORT"].map((direction) => [
+    ['LONG', 'SHORT'].map((direction) => [
       direction,
       Object.fromEntries(
-        ["train", "tuning", "test"].map((partition) => [partition, new Map()]),
+        ['train', 'tuning', 'test'].map((partition) => [partition, new Map()]),
       ),
     ]),
   );
@@ -2902,13 +3041,13 @@ const accumulateCrossAudit = ({
     entry.partitions[partition] += 1;
     if (value === true) entry.trueRows += 1;
     else if (value === false) entry.falseRows += 1;
-    else if (typeof value === "number" && Number.isFinite(value)) {
+    else if (typeof value === 'number' && Number.isFinite(value)) {
       entry.numericRows += 1;
       entry.numericMin =
         entry.numericMin == null ? value : Math.min(entry.numericMin, value);
       entry.numericMax =
         entry.numericMax == null ? value : Math.max(entry.numericMax, value);
-    } else if (typeof value === "string") {
+    } else if (typeof value === 'string') {
       entry.categories.set(value, (entry.categories.get(value) ?? 0) + 1);
     }
   }
@@ -2969,7 +3108,7 @@ const getCrossFeatureEntries = ({
     .map(([feature, strategyCounts]) => {
       const classification = classifyCrossStrategyFeature(feature);
       const partitionCoverage = Object.fromEntries(
-        ["train", "tuning", "test"].map((partition) => {
+        ['train', 'tuning', 'test'].map((partition) => {
           const coverage =
             coverageStore[profile][direction][partition].get(feature);
           const totalRows = [
@@ -2998,8 +3137,8 @@ const getCrossFeatureEntries = ({
       return {
         feature,
         profile,
-        scope: classification?.scope ?? "unknown",
-        role: classification?.role ?? "unknown",
+        scope: classification?.scope ?? 'unknown',
+        role: classification?.role ?? 'unknown',
         trainStrategies: eligibleStrategies,
         trainRows: [...strategyCounts.values()].reduce(
           (sum, rows) => sum + rows,
@@ -3043,7 +3182,7 @@ const crossPrimitiveSignature = (value) => `${typeof value}:${String(value)}`;
 
 const getCrossConsensusFeatures = (
   rows,
-  { minConsensusRatio, featureKey = "features" },
+  { minConsensusRatio, featureKey = 'features' },
 ) => {
   const featureValues = new Map();
   for (const row of rows) {
@@ -3151,8 +3290,8 @@ export const aggregateBenchmarkDiscoveryRows = (
     const first = eventRows[0];
     output.push({
       ...first,
-      strategy: "__benchmark_event__",
-      symbol: "__benchmark_event__",
+      strategy: '__benchmark_event__',
+      symbol: '__benchmark_event__',
       profit:
         strategySnapshots.reduce((sum, entry) => sum + entry.profit, 0) /
         strategySnapshots.length,
@@ -3195,6 +3334,8 @@ const hasValidationSign = (pocket, expectedSign, minValidationSupport) => {
 export const buildCrossStrategyReport = async ({
   projectRoot,
   sourceRepositoryRoot,
+  frameworkRepositoryRoot,
+  searchAiPockets: searchAiPocketsOverride,
   groups,
   validationSplit,
   testSplit,
@@ -3212,25 +3353,28 @@ export const buildCrossStrategyReport = async ({
   portfolioCapacity = 5,
 }) => {
   if (groups.length < 2) {
-    throw new Error("Cross-strategy research requires at least two exports");
+    throw new Error('Cross-strategy research requires at least two exports');
   }
   if (testSplit <= 0 || validationSplit <= 0) {
     throw new Error(
-      "--crossStrategy requires positive --validationSplit and --testSplit",
+      '--crossStrategy requires positive --validationSplit and --testSplit',
     );
   }
-  const require = createRequire(import.meta.url);
-  const pocketModulePath = path.join(
-    sourceRepositoryRoot,
-    "packages/cli/dist/lib/aiPocketSearch.js",
-  );
-  await fsp.access(pocketModulePath);
-  const { searchAiPockets } = require(pocketModulePath);
+  let searchAiPockets = searchAiPocketsOverride;
+  if (!searchAiPockets) {
+    const require = createRequire(import.meta.url);
+    const pocketModulePath = path.join(
+      frameworkRepositoryRoot,
+      'packages/cli/dist/lib/aiPocketSearch.js',
+    );
+    await fsp.access(pocketModulePath);
+    ({ searchAiPockets } = require(pocketModulePath));
+  }
   const ranges = await getCrossDatasetRanges(groups);
   const minTimestamp = Math.max(...ranges.map((entry) => entry.minTimestamp));
   const maxTimestamp = Math.min(...ranges.map((entry) => entry.maxTimestamp));
   if (!(maxTimestamp > minTimestamp)) {
-    throw new Error("Latest exports have no common chronological overlap");
+    throw new Error('Latest exports have no common chronological overlap');
   }
 
   const manifest = new Map();
@@ -3355,11 +3499,11 @@ export const buildCrossStrategyReport = async ({
   const profiles = {};
   for (const profile of CROSS_SEARCH_PROFILE_NAMES) {
     const minCoverage =
-      profile === "universal"
+      profile === 'universal'
         ? minFeatureCoverage
         : minBenchmarkFeatureCoverage;
     const profileDirections = {};
-    for (const direction of ["LONG", "SHORT"]) {
+    for (const direction of ['LONG', 'SHORT']) {
       const featureEntries = getCrossFeatureEntries({
         profile,
         direction,
@@ -3392,7 +3536,7 @@ export const buildCrossStrategyReport = async ({
       let discoveryTuning;
       let evaluationSplit = directionSplit;
       let featureConsistency = null;
-      if (profile === "benchmarkReference") {
+      if (profile === 'benchmarkReference') {
         const trainAggregation = aggregateBenchmarkDiscoveryRows(
           directionSplit.train,
         );
@@ -3453,9 +3597,9 @@ export const buildCrossStrategyReport = async ({
         top: candidatePoolSize,
         progressInterval: 2_500,
         onProgress: (progress) => {
-          if (progress.done || progress.phase === "combinations") {
+          if (progress.done || progress.phase === 'combinations') {
             console.error(
-              `cross ${profile}/${direction} ${progress.phase} ${progress.current}/${progress.total}${progress.truncated ? " truncated" : ""}`,
+              `cross ${profile}/${direction} ${progress.phase} ${progress.current}/${progress.total}${progress.truncated ? ' truncated' : ''}`,
             );
           }
         },
@@ -3483,9 +3627,9 @@ export const buildCrossStrategyReport = async ({
           ]),
         ),
         discoveryUnit:
-          profile === "benchmarkReference"
-            ? "strategy-consensus timestamp-direction benchmark event with macro strategy LU; acceptance selects whole events"
-            : "balanced signal rows with equal timestamp profit weight",
+          profile === 'benchmarkReference'
+            ? 'strategy-consensus timestamp-direction benchmark event with macro strategy LU; acceptance selects whole events'
+            : 'balanced signal rows with equal timestamp profit weight',
         discoveryRows: {
           train: discoveryTrain.length,
           tuning: discoveryTuning.length,
@@ -3521,9 +3665,9 @@ export const buildCrossStrategyReport = async ({
     }
     profiles[profile] = {
       description:
-        profile === "universal"
-          ? "normalized target/setup market state"
-          : "normalized benchmark, reference, and global market state",
+        profile === 'universal'
+          ? 'normalized target/setup market state'
+          : 'normalized benchmark, reference, and global market state',
       directions: profileDirections,
     };
 
@@ -3560,9 +3704,11 @@ export const buildCrossStrategyReport = async ({
   return {
     generatedAt: new Date().toISOString(),
     run: {
-      mode: "profiled cross-strategy saved-snapshot feasibility",
+      mode: 'profiled cross-strategy saved-snapshot feasibility',
+      sourceRepositoryRoot,
+      frameworkRepositoryRoot,
       evidenceStatus:
-        "retrospective research-only; this report exposes the historical test tail",
+        'retrospective research-only; this report exposes the historical test tail',
       strategies: groups.length,
       overlap: {
         minTimestamp: new Date(minTimestamp).toISOString(),
@@ -3588,16 +3734,16 @@ export const buildCrossStrategyReport = async ({
         minSharedStrategies,
         portfolioCapacity,
         selectionUnit: {
-          universal: "signal row",
-          benchmarkReference: "strategy-consensus timestamp-direction event",
+          universal: 'signal row',
+          benchmarkReference: 'strategy-consensus timestamp-direction event',
         },
       },
       featureCoverage: {
         universal: minFeatureCoverage,
         benchmarkReference: minBenchmarkFeatureCoverage,
-        eligibilityPartition: "train only",
+        eligibilityPartition: 'train only',
       },
-      normalization: "profit / median absolute train loss per strategy",
+      normalization: 'profit / median absolute train loss per strategy',
       discoveryBalance: { maxRowsPerStrategy, maxRowsPerEvent },
       search: {
         maxDepth,
@@ -3635,10 +3781,13 @@ export const buildAblationReport = ({
   capacities = DEFAULT_CAPACITIES,
   maxLossValue = null,
   filePaths,
+  sourceRepositoryRoot = null,
+  frameworkRepositoryRoot = null,
+  sourceRepositoryKind = null,
   failed = 0,
   featureInventory = [],
 }) => {
-  if (!rows.length) throw new Error("No rows were evaluated");
+  if (!rows.length) throw new Error('No rows were evaluated');
   const minTimestamp = rows[0].timestamp;
   const maxTimestamp = rows.at(-1).timestamp;
   const split = splitRowsByTimestamp(rows, validationSplit, testSplit);
@@ -3760,6 +3909,9 @@ export const buildAblationReport = ({
     generatedAt: new Date().toISOString(),
     run: {
       filePaths,
+      sourceRepositoryRoot,
+      frameworkRepositoryRoot,
+      sourceRepositoryKind,
       rows: rows.length,
       failed,
       minQuality,
@@ -3791,10 +3943,10 @@ export const buildAblationReport = ({
 };
 
 const formatNumber = (value, digits = 2) =>
-  value == null || !Number.isFinite(value) ? "n/a" : value.toFixed(digits);
+  value == null || !Number.isFinite(value) ? 'n/a' : value.toFixed(digits);
 const formatPct = (value) =>
   value == null || !Number.isFinite(value)
-    ? "n/a"
+    ? 'n/a'
     : `${(value * 100).toFixed(1)}%`;
 const formatMetric = (summary) => ({
   n: summary.trades,
@@ -3814,13 +3966,13 @@ const formatMetric = (summary) => ({
 });
 
 const escapeCell = (value) =>
-  String(value).replace(/\|/g, "\\|").replace(/\n/g, " ");
+  String(value).replace(/\|/g, '\\|').replace(/\n/g, ' ');
 const markdownTable = (headers, rows) =>
   [
-    `| ${headers.map(escapeCell).join(" | ")} |`,
-    `| ${headers.map(() => "---").join(" | ")} |`,
-    ...rows.map((row) => `| ${row.map(escapeCell).join(" | ")} |`),
-  ].join("\n");
+    `| ${headers.map(escapeCell).join(' | ')} |`,
+    `| ${headers.map(() => '---').join(' | ')} |`,
+    ...rows.map((row) => `| ${row.map(escapeCell).join(' | ')} |`),
+  ].join('\n');
 
 const comparisonRow = (label, baseline, candidate) => {
   const left = formatMetric(baseline);
@@ -3946,49 +4098,52 @@ const validationComparisonRow = (label, baseline, candidate) => {
 
 export const formatMarkdownReport = (report) => {
   const lines = [
-    "# AI Gate Ablation Report",
-    "",
+    '# AI Gate Ablation Report',
+    '',
     `Generated: ${report.generatedAt}`,
-    "",
-    "## Run",
-    "",
+    '',
+    '## Run',
+    '',
     markdownTable(
-      ["Field", "Value"],
+      ['Field', 'Value'],
       [
-        ["rows", report.run.rows],
-        ["failed", report.run.failed],
-        ["range", `${report.run.minTimestamp} .. ${report.run.maxTimestamp}`],
-        ["span_days", formatNumber(report.run.spanDays)],
-        ["min_quality", report.run.minQuality],
-        ["tuning_split", formatPct(report.run.validationSplit)],
-        ["test_split", formatPct(report.run.testSplit)],
-        ["train_rows", report.run.trainRows],
-        ["tuning_rows", report.run.tuningRows],
-        ["test_rows", report.run.testRows],
-        ["train_events", report.run.trainEvents],
-        ["tuning_events", report.run.tuningEvents],
-        ["test_events", report.run.testEvents],
-        ["capacities", report.run.capacities.join(",")],
-        ["max_loss_value", formatNumber(report.run.maxLossValue)],
+        ['rows', report.run.rows],
+        ['failed', report.run.failed],
+        ['source_root', report.run.sourceRepositoryRoot ?? 'n/a'],
+        ['source_kind', report.run.sourceRepositoryKind ?? 'n/a'],
+        ['framework_root', report.run.frameworkRepositoryRoot ?? 'n/a'],
+        ['range', `${report.run.minTimestamp} .. ${report.run.maxTimestamp}`],
+        ['span_days', formatNumber(report.run.spanDays)],
+        ['min_quality', report.run.minQuality],
+        ['tuning_split', formatPct(report.run.validationSplit)],
+        ['test_split', formatPct(report.run.testSplit)],
+        ['train_rows', report.run.trainRows],
+        ['tuning_rows', report.run.tuningRows],
+        ['test_rows', report.run.testRows],
+        ['train_events', report.run.trainEvents],
+        ['tuning_events', report.run.tuningEvents],
+        ['test_events', report.run.testEvents],
+        ['capacities', report.run.capacities.join(',')],
+        ['max_loss_value', formatNumber(report.run.maxLossValue)],
         [
-          "terminal_windows",
-          report.run.terminalWindows.map((value) => `${value}d`).join(","),
+          'terminal_windows',
+          report.run.terminalWindows.map((value) => `${value}d`).join(','),
         ],
       ],
     ),
-    "",
-    "## Dataset Files",
-    "",
+    '',
+    '## Dataset Files',
+    '',
     ...report.run.filePaths.map((filePath) => `- \`${filePath}\``),
-    "",
+    '',
   ];
 
   if (report.featureInventory.length) {
     lines.push(
-      "## Feature Inventory",
-      "",
+      '## Feature Inventory',
+      '',
       markdownTable(
-        ["Feature", "Count", "Null", "Numeric", "Min", "Max", "Categories"],
+        ['Feature', 'Count', 'Null', 'Numeric', 'Min', 'Max', 'Categories'],
         report.featureInventory.map((entry) => [
           entry.feature,
           entry.count,
@@ -3998,137 +4153,137 @@ export const formatMarkdownReport = (report) => {
           formatNumber(entry.max, 6),
           entry.categories
             .map(({ value, count }) => `${value}:${count}`)
-            .join(", "),
+            .join(', '),
         ]),
       ),
-      "",
+      '',
     );
   }
 
   lines.push(
-    "## Baseline",
-    "",
+    '## Baseline',
+    '',
     markdownTable(
       [
-        "Period",
-        "N",
-        "WR",
-        "PNL",
-        "PF",
-        "Sharpe",
-        "Sortino",
-        "Calmar",
-        "MaxDD",
-        "DD/Gross",
-        "DD/PNL",
-        "Strict Loss",
-        "Loss Streak",
-        "Losing Months",
-        "Cadence/D",
+        'Period',
+        'N',
+        'WR',
+        'PNL',
+        'PF',
+        'Sharpe',
+        'Sortino',
+        'Calmar',
+        'MaxDD',
+        'DD/Gross',
+        'DD/PNL',
+        'Strict Loss',
+        'Loss Streak',
+        'Losing Months',
+        'Cadence/D',
       ],
       Object.entries(report.baseline.periods).map(([period, summary]) => [
         period,
         ...summaryRows(summary).slice(0, -1),
       ]),
     ),
-    "",
-    "### Baseline Cadence and Fan-out",
-    "",
+    '',
+    '### Baseline Cadence and Fan-out',
+    '',
     markdownTable(
       [
-        "Period",
-        "Trades/D",
-        "Events/D",
-        "Active Days",
-        "Events",
-        "Trades/Event",
-        "p95 Batch",
-        "Max Batch",
-        "Top Event Count",
-        "Top Event PNL",
+        'Period',
+        'Trades/D',
+        'Events/D',
+        'Active Days',
+        'Events',
+        'Trades/Event',
+        'p95 Batch',
+        'Max Batch',
+        'Top Event Count',
+        'Top Event PNL',
       ],
       fanoutRows(report.baseline.periods),
     ),
-    "",
-    "### Baseline Capacity Stress",
-    "",
+    '',
+    '### Baseline Capacity Stress',
+    '',
     markdownTable(
       [
-        "Period",
-        "Cap",
-        "Accepted",
-        "Overflow",
-        "Overflow Events",
-        "Max Stop Risk",
+        'Period',
+        'Cap',
+        'Accepted',
+        'Overflow',
+        'Overflow Events',
+        'Max Stop Risk',
       ],
       capacityRows(report.baseline.periods),
     ),
-    "",
-    "### Baseline Validation",
-    "",
+    '',
+    '### Baseline Validation',
+    '',
     markdownTable(
       [
-        "Partition",
-        "Source Rows",
-        "Source Events",
-        "Approved N",
-        "Approved Events",
-        "WR",
-        "PNL",
-        "PF",
-        "MaxDD",
-        "Max Batch",
+        'Partition',
+        'Source Rows',
+        'Source Events',
+        'Approved N',
+        'Approved Events',
+        'WR',
+        'PNL',
+        'PF',
+        'MaxDD',
+        'Max Batch',
       ],
       [
         validationSummaryRow(
-          "train",
+          'train',
           report.run.trainRows,
           report.run.trainEvents,
           report.baseline.train,
         ),
         validationSummaryRow(
-          "tuning",
+          'tuning',
           report.run.tuningRows,
           report.run.tuningEvents,
           report.baseline.tuning,
         ),
         validationSummaryRow(
-          "untouched test",
+          'untouched test',
           report.run.testRows,
           report.run.testEvents,
           report.baseline.test,
         ),
       ],
     ),
-    "",
+    '',
   );
 
   for (const variant of report.variants) {
     lines.push(
       `## Variant: ${variant.name}`,
-      "",
-      `- mode: \`${variant.mode}${variant.quality == null ? "" : `@${variant.quality}`}\``,
+      '',
+      `- mode: \`${variant.mode}${variant.quality == null ? '' : `@${variant.quality}`}\``,
       `- expression: \`${variant.expression}\``,
-      "",
-      "### Period Comparison",
-      "",
+      '',
+      '### Period Comparison',
+      '',
       markdownTable(
         [
-          "Period",
-          "N",
-          "WR",
-          "PNL",
-          "PF",
-          "Sharpe",
-          "Sortino",
-          "Calmar",
-          "MaxDD",
-          "DD/Gross",
-          "DD/PNL",
-          "Strict Loss",
-          "Loss Streak",
-          "Losing Months",
-          "Cadence/D",
+          'Period',
+          'N',
+          'WR',
+          'PNL',
+          'PF',
+          'Sharpe',
+          'Sortino',
+          'Calmar',
+          'MaxDD',
+          'DD/Gross',
+          'DD/PNL',
+          'Strict Loss',
+          'Loss Streak',
+          'Losing Months',
+          'Cadence/D',
         ],
         Object.keys(variant.periods).map((period) =>
           comparisonRow(
@@ -4138,21 +4293,21 @@ export const formatMarkdownReport = (report) => {
           ),
         ),
       ),
-      "",
-      "### Cadence and Fan-out Comparison",
-      "",
+      '',
+      '### Cadence and Fan-out Comparison',
+      '',
       markdownTable(
         [
-          "Period",
-          "Trades/D",
-          "Events/D",
-          "Active Days",
-          "Events",
-          "Trades/Event",
-          "p95 Batch",
-          "Max Batch",
-          "Top Event Count",
-          "Top Event PNL",
+          'Period',
+          'Trades/D',
+          'Events/D',
+          'Active Days',
+          'Events',
+          'Trades/Event',
+          'p95 Batch',
+          'Max Batch',
+          'Top Event Count',
+          'Top Event PNL',
         ],
         Object.keys(variant.periods).map((period) =>
           fanoutComparisonRow(
@@ -4162,81 +4317,81 @@ export const formatMarkdownReport = (report) => {
           ),
         ),
       ),
-      "",
-      "### Capacity Stress",
-      "",
+      '',
+      '### Capacity Stress',
+      '',
       markdownTable(
         [
-          "Period",
-          "Cap",
-          "Accepted",
-          "Overflow",
-          "Overflow Events",
-          "Max Stop Risk",
+          'Period',
+          'Cap',
+          'Accepted',
+          'Overflow',
+          'Overflow Events',
+          'Max Stop Risk',
         ],
         capacityRows(variant.periods),
       ),
-      "",
-      "### Time Split",
-      "",
+      '',
+      '### Time Split',
+      '',
       markdownTable(
         [
-          "Split",
-          "N",
-          "Events",
-          "WR",
-          "PNL",
-          "PF",
-          "Sharpe",
-          "Sortino",
-          "Calmar",
-          "MaxDD",
-          "DD/Gross",
-          "DD/PNL",
-          "Strict Loss",
-          "Loss Streak",
-          "Losing Months",
-          "Cadence/D",
-          "Max Batch",
+          'Split',
+          'N',
+          'Events',
+          'WR',
+          'PNL',
+          'PF',
+          'Sharpe',
+          'Sortino',
+          'Calmar',
+          'MaxDD',
+          'DD/Gross',
+          'DD/PNL',
+          'Strict Loss',
+          'Loss Streak',
+          'Losing Months',
+          'Cadence/D',
+          'Max Batch',
         ],
         [
           validationComparisonRow(
-            "train",
+            'train',
             report.baseline.train,
             variant.train,
           ),
           validationComparisonRow(
-            "tuning",
+            'tuning',
             report.baseline.tuning,
             variant.tuning,
           ),
           validationComparisonRow(
-            "untouched test",
+            'untouched test',
             report.baseline.test,
             variant.test,
           ),
         ],
       ),
-      "",
-      "### Quality Thresholds",
-      "",
+      '',
+      '### Quality Thresholds',
+      '',
       markdownTable(
         [
-          "Threshold",
-          "N",
-          "WR",
-          "PNL",
-          "PF",
-          "Sharpe",
-          "Sortino",
-          "Calmar",
-          "MaxDD",
-          "DD/Gross",
-          "DD/PNL",
-          "Strict Loss",
-          "Loss Streak",
-          "Losing Months",
-          "Cadence/D",
+          'Threshold',
+          'N',
+          'WR',
+          'PNL',
+          'PF',
+          'Sharpe',
+          'Sortino',
+          'Calmar',
+          'MaxDD',
+          'DD/Gross',
+          'DD/PNL',
+          'Strict Loss',
+          'Loss Streak',
+          'Losing Months',
+          'Cadence/D',
         ],
         Object.keys(variant.qualityThresholds).map((threshold) =>
           comparisonRow(
@@ -4246,26 +4401,26 @@ export const formatMarkdownReport = (report) => {
           ),
         ),
       ),
-      "",
-      "### Direction",
-      "",
+      '',
+      '### Direction',
+      '',
       markdownTable(
         [
-          "Direction",
-          "N",
-          "WR",
-          "PNL",
-          "PF",
-          "Sharpe",
-          "Sortino",
-          "Calmar",
-          "MaxDD",
-          "DD/Gross",
-          "DD/PNL",
-          "Strict Loss",
-          "Loss Streak",
-          "Losing Months",
-          "Cadence/D",
+          'Direction',
+          'N',
+          'WR',
+          'PNL',
+          'PF',
+          'Sharpe',
+          'Sortino',
+          'Calmar',
+          'MaxDD',
+          'DD/Gross',
+          'DD/PNL',
+          'Strict Loss',
+          'Loss Streak',
+          'Losing Months',
+          'Cadence/D',
         ],
         Object.keys(variant.directions).map((direction) =>
           comparisonRow(
@@ -4275,47 +4430,47 @@ export const formatMarkdownReport = (report) => {
           ),
         ),
       ),
-      "",
-      "### Ablation Slices",
-      "",
+      '',
+      '### Ablation Slices',
+      '',
       markdownTable(
         [
-          "Slice",
-          "N",
-          "WR",
-          "PNL",
-          "PF",
-          "Sharpe",
-          "Sortino",
-          "Calmar",
-          "MaxDD",
-          "DD/Gross",
-          "DD/PNL",
-          "Strict Loss",
-          "Loss Streak",
-          "Losing Months",
-          "Cadence/D",
-          "Unique Timestamps",
+          'Slice',
+          'N',
+          'WR',
+          'PNL',
+          'PF',
+          'Sharpe',
+          'Sortino',
+          'Calmar',
+          'MaxDD',
+          'DD/Gross',
+          'DD/PNL',
+          'Strict Loss',
+          'Loss Streak',
+          'Losing Months',
+          'Cadence/D',
+          'Unique Timestamps',
         ],
         [
-          ["rule matches", ...summaryRows(variant.matchedAll)],
-          ["removed", ...summaryRows(variant.removed)],
-          ["added", ...summaryRows(variant.added)],
+          ['rule matches', ...summaryRows(variant.matchedAll)],
+          ['removed', ...summaryRows(variant.removed)],
+          ['added', ...summaryRows(variant.added)],
         ],
       ),
-      "",
-      "### Monthly Stability",
-      "",
+      '',
+      '### Monthly Stability',
+      '',
       markdownTable(
         [
-          "Month",
-          "Baseline N",
-          "Candidate N",
-          "Baseline PNL",
-          "Candidate PNL",
-          "Candidate WR",
-          "Candidate PF",
-          "Candidate MaxDD",
+          'Month',
+          'Baseline N',
+          'Candidate N',
+          'Baseline PNL',
+          'Candidate PNL',
+          'Candidate WR',
+          'Candidate PF',
+          'Candidate MaxDD',
         ],
         Object.keys(variant.months).map((month) => [
           month,
@@ -4328,16 +4483,16 @@ export const formatMarkdownReport = (report) => {
           formatNumber(variant.months[month].maxDrawdown),
         ]),
       ),
-      "",
-      "### Slice Concentration",
-      "",
-      `- removed top symbols: ${variant.removed.topSymbols.map(({ symbol, count, pnl }) => `${symbol}:${count}/${formatNumber(pnl)}`).join(", ") || "none"}`,
-      `- added top symbols: ${variant.added.topSymbols.map(({ symbol, count, pnl }) => `${symbol}:${count}/${formatNumber(pnl)}`).join(", ") || "none"}`,
-      "",
+      '',
+      '### Slice Concentration',
+      '',
+      `- removed top symbols: ${variant.removed.topSymbols.map(({ symbol, count, pnl }) => `${symbol}:${count}/${formatNumber(pnl)}`).join(', ') || 'none'}`,
+      `- added top symbols: ${variant.added.topSymbols.map(({ symbol, count, pnl }) => `${symbol}:${count}/${formatNumber(pnl)}`).join(', ') || 'none'}`,
+      '',
     );
   }
 
-  return `${lines.join("\n")}\n`;
+  return `${lines.join('\n')}\n`;
 };
 
 const crossPartitionCell = (summary) =>
@@ -4362,33 +4517,33 @@ const crossCandidateRows = (candidates) =>
       formatPct(candidate.test.topStrategyCountShare),
       formatPct(candidate.test.topEventCountShare),
       `${candidate.negativeControl.signCorrectRuns}/${candidate.negativeControl.runs}`,
-      candidate.passes ? "PASS" : "FAIL",
+      candidate.passes ? 'PASS' : 'FAIL',
     ]);
 
 const crossCandidateTable = (candidates) =>
   candidates.length
     ? markdownTable(
         [
-          "#",
-          "Condition",
-          "Train E/LU/PF",
-          "Tuning E/LU/PF",
-          "Test N",
-          "Test events",
-          "Test WR",
-          "Test PF",
-          "Test LU",
-          "Selected",
-          "Kept E/LU/PF",
-          "Good/covered strategies",
-          "Top strategy count",
-          "Top event count",
-          "Shift control",
-          "Checks",
+          '#',
+          'Condition',
+          'Train E/LU/PF',
+          'Tuning E/LU/PF',
+          'Test N',
+          'Test events',
+          'Test WR',
+          'Test PF',
+          'Test LU',
+          'Selected',
+          'Kept E/LU/PF',
+          'Good/covered strategies',
+          'Top strategy count',
+          'Top event count',
+          'Shift control',
+          'Checks',
         ],
         crossCandidateRows(candidates),
       )
-    : "No candidates survived train/tuning search.";
+    : 'No candidates survived train/tuning search.';
 
 const crossStrategyRows = (candidate) =>
   candidate.test.strategies.map((entry) => [
@@ -4403,71 +4558,71 @@ const crossStrategyRows = (candidate) =>
 
 export const formatCrossStrategyMarkdown = (report) => {
   const lines = [
-    "# Profiled Cross-Strategy Pocket Feasibility",
-    "",
+    '# Profiled Cross-Strategy Pocket Feasibility',
+    '',
     `Generated: ${report.generatedAt}`,
-    "",
-    "This is retrospective saved-snapshot pocket discovery, not a current qN+ gate replay. PnL search values are normalized loss units (LU). The historical test tail is exposed by this report and is not future untouched evidence.",
-    "",
-    "## Run",
-    "",
+    '',
+    'This is retrospective saved-snapshot pocket discovery, not a current qN+ gate replay. PnL search values are normalized loss units (LU). The historical test tail is exposed by this report and is not future untouched evidence.',
+    '',
+    '## Run',
+    '',
     markdownTable(
-      ["Field", "Value"],
+      ['Field', 'Value'],
       [
-        ["strategies", report.run.strategies],
+        ['strategies', report.run.strategies],
         [
-          "overlap",
+          'overlap',
           `${report.run.overlap.minTimestamp} .. ${report.run.overlap.maxTimestamp}`,
         ],
-        ["scanned_rows", report.run.scanned],
-        ["feature_scan_rows", report.run.featureScanRows],
-        ["overlap_rows", report.run.overlapRows],
-        ["independent_events", report.run.uniqueEvents],
+        ['scanned_rows', report.run.scanned],
+        ['feature_scan_rows', report.run.featureScanRows],
+        ['overlap_rows', report.run.overlapRows],
+        ['independent_events', report.run.uniqueEvents],
         [
-          "failed_rows",
+          'failed_rows',
           `metadata=${report.run.failed.metadataPass}, features=${report.run.failed.featurePass}`,
         ],
-        ["tuning_split", formatPct(report.run.validationSplit)],
-        ["test_split", formatPct(report.run.testSplit)],
-        ["feature_strategy_floor", report.run.minFeatureStrategies],
+        ['tuning_split', formatPct(report.run.validationSplit)],
+        ['test_split', formatPct(report.run.testSplit)],
+        ['feature_strategy_floor', report.run.minFeatureStrategies],
         [
-          "shared_pocket_strategy_floor",
+          'shared_pocket_strategy_floor',
           report.run.acceptance.minSharedStrategies,
         ],
         [
-          "approval_portfolio_capacity",
+          'approval_portfolio_capacity',
           report.run.acceptance.portfolioCapacity,
         ],
         [
-          "universal_train_coverage_floor",
+          'universal_train_coverage_floor',
           formatPct(report.run.featureCoverage.universal),
         ],
         [
-          "benchmark_train_coverage_floor",
+          'benchmark_train_coverage_floor',
           formatPct(report.run.featureCoverage.benchmarkReference),
         ],
         [
-          "feature_eligibility",
+          'feature_eligibility',
           report.run.featureCoverage.eligibilityPartition,
         ],
-        ["normalization", report.run.normalization],
+        ['normalization', report.run.normalization],
         [
-          "discovery_balance",
+          'discovery_balance',
           `${report.run.discoveryBalance.maxRowsPerStrategy}/strategy, ${report.run.discoveryBalance.maxRowsPerEvent}/strategy-event`,
         ],
       ],
     ),
-    "",
-    "## Dataset Lineage",
-    "",
+    '',
+    '## Dataset Lineage',
+    '',
     markdownTable(
       [
-        "Strategy",
-        "Merge",
-        "Parts",
-        "Rows in overlap",
-        "Train loss scale",
-        "Export range",
+        'Strategy',
+        'Merge',
+        'Parts',
+        'Rows in overlap',
+        'Train loss scale',
+        'Export range',
       ],
       report.datasets.map((dataset) => [
         dataset.strategy,
@@ -4478,73 +4633,73 @@ export const formatCrossStrategyMarkdown = (report) => {
         `${new Date(dataset.range.minTimestamp).toISOString()} .. ${new Date(dataset.range.maxTimestamp).toISOString()}`,
       ]),
     ),
-    "",
-    "## Global Time Partitions",
-    "",
+    '',
+    '## Global Time Partitions',
+    '',
     markdownTable(
-      ["Partition", "Events", "Range"],
-      ["train", "tuning", "test"].map((partition) => {
+      ['Partition', 'Events', 'Range'],
+      ['train', 'tuning', 'test'].map((partition) => {
         const value = report.run.partitions[partition];
         return [
           partition,
           value?.events ?? 0,
-          value ? `${value.minTimestamp} .. ${value.maxTimestamp}` : "n/a",
+          value ? `${value.minTimestamp} .. ${value.maxTimestamp}` : 'n/a',
         ];
       }),
     ),
-    "",
-    "## Feature Policy",
-    "",
-    "Normalized target/setup fields and normalized benchmark/reference/global fields are searched separately. Freshness and coverage fields are eligibility guards only. Raw absolute levels remain visible in the audit with their required causal transform; derived policy composites are audited but not searched.",
-    "",
-    "Benchmark/reference snapshots use within-strategy consensus followed by cross-strategy consensus. Acceptance then applies the same snapshot to every signal in that timestamp-direction event; approval fan-out is capped by the configured portfolio capacity.",
-    "",
+    '',
+    '## Feature Policy',
+    '',
+    'Normalized target/setup fields and normalized benchmark/reference/global fields are searched separately. Freshness and coverage fields are eligibility guards only. Raw absolute levels remain visible in the audit with their required causal transform; derived policy composites are audited but not searched.',
+    '',
+    'Benchmark/reference snapshots use within-strategy consensus followed by cross-strategy consensus. Acceptance then applies the same snapshot to every signal in that timestamp-direction event; approval fan-out is capped by the configured portfolio capacity.',
+    '',
     markdownTable(
-      ["Bucket", "Features", "Search"],
+      ['Bucket', 'Features', 'Search'],
       [
-        ["universal", "per direction below", "yes"],
-        ["benchmarkReference", "per direction below", "yes, event-level"],
-        ["dataQuality", report.audits.dataQuality.length, "guard only"],
+        ['universal', 'per direction below', 'yes'],
+        ['benchmarkReference', 'per direction below', 'yes, event-level'],
+        ['dataQuality', report.audits.dataQuality.length, 'guard only'],
         [
-          "rawNonstationary",
+          'rawNonstationary',
           report.audits.rawNonstationary.length,
-          "audit only",
+          'audit only',
         ],
-        ["derivedPolicy", report.audits.derivedPolicy.length, "audit only"],
-        ["metadata", report.audits.metadata.length, "lineage only"],
+        ['derivedPolicy', report.audits.derivedPolicy.length, 'audit only'],
+        ['metadata', report.audits.metadata.length, 'lineage only'],
       ],
     ),
-    "",
+    '',
   ];
 
   for (const profile of CROSS_SEARCH_PROFILE_NAMES) {
     const profileResult = report.profiles[profile];
-    lines.push(`## Profile: ${profile}`, "", profileResult.description, "");
-    for (const direction of ["LONG", "SHORT"]) {
+    lines.push(`## Profile: ${profile}`, '', profileResult.description, '');
+    for (const direction of ['LONG', 'SHORT']) {
       const result = profileResult.directions[direction];
       lines.push(
         `### ${profile} / ${direction}`,
-        "",
+        '',
         markdownTable(
-          ["Partition", "Rows", "Events"],
-          ["train", "tuning", "test"].map((partition) => [
+          ['Partition', 'Rows', 'Events'],
+          ['train', 'tuning', 'test'].map((partition) => [
             partition,
             result.rows[partition],
             result.events[partition],
           ]),
         ),
-        "",
-        `Eligible train features: ${result.features.length}; discovery unit: ${result.discoveryUnit}. Discovery rows: train ${result.discoveryRows.train}, tuning ${result.discoveryRows.tuning}; predicates ${result.searchStats.predicates}, combinations ${result.searchStats.combinationsEvaluated}${result.searchStats.truncated ? " (truncated)" : ""}.`,
-        "",
+        '',
+        `Eligible train features: ${result.features.length}; discovery unit: ${result.discoveryUnit}. Discovery rows: train ${result.discoveryRows.train}, tuning ${result.discoveryRows.tuning}; predicates ${result.searchStats.predicates}, combinations ${result.searchStats.combinationsEvaluated}${result.searchStats.truncated ? ' (truncated)' : ''}.`,
+        '',
         markdownTable(
           [
-            "Feature",
-            "Scope",
-            "Train strategies",
-            "Train rows",
-            "Train coverage",
-            "Tuning coverage",
-            "Test coverage",
+            'Feature',
+            'Scope',
+            'Train strategies',
+            'Train rows',
+            'Train coverage',
+            'Tuning coverage',
+            'Test coverage',
           ],
           result.features
             .slice(0, 80)
@@ -4558,15 +4713,15 @@ export const formatCrossStrategyMarkdown = (report) => {
               formatPct(entry.partitionCoverage.test.coverage),
             ]),
         ),
-        "",
+        '',
         `#### ${direction} approval pockets`,
-        "",
+        '',
         crossCandidateTable(result.approve),
-        "",
+        '',
         `#### ${direction} block pockets`,
-        "",
+        '',
         crossCandidateTable(result.block),
-        "",
+        '',
       );
 
       if (result.featureConsistency) {
@@ -4588,39 +4743,39 @@ export const formatCrossStrategyMarkdown = (report) => {
         );
         lines.push(
           `#### ${direction} benchmark snapshot consistency`,
-          "",
+          '',
           markdownTable(
             [
-              "Partition",
-              "Feature",
-              "Observed events",
-              "Consensus",
-              "Conflicts",
-              "Intra-strategy conflicts",
-              "Cross-strategy conflicts",
+              'Partition',
+              'Feature',
+              'Observed events',
+              'Consensus',
+              'Conflicts',
+              'Intra-strategy conflicts',
+              'Cross-strategy conflicts',
             ],
             consistencyRows,
           ),
-          "",
+          '',
         );
       }
 
       for (const [kind, candidates] of [
-        ["approval", result.approve],
-        ["block", result.block],
+        ['approval', result.approve],
+        ['block', result.block],
       ]) {
         const candidate = candidates[0];
         if (!candidate) continue;
         lines.push(
           `#### ${direction} top ${kind}: per-strategy historical test`,
-          "",
+          '',
           `Condition: \`${candidate.condition}\``,
-          "",
+          '',
           markdownTable(
-            ["Slice", "Rows", "Events", "WR", "PF", "LU", "LU/event"],
+            ['Slice', 'Rows', 'Events', 'WR', 'PF', 'LU', 'LU/event'],
             [
               [
-                "selected",
+                'selected',
                 candidate.test.trades,
                 candidate.test.events,
                 formatPct(candidate.test.winRate),
@@ -4633,7 +4788,7 @@ export const formatCrossStrategyMarkdown = (report) => {
                 ),
               ],
               [
-                "kept complement",
+                'kept complement',
                 candidate.test.complement.rows,
                 candidate.test.complement.events,
                 formatPct(candidate.test.complement.winRate),
@@ -4643,32 +4798,32 @@ export const formatCrossStrategyMarkdown = (report) => {
               ],
             ],
           ),
-          "",
+          '',
           markdownTable(
-            ["Strategy", "N", "Events", "WR", "PF", "LU", "Raw PnL"],
+            ['Strategy', 'N', 'Events', 'WR', 'PF', 'LU', 'Raw PnL'],
             crossStrategyRows(candidate),
           ),
-          "",
-          "Acceptance checks:",
-          "",
+          '',
+          'Acceptance checks:',
+          '',
           markdownTable(
-            ["Check", "Status"],
+            ['Check', 'Status'],
             Object.entries(candidate.checks).map(([check, passed]) => [
               check,
-              passed ? "PASS" : "FAIL",
+              passed ? 'PASS' : 'FAIL',
             ]),
           ),
-          "",
+          '',
         );
       }
     }
   }
 
   lines.push(
-    "## Data-Quality Guard Audit",
-    "",
+    '## Data-Quality Guard Audit',
+    '',
     markdownTable(
-      ["Feature", "Scope", "Coverage", "True rate", "Min", "Max"],
+      ['Feature', 'Scope', 'Coverage', 'True rate', 'Min', 'Max'],
       report.audits.dataQuality
         .slice(0, 100)
         .map((entry) => [
@@ -4680,11 +4835,11 @@ export const formatCrossStrategyMarkdown = (report) => {
           formatNumber(entry.numericMax),
         ]),
     ),
-    "",
-    "## Raw / Nonstationary Audit",
-    "",
+    '',
+    '## Raw / Nonstationary Audit',
+    '',
     markdownTable(
-      ["Feature", "Scope", "Coverage", "Required transform"],
+      ['Feature', 'Scope', 'Coverage', 'Required transform'],
       report.audits.rawNonstationary
         .slice(0, 120)
         .map((entry) => [
@@ -4694,11 +4849,11 @@ export const formatCrossStrategyMarkdown = (report) => {
           entry.transform,
         ]),
     ),
-    "",
-    "## Existing Derived-Policy Audit",
-    "",
+    '',
+    '## Existing Derived-Policy Audit',
+    '',
     markdownTable(
-      ["Feature", "Coverage", "Reason"],
+      ['Feature', 'Coverage', 'Reason'],
       report.audits.derivedPolicy
         .slice(0, 80)
         .map((entry) => [
@@ -4707,12 +4862,12 @@ export const formatCrossStrategyMarkdown = (report) => {
           entry.reason,
         ]),
     ),
-    "",
+    '',
   );
 
   const passing = CROSS_SEARCH_PROFILE_NAMES.flatMap((profile) =>
-    ["LONG", "SHORT"].flatMap((direction) =>
-      ["approve", "block"].map((kind) => ({
+    ['LONG', 'SHORT'].flatMap((direction) =>
+      ['approve', 'block'].map((kind) => ({
         profile,
         direction,
         kind,
@@ -4723,10 +4878,10 @@ export const formatCrossStrategyMarkdown = (report) => {
     ),
   );
   lines.push(
-    "## Feasibility Verdict",
-    "",
+    '## Feasibility Verdict',
+    '',
     markdownTable(
-      ["Profile", "Direction", "Pocket type", "Passing all checks"],
+      ['Profile', 'Direction', 'Pocket type', 'Passing all checks'],
       passing.map((entry) => [
         entry.profile,
         entry.direction,
@@ -4734,11 +4889,11 @@ export const formatCrossStrategyMarkdown = (report) => {
         entry.count,
       ]),
     ),
-    "",
-    "The five circular-shift checks are fixed-pocket diagnostics, not family-wise permutation proof. Any PASS remains research-only until the exact rule survives an export strictly after this report cutoff and live-env lineage checks.",
-    "",
+    '',
+    'The five circular-shift checks are fixed-pocket diagnostics, not family-wise permutation proof. Any PASS remains research-only until the exact rule survives an export strictly after this report cutoff and live-env lineage checks.',
+    '',
   );
-  return `${lines.join("\n")}\n`;
+  return `${lines.join('\n')}\n`;
 };
 
 const printGroups = (groups, projectRoot) => {
@@ -4758,7 +4913,6 @@ export const main = async () => {
     console.log(usage);
     return;
   }
-  const sourceRepositoryRoot = findSourceRepositoryRoot();
   const projectRoot = resolveArtifactProjectRoot();
   const outDir = path.resolve(projectRoot, options.outDir);
   if (options.list) {
@@ -4775,6 +4929,11 @@ export const main = async () => {
     );
     return;
   }
+  const sourceRepositoryRoot = findSourceRepositoryRoot();
+  const sourceRepositoryKind = getSourceRepositoryKind(sourceRepositoryRoot);
+  const frameworkRepositoryRoot = findFrameworkRepositoryRoot(
+    sourceRepositoryRoot,
+  );
   if (options.crossStrategy) {
     const groups = latestDatasetGroupsByStrategy(
       await listDatasetGroups(outDir),
@@ -4782,6 +4941,7 @@ export const main = async () => {
     const report = await buildCrossStrategyReport({
       projectRoot,
       sourceRepositoryRoot,
+      frameworkRepositoryRoot,
       groups,
       validationSplit: options.validationSplit,
       testSplit: options.testSplit,
@@ -4807,10 +4967,10 @@ export const main = async () => {
       await fsp.mkdir(path.dirname(outputPath), { recursive: true });
       await fsp.writeFile(
         outputPath,
-        outputPath.endsWith(".json")
+        outputPath.endsWith('.json')
           ? `${JSON.stringify(report, null, 2)}\n`
           : markdown,
-        "utf8",
+        'utf8',
       );
       console.error(`report: ${path.relative(projectRoot, outputPath)}`);
     }
@@ -4820,7 +4980,7 @@ export const main = async () => {
   let variants = await loadVariants(options.variants, options.spec);
   if (options.movingAverageStudy && variants.length) {
     throw new Error(
-      "--movingAverageStudy cannot be combined with --variant or --spec",
+      '--movingAverageStudy cannot be combined with --variant or --spec',
     );
   }
   if (
@@ -4828,7 +4988,7 @@ export const main = async () => {
     !options.featurePattern &&
     !options.movingAverageStudy
   ) {
-    console.error("No variants supplied; printing current baseline only.");
+    console.error('No variants supplied; printing current baseline only.');
   }
   const filePaths = await resolveDatasetFiles({
     projectRoot,
@@ -4839,7 +4999,7 @@ export const main = async () => {
   let featurePattern = null;
   if (options.featurePattern) {
     try {
-      featurePattern = new RegExp(options.featurePattern, "i");
+      featurePattern = new RegExp(options.featurePattern, 'i');
     } catch (error) {
       throw new Error(`Invalid --featurePattern: ${error.message}`);
     }
@@ -4847,6 +5007,7 @@ export const main = async () => {
   const loaded = await loadResearchRows({
     projectRoot,
     sourceRepositoryRoot,
+    frameworkRepositoryRoot,
     filePaths,
     variants: options.movingAverageStudy ? [] : variants,
     minQuality: options.minQuality,
@@ -4878,6 +5039,9 @@ export const main = async () => {
     testSplit: options.testSplit,
     capacities: options.capacities,
     maxLossValue: options.maxLossValue,
+    sourceRepositoryRoot,
+    frameworkRepositoryRoot,
+    sourceRepositoryKind,
     filePaths: filePaths.map((filePath) =>
       path.relative(projectRoot, filePath),
     ),
@@ -4900,10 +5064,10 @@ export const main = async () => {
     await fsp.mkdir(path.dirname(outputPath), { recursive: true });
     await fsp.writeFile(
       outputPath,
-      outputPath.endsWith(".json")
+      outputPath.endsWith('.json')
         ? `${JSON.stringify(report, null, 2)}\n`
         : markdown,
-      "utf8",
+      'utf8',
     );
     console.error(`report: ${path.relative(projectRoot, outputPath)}`);
   }

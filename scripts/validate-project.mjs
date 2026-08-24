@@ -11,6 +11,23 @@ const assert = (condition, message) => {
   if (!condition) throw new Error(message);
 };
 
+const tradejsSkills = [
+  "ai-train-local-research",
+  "backtest-config-redis",
+  "runtime-parity-mismatch-analysis",
+  "save-strategy-config-from-backtest",
+  "strategy-backtest-research",
+  "strategy-candidate-report",
+  "strategy-candidate-compare",
+  "strategy-improvement-plan",
+  "strategy-improvement-research",
+  "strategy-period-revalidate",
+  "strategy-forward-start",
+  "strategy-forward-status",
+  "strategy-risk-scale",
+  "strategy-release",
+];
+
 const focusedStrategySkills = [
   "strategy-candidate-report",
   "strategy-candidate-compare",
@@ -27,15 +44,7 @@ const requiredFiles = [
   ".github/workflows/publish.yml",
   ".github/workflows/package-update.yml",
   ".github/dependabot.yml",
-  ".codex/skills/ai-train-local-research/SKILL.md",
-  ".codex/skills/backtest-config-redis/SKILL.md",
-  ".codex/skills/runtime-parity-mismatch-analysis/SKILL.md",
-  ".codex/skills/save-strategy-config-from-backtest/SKILL.md",
-  ".codex/skills/strategy-backtest-research/SKILL.md",
-  ...focusedStrategySkills.map(
-    (skillName) => `.codex/skills/${skillName}/SKILL.md`,
-  ),
-  ".codex/skills/strategy-release/SKILL.md",
+  ...tradejsSkills.map((skillName) => `.codex/skills/${skillName}/SKILL.md`),
   ".codex/skills/strategy-release/agents/openai.yaml",
   ".codex/tradejs-skill-bundle.json",
   "Dockerfile",
@@ -186,10 +195,21 @@ for (const artifactDirectory of [
   );
 }
 
+assert(
+  read(".prettierignore").includes(".codex/skills/"),
+  "Checksum-managed TradeJS skills must not be reformatted in Project",
+);
+
+const tradejsSkillContents = new Map(
+  tradejsSkills.map((skillName) => [
+    skillName,
+    read(`.codex/skills/${skillName}/SKILL.md`),
+  ]),
+);
 const focusedSkillContents = new Map(
   focusedStrategySkills.map((skillName) => [
     skillName,
-    read(`.codex/skills/${skillName}/SKILL.md`),
+    tradejsSkillContents.get(skillName),
   ]),
 );
 
@@ -202,10 +222,10 @@ assert(
   skillBundleManifest.schema === "tradejs-skill-bundle/v1" &&
     skillBundleManifest.source === "TradeJS-Dev/TradeJS:.codex/skills" &&
     JSON.stringify(skillBundleManifest.skills) ===
-      JSON.stringify(focusedStrategySkills),
-  "Focused strategy skills must come from the canonical TradeJS bundle",
+      JSON.stringify(tradejsSkills),
+  "All TradeJS skills must come from the canonical checksum bundle",
 );
-for (const skillName of focusedStrategySkills) {
+for (const skillName of tradejsSkills) {
   assert(
     skillBundleManifest.files[`.codex/skills/${skillName}/SKILL.md`],
     `Skill bundle manifest is missing ${skillName}`,
@@ -216,7 +236,7 @@ for (const [relativePath, expectedSha256] of Object.entries(
 )) {
   assert(
     /^\.codex\/skills\/[a-z0-9-]+\//.test(relativePath) &&
-      focusedStrategySkills.some((skillName) =>
+      tradejsSkills.some((skillName) =>
         relativePath.startsWith(`.codex/skills/${skillName}/`),
       ) &&
       fs.existsSync(path.join(root, relativePath)) &&
@@ -233,7 +253,7 @@ assert(
   ) === skillBundleManifest.bundleSha256,
   "Installed skill bundle checksum is invalid",
 );
-for (const [skillName, skill] of focusedSkillContents) {
+for (const [skillName, skill] of tradejsSkillContents) {
   assert(
     skill.includes(`name: ${skillName}`),
     `${skillName} must keep its skill identity`,
