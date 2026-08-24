@@ -1,0 +1,25 @@
+{
+  "schema": "tradejs-skill-bundle/v1",
+  "source": "TradeJS-Dev/TradeJS:.codex/skills",
+  "bundleSha256": "421dc2c6f2399ebd81a056a409f6d269f6ef90b5a30fa9d30167bf9a71578a30",
+  "skills": [
+    "strategy-candidate-report",
+    "strategy-candidate-compare",
+    "strategy-improvement-plan",
+    "strategy-improvement-research",
+    "strategy-period-revalidate",
+    "strategy-forward-start",
+    "strategy-forward-status",
+    "strategy-risk-scale"
+  ],
+  "files": {
+    ".codex/skills/strategy-candidate-compare/SKILL.md": "34dbca2c77ce74836f5c264131cefb751313147128ab1c3f947002f975be051c",
+    ".codex/skills/strategy-candidate-report/SKILL.md": "3cad1241ce2107d7e30a5d78eafd6429514a10d1a8e9cf3d0e97ffef9d691ab6",
+    ".codex/skills/strategy-forward-start/SKILL.md": "1591bd1c64864283320793b3c0bb4e1677aab960951ef8b487a1101ca7b6f82c",
+    ".codex/skills/strategy-forward-status/SKILL.md": "b41f117680259fd7b4d5cbe3c0a1be75a42f08c8cf78f9ad7ccb0d90bfc66269",
+    ".codex/skills/strategy-improvement-plan/SKILL.md": "f5f0f390941dd3332890a2f0ffae1248abde4925db2cf49a41c0c0c1b47e7864",
+    ".codex/skills/strategy-improvement-research/SKILL.md": "a03092a0ca8108f4f019b759ef93880da135c4346eee6c18ffb60dd1ab9bdf7c",
+    ".codex/skills/strategy-period-revalidate/SKILL.md": "f367ba1c632506a7d9bf92662a40b61df55f7a56ad04f3600a475b3c365bbbcb",
+    ".codex/skills/strategy-risk-scale/SKILL.md": "2c07846c9da2fd622ea6f5586c42863fc27b35a7d1d00614d5bbe0719da4d39f"
+  }
+}

@@ -68,8 +68,13 @@ requested.
 ## TradeJS Skills
 
 This Project carries its installed workflow definitions under `.codex/skills`;
-their canonical templates are owned by
-`~/dev/tradejs/investing/packages/create-tradejs/templates/.codex/skills`.
+their single editable source is owned by
+`~/dev/tradejs/investing/.codex/skills`. The installed focused-workflow
+snapshot is bound by `.codex/tradejs-skill-bundle.json`; do not hand-copy or
+edit its managed files. In the canonical workspace, rebuild `create-tradejs`
+and run its `--update-skills` command against this Project, then inspect the
+diff and run `yarn checks`. A published `create-tradejs` can update another
+standalone Project by running its approved version with `--update-skills .`.
 Read the complete matching Project-local `SKILL.md` before acting:
 
 - `$strategy-backtest-research` — strategy implementation, figures, backtest

@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -36,6 +37,7 @@ const requiredFiles = [
   ),
   ".codex/skills/strategy-release/SKILL.md",
   ".codex/skills/strategy-release/agents/openai.yaml",
+  ".codex/tradejs-skill-bundle.json",
   "Dockerfile",
   "cronjob",
   "config/runtime/index.ts",
@@ -189,6 +191,47 @@ const focusedSkillContents = new Map(
     skillName,
     read(`.codex/skills/${skillName}/SKILL.md`),
   ]),
+);
+
+const skillBundleManifest = JSON.parse(
+  read(".codex/tradejs-skill-bundle.json"),
+);
+const sha256 = (contents) =>
+  createHash("sha256").update(contents).digest("hex");
+assert(
+  skillBundleManifest.schema === "tradejs-skill-bundle/v1" &&
+    skillBundleManifest.source === "TradeJS-Dev/TradeJS:.codex/skills" &&
+    JSON.stringify(skillBundleManifest.skills) ===
+      JSON.stringify(focusedStrategySkills),
+  "Focused strategy skills must come from the canonical TradeJS bundle",
+);
+for (const skillName of focusedStrategySkills) {
+  assert(
+    skillBundleManifest.files[`.codex/skills/${skillName}/SKILL.md`],
+    `Skill bundle manifest is missing ${skillName}`,
+  );
+}
+for (const [relativePath, expectedSha256] of Object.entries(
+  skillBundleManifest.files,
+)) {
+  assert(
+    /^\.codex\/skills\/[a-z0-9-]+\//.test(relativePath) &&
+      focusedStrategySkills.some((skillName) =>
+        relativePath.startsWith(`.codex/skills/${skillName}/`),
+      ) &&
+      fs.existsSync(path.join(root, relativePath)) &&
+      sha256(read(relativePath)) === expectedSha256,
+    `Installed skill bundle mismatch: ${relativePath}`,
+  );
+}
+assert(
+  sha256(
+    Object.entries(skillBundleManifest.files)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([relativePath, fileSha256]) => `${relativePath}\0${fileSha256}`)
+      .join("\n"),
+  ) === skillBundleManifest.bundleSha256,
+  "Installed skill bundle checksum is invalid",
 );
 for (const [skillName, skill] of focusedSkillContents) {
   assert(
