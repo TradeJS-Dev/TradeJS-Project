@@ -56,7 +56,7 @@
     "@tradejs/strategy-adaptive-momentum-ribbon": "3.0.3",
     "@tradejs/strategy-adaptive-trend-channel": "3.0.3",
     "@tradejs/strategy-breakout": "3.0.3",
-    "@tradejs/strategy-cup-and-handle": "3.0.3",
+    "@tradejs/strategy-cup-and-handle": "3.0.4",
     "@tradejs/strategy-double-tap": "3.0.3",
     "@tradejs/strategy-grid": "3.0.3",
     "@tradejs/strategy-grid-classic": "3.0.3",

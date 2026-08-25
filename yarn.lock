@@ -1310,14 +1310,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/strategy-cup-and-handle@npm:3.0.3":
-  version: 3.0.3
-  resolution: "@tradejs/strategy-cup-and-handle@npm:3.0.3"
+"@tradejs/strategy-cup-and-handle@npm:3.0.4":
+  version: 3.0.4
+  resolution: "@tradejs/strategy-cup-and-handle@npm:3.0.4"
   peerDependencies:
     "@tradejs/core": ^3.0.1
     "@tradejs/strategy-kit": ^3.0.1
     "@tradejs/types": ^3.0.1
-  checksum: 10c0/17e1578ee9ccac48e444af8a31d3a39a740808925b5faf9704730024e54021b4b0547a5786cb7a82e13edf8d609fd36fa64631ecf3eed7878586cf9fc51557fc
+  checksum: 10c0/17bd8b059e66bc5d2c5dc11dd2b0d27a5e9148dd5ddceca6c97fea6338a9eb4d19d931b66847a01d1c0432daaac02a2e9044a259ee485aa30f8c67c8afb066d6
   languageName: node
   linkType: hard
 
@@ -5529,7 +5529,7 @@ __metadata:
     "@tradejs/strategy-adaptive-momentum-ribbon": "npm:3.0.3"
     "@tradejs/strategy-adaptive-trend-channel": "npm:3.0.3"
     "@tradejs/strategy-breakout": "npm:3.0.3"
-    "@tradejs/strategy-cup-and-handle": "npm:3.0.3"
+    "@tradejs/strategy-cup-and-handle": "npm:3.0.4"
     "@tradejs/strategy-double-tap": "npm:3.0.3"
     "@tradejs/strategy-grid": "npm:3.0.3"
     "@tradejs/strategy-grid-classic": "npm:3.0.3"
