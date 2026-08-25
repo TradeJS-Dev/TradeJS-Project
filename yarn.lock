@@ -1443,14 +1443,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/strategy-structure-zones@npm:3.0.3":
-  version: 3.0.3
-  resolution: "@tradejs/strategy-structure-zones@npm:3.0.3"
+"@tradejs/strategy-structure-zones@npm:3.0.4":
+  version: 3.0.4
+  resolution: "@tradejs/strategy-structure-zones@npm:3.0.4"
   peerDependencies:
     "@tradejs/core": ^3.0.1
     "@tradejs/strategy-kit": ^3.0.1
     "@tradejs/types": ^3.0.1
-  checksum: 10c0/12ee9686f5a24182ce5badf93b57632a58bcf74501814ea3fbac85ebc817fe431aa9bfc6abb4d44944dac310ecae48daf365d139fd9ef873c4e703cde4fceb41
+  checksum: 10c0/edaeed2861d89a6338b5bc6e0beb2183243655cf8582c0b889ed10e4c90e6e46b0e80979e4f1b045487f221c4115439191c62630de30c38c3ce4bee46743edcd
   languageName: node
   linkType: hard
 
@@ -5541,7 +5541,7 @@ __metadata:
     "@tradejs/strategy-ma-strategy": "npm:3.0.3"
     "@tradejs/strategy-market-flush-reversal": "npm:3.0.4"
     "@tradejs/strategy-relative-rotation": "npm:3.0.3"
-    "@tradejs/strategy-structure-zones": "npm:3.0.3"
+    "@tradejs/strategy-structure-zones": "npm:3.0.4"
     "@tradejs/strategy-trend-follow": "npm:3.0.4"
     "@tradejs/strategy-trend-line": "npm:3.0.3"
     "@tradejs/strategy-trend-shift": "npm:3.0.4"
