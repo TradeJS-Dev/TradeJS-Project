@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { assertExactTradejsVersion } from "./tradejs-version.mjs";
+import { assertProjectTradejsVersion } from "./tradejs-version.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (relativePath) =>
@@ -62,6 +62,8 @@ const requiredFiles = [
   "scripts/runtime-entrypoint.test.mjs",
   "scripts/project-workflows.test.mjs",
   "scripts/project-image-smoke.sh",
+  "scripts/sync-runtime-package-composition.mjs",
+  "scripts/sync-runtime-package-composition.test.mjs",
   "scripts/tradejs-version.mjs",
   "scripts/tradejs-version.test.mjs",
   "scripts/write-runtime-package-manifest.mjs",
@@ -88,7 +90,7 @@ assert(
   "TradeJS-Project must depend on @tradejs/base",
 );
 for (const [name, version] of tradejsDependencies) {
-  assertExactTradejsVersion(name, version);
+  assertProjectTradejsVersion(name, version);
 }
 const strategyDependencies = Object.entries(packageJson.dependencies).filter(
   ([name]) =>

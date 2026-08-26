@@ -3,7 +3,11 @@ import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import semver from "semver";
-import { assertExactTradejsVersion } from "./tradejs-version.mjs";
+import {
+  assertProjectTradejsVersion,
+  isFrameworkRuntimePackage,
+  resolveFrameworkPackageRelease,
+} from "./tradejs-version.mjs";
 
 const defaultRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -33,9 +37,7 @@ const resolveProjectSha = (root, projectSha) => {
 };
 
 const usesHostProvidedRuntime = (packageName) =>
-  packageName === "@tradejs/base" ||
-  packageName === "@tradejs/strategy-kit" ||
-  packageName.startsWith("@tradejs/strategy-");
+  !isFrameworkRuntimePackage(packageName);
 
 export const buildRuntimePackageManifest = ({
   root = defaultRoot,
@@ -47,7 +49,7 @@ export const buildRuntimePackageManifest = ({
     .filter((name) => name.startsWith("@tradejs/"))
     .sort();
   for (const name of directRuntimePackages) {
-    assertExactTradejsVersion(name, packageJson.dependencies[name]);
+    assertProjectTradejsVersion(name, packageJson.dependencies[name]);
   }
 
   const packages = {};
@@ -62,7 +64,7 @@ export const buildRuntimePackageManifest = ({
     if (installed.name !== name || typeof installed.version !== "string") {
       throw new Error(`Invalid installed package manifest: ${name}`);
     }
-    assertExactTradejsVersion(name, installed.version);
+    assertProjectTradejsVersion(name, installed.version);
     const declaredVersion = packageJson.dependencies[name];
     if (
       declaredVersion !== undefined &&
@@ -112,19 +114,7 @@ export const buildRuntimePackageManifest = ({
       );
     }
   }
-  const enginePackages = directRuntimePackages
-    .filter((name) => !usesHostProvidedRuntime(name))
-    .map((name) => `${name}@${packages[name]}`);
-  const engineVersions = new Set(
-    directRuntimePackages
-      .filter((name) => !usesHostProvidedRuntime(name))
-      .map((name) => packages[name]),
-  );
-  if (engineVersions.size !== 1) {
-    throw new Error(
-      `Engine package family must use one version: ${enginePackages.join(", ")}`,
-    );
-  }
+  resolveFrameworkPackageRelease(packages);
   return {
     schema: "tradejs-runtime-package-manifest/v1",
     projectSha: resolvedProjectSha,

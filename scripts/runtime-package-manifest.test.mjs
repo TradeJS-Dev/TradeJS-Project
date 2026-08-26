@@ -10,6 +10,7 @@ const makeFixture = ({
   installedNodeVersion = "3.1.4",
   strategyKitPeerRange = "^3.0.0",
   strategyRuntimeDependency = false,
+  strategyVersion = "3.0.0",
   additionalEngineVersion,
 } = {}) => {
   const root = fs.mkdtempSync(
@@ -37,7 +38,7 @@ const makeFixture = ({
         ...(additionalEngineVersion
           ? { "@tradejs/core": additionalEngineVersion }
           : {}),
-        "@tradejs/strategy-double-tap": "3.0.0",
+        "@tradejs/strategy-double-tap": strategyVersion,
         dotenv: "^16.0.0",
       },
     }),
@@ -59,7 +60,7 @@ const makeFixture = ({
     path.join(root, "node_modules/@tradejs/strategy-double-tap/package.json"),
     JSON.stringify({
       name: "@tradejs/strategy-double-tap",
-      version: "3.0.0",
+      version: strategyVersion,
       ...(strategyRuntimeDependency
         ? { dependencies: { "@tradejs/strategy-kit": strategyKitPeerRange } }
         : {
@@ -126,11 +127,11 @@ test("rejects non-exact TradeJS dependency versions", (t) => {
         root,
         projectSha: "a".repeat(40),
       }),
-    /@tradejs\/node must use an exact stable version/,
+    /@tradejs\/node must use an exact stable or beta version/,
   );
 });
 
-test("rejects prerelease packages in every Project composition", (t) => {
+test("accepts one exact beta framework cohort", (t) => {
   const version = "3.1.8-beta.42";
   const root = makeFixture({
     declaredNodeVersion: version,
@@ -138,13 +139,20 @@ test("rejects prerelease packages in every Project composition", (t) => {
   });
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
 
+  const manifest = buildRuntimePackageManifest({
+    root,
+    projectSha: "a".repeat(40),
+  });
+  assert.equal(manifest.packages["@tradejs/node"], version);
+});
+
+test("rejects prerelease host-provided packages", (t) => {
+  const root = makeFixture({ strategyVersion: "3.0.1-beta.1" });
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+
   assert.throws(
-    () =>
-      buildRuntimePackageManifest({
-        root,
-        projectSha: "a".repeat(40),
-      }),
-    /@tradejs\/node must use an exact stable version/,
+    () => buildRuntimePackageManifest({ root, projectSha: "a".repeat(40) }),
+    /@tradejs\/strategy-double-tap must use an exact stable version/,
   );
 });
 
@@ -154,7 +162,7 @@ test("rejects a mixed engine package release", (t) => {
 
   assert.throws(
     () => buildRuntimePackageManifest({ root, projectSha: "a".repeat(40) }),
-    /Engine package family must use one version: @tradejs\/core@3\.1\.5, @tradejs\/node@3\.1\.4/,
+    /Framework package family must use one version: @tradejs\/core@3\.1\.5, @tradejs\/node@3\.1\.4/,
   );
 });
 

@@ -7,8 +7,8 @@ readonly expected_packages_csv="${2:?Usage: project-image-smoke.sh <image> <pack
 readonly expected_version="${3:?Usage: project-image-smoke.sh <image> <packages-csv> <version> <project-sha>}"
 readonly project_sha="${4:?Usage: project-image-smoke.sh <image> <packages-csv> <version> <project-sha>}"
 
-[[ "$expected_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || {
-  echo "Invalid exact stable smoke version: $expected_version" >&2
+[[ "$expected_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-beta\.[1-9][0-9]*)?$ ]] || {
+  echo "Invalid exact stable or beta smoke version: $expected_version" >&2
   exit 1
 }
 [[ "$project_sha" =~ ^[0-9a-f]{40}$ ]] || {
@@ -185,5 +185,5 @@ fi
 
 docker exec "$app_container" curl -fsS http://127.0.0.1:3000 >/dev/null
 
-printf 'Stable Project image smoke passed: %s (%s)\n' \
+printf 'Exact Project image smoke passed: %s (%s)\n' \
   "$expected_version" "$project_sha"

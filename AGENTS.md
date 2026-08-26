@@ -159,12 +159,13 @@ is not the production source of truth.
 - Require a full Project Git SHA in `runtime-package-manifest.json`; reject
   incompatible TradeJS peer ranges and any Base/Kit/strategy package that
   bundles a second TradeJS runtime under `dependencies`.
-- Keep every Project composition stable-only. Prerelease dependencies are
-  rejected by validation and image construction; package repositories validate
-  prerelease tarballs independently before stable promotion.
-- Batch all newly promoted stable TradeJS packages through the weekly Project
-  sync so one release window produces one Project image rather than one image
-  per package.
+- Pin one exact framework cohort in every Project composition. The framework
+  family may use either one canonical `x.y.z` release or one canonical
+  `x.y.z-beta.N` release; never resolve a mutable dist-tag at install or runtime.
+  Base, Kit, and strategy packages remain exact and stable-only.
+- Batch a verified framework beta through the hourly Project sync. Refresh
+  stable Base, Kit, and strategy packages only in the weekly adjunct or an
+  explicit manual sync, so one release window produces one Project image.
 - A push to `main` must not publish or deploy. Image publication and the
   immutable Deploy handoff require an explicit `publish.yml` dispatch. The
   dispatch is atomic: missing Deploy credentials fail before image publication;

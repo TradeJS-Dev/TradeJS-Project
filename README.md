@@ -164,18 +164,20 @@ docker build --check .
 
 ## Production handoff
 
-The committed Project composition is stable-only. Framework and package
-repositories validate their own prerelease tarballs in isolated npm consumers;
-Project assembles only stable exact versions. Validation and image construction
-reject prerelease dependencies unconditionally, so a beta package cannot enter
-the Project handoff.
+The committed Project composition pins one exact framework release cohort.
+Production normally follows a canonical beta such as `3.1.26-beta.242`; every
+framework package must have that same version and npm `gitHead`. Base, Kit, and
+strategy packages remain stable-only. Neither the mutable `beta` tag nor a
+SemVer range enters `package.json`, the lockfile, the image, or Deploy.
 
-Every Monday at `06:00 UTC`, after package promotion windows, the protected
-`package-update.yml` workflow resolves the stable npm `latest` tag for every
-direct `@tradejs/*` dependency, updates the exact package versions and lockfile
-in one batch, runs `yarn checks`, commits one composition, and publishes one
-Project image. A manual dispatch provides the same batched emergency sync.
-`scripts/project-image-smoke.sh` validates the stable candidate image with
+At minute `47` of every hour, the protected `package-update.yml` workflow reads
+the already verified npm `beta` tag, resolves the complete framework cohort,
+updates the exact versions and lockfile in one batch, runs `yarn checks`,
+commits one composition, and publishes one Project image. The Monday
+`06:00 UTC` run also refreshes stable Base, Kit, and strategy packages from
+`latest`; a manual dispatch can select an exact beta and optionally perform the
+same stable-package refresh. `scripts/project-image-smoke.sh` validates the
+exact candidate image with
 isolated Redis and Timescale, the exact Git-owned declaration, package manifest,
 optional pause lifecycle, absence of legacy runtime keys, and application
 health. It deliberately does not start the exchange-facing signals daemon or
@@ -187,8 +189,8 @@ Pushing `main` only updates source. Publishing is an explicit
 publishes `ghcr.io/tradejs-dev/tradejs-project-app:<commit-sha>`, and dispatches
 that exact SHA to `TradeJS-Deploy`. The Project repository secret
 `DEPLOY_REPOSITORY_TOKEN` authorizes that handoff; a missing credential fails
-the workflow before image publication. The weekly package update invokes the
-same workflow after its stable composition passes checks and Docker smoke.
+the workflow before image publication. The package update invokes the same
+workflow after its exact composition passes checks and Docker smoke.
 
 The complete repository-to-repository ownership and migration commands for
 GitHub Actions configuration are documented in
@@ -200,7 +202,8 @@ workflow fails before publishing an image or dispatching a production rollout.
 Every `@tradejs/*` dependency uses an exact version. Image construction fails
 if an installed version differs from `package.json`; the generated
 `runtime-package-manifest.json` records the same exact versions, including the
-strategy packages' TradeJS runtime dependencies, and Project SHA. `yarn checks`
+complete framework cohort, strategy packages' TradeJS runtime dependencies,
+and Project SHA. `yarn checks`
 typechecks the declaration, validates the complete plugin catalog, materializes
 strategy defaults, rejects stale package inventory, and prints the computed
 revisions before building. There is no manual version map or Redis release

@@ -9,7 +9,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (name) =>
   fs.readFileSync(path.join(root, ".github/workflows", name), "utf8");
 
-test("production image publication rejects prerelease dependencies", () => {
+test("production image publication verifies the exact committed composition", () => {
   const workflow = read("publish.yml");
   assert.doesNotMatch(workflow, /TRADEJS_ALLOW_PRERELEASE/);
   assert.match(workflow, /run: yarn checks/);
@@ -51,31 +51,43 @@ test("Project SHA does not invalidate the runner system layer", () => {
   );
 });
 
-test("weekly stable package sync is batched into one Project image", () => {
+test("verified beta sync is batched into one Project image", () => {
   const workflow = read("package-update.yml");
+  const resolver = fs.readFileSync(
+    path.join(root, "scripts/sync-runtime-package-composition.mjs"),
+    "utf8",
+  );
   assert.doesNotMatch(workflow, /environment: npm-production/);
+  assert.match(workflow, /cron: "47 \* \* \* \*"/);
   assert.match(workflow, /cron: "0 6 \* \* 1"/);
-  assert.match(workflow, /registry\.npmjs\.org/);
-  assert.match(workflow, /latest is not a stable exact version/);
+  assert.match(workflow, /framework_version:/);
+  assert.match(workflow, /sync_stable_packages:/);
+  assert.match(workflow, /sync-runtime-package-composition\.mjs/);
+  assert.match(resolver, /registry\.npmjs\.org/);
+  assert.match(
+    resolver,
+    /Framework beta packages do not share one source gitHead/,
+  );
+  assert.match(resolver, /latest is not an exact stable version/);
   assert.doesNotMatch(workflow, /bump-runtime-strategy-versions\.mjs/);
-  assert.match(workflow, /git diff --quiet -- package\.json yarn\.lock/);
+  assert.match(workflow, /git diff --quiet -- package\.json/);
   assert.match(workflow, /yarn install --no-immutable/);
   assert.match(workflow, /run: yarn checks/);
   assert.match(workflow, /project-image-smoke\.sh/);
   assert.ok(
-    workflow.indexOf("Create one local stable composition commit") <
+    workflow.indexOf("Create one local beta composition commit") <
       workflow.indexOf("project-image-smoke.sh"),
   );
   assert.ok(
     workflow.indexOf("project-image-smoke.sh") <
-      workflow.indexOf("Push the verified stable composition"),
+      workflow.indexOf("Push the verified beta composition"),
   );
   assert.match(workflow, /gh workflow run publish\.yml --ref main/);
   assert.doesNotMatch(workflow, /TRADEJS_ALLOW_PRERELEASE/);
   assert.doesNotMatch(workflow, /repository_dispatch/);
 });
 
-test("Project image smoke is stable and exchange-independent", () => {
+test("Project image smoke accepts exact release cohorts and is exchange-independent", () => {
   const smokePath = path.join(root, "scripts/project-image-smoke.sh");
   const smoke = fs.readFileSync(smokePath, "utf8");
 
@@ -92,19 +104,20 @@ test("Project image smoke is stable and exchange-independent", () => {
   assert.match(smoke, /runtime-control resume/);
   assert.doesNotMatch(smoke, /signals-daemon/);
   assert.doesNotMatch(smoke, /market-ws/);
-  assert.doesNotMatch(smoke, /-beta/);
-
-  const prerelease = spawnSync(
+  const invalidPrerelease = spawnSync(
     "bash",
     [
       smokePath,
       "tradejs-project:test",
       "@tradejs/node",
-      "3.1.13-beta.1",
+      "3.1.13-rc.1",
       "a".repeat(40),
     ],
     { encoding: "utf8" },
   );
-  assert.equal(prerelease.status, 1);
-  assert.match(prerelease.stderr, /Invalid exact stable smoke version/);
+  assert.equal(invalidPrerelease.status, 1);
+  assert.match(
+    invalidPrerelease.stderr,
+    /Invalid exact stable or beta smoke version/,
+  );
 });
