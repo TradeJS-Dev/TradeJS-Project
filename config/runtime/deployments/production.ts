@@ -3,6 +3,7 @@ import { cupAndHandleRuntime } from "../strategies/cup-and-handle";
 import { doubleTapRuntime } from "../strategies/double-tap";
 import { headAndShouldersRuntime } from "../strategies/head-and-shoulders";
 import { marketFlushReversalRuntime } from "../strategies/market-flush-reversal";
+import { relativeRotationRuntime } from "../strategies/relative-rotation";
 import { structureZonesRuntime } from "../strategies/structure-zones";
 import { trendFollowRuntime } from "../strategies/trend-follow";
 import { trendShiftRuntime } from "../strategies/trend-shift";
@@ -18,6 +19,7 @@ export const productionDeployment = {
     DoubleTap: doubleTapRuntime,
     HeadAndShoulders: headAndShouldersRuntime,
     MarketFlushReversal: marketFlushReversalRuntime,
+    RelativeRotation: relativeRotationRuntime,
     StructureZones: structureZonesRuntime,
     TrendShift: trendShiftRuntime,
     TrendFollow: trendFollowRuntime,
