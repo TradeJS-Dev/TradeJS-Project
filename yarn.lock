@@ -1356,14 +1356,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/strategy-head-and-shoulders@npm:3.0.3":
-  version: 3.0.3
-  resolution: "@tradejs/strategy-head-and-shoulders@npm:3.0.3"
+"@tradejs/strategy-head-and-shoulders@npm:3.0.4":
+  version: 3.0.4
+  resolution: "@tradejs/strategy-head-and-shoulders@npm:3.0.4"
   peerDependencies:
     "@tradejs/core": ^3.0.1
     "@tradejs/strategy-kit": ^3.0.1
     "@tradejs/types": ^3.0.1
-  checksum: 10c0/d9e081f749f1e5920c353e05a4a8db2fcc9936549a40634f7ac016bd5e9934e12fb48990921d4d83583537d9c528c1546e915a87467cac1f8cb2377b42d9df2f
+  checksum: 10c0/0a08f1f1a730f32bc69b11b744b65b3efcf7b7653ee9bbbf27415b0b933957a299b735ea517ab7109bc429bdb84f04190bd4cc86a08cc2469cabc32261050df1
   languageName: node
   linkType: hard
 
@@ -5533,7 +5533,7 @@ __metadata:
     "@tradejs/strategy-double-tap": "npm:3.0.3"
     "@tradejs/strategy-grid": "npm:3.0.3"
     "@tradejs/strategy-grid-classic": "npm:3.0.3"
-    "@tradejs/strategy-head-and-shoulders": "npm:3.0.3"
+    "@tradejs/strategy-head-and-shoulders": "npm:3.0.4"
     "@tradejs/strategy-hyperliquid-consensus": "npm:3.0.3"
     "@tradejs/strategy-kit": "npm:3.0.4"
     "@tradejs/strategy-liquidity-tails": "npm:3.0.3"

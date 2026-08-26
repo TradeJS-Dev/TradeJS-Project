@@ -60,7 +60,7 @@
     "@tradejs/strategy-double-tap": "3.0.3",
     "@tradejs/strategy-grid": "3.0.3",
     "@tradejs/strategy-grid-classic": "3.0.3",
-    "@tradejs/strategy-head-and-shoulders": "3.0.3",
+    "@tradejs/strategy-head-and-shoulders": "3.0.4",
     "@tradejs/strategy-hyperliquid-consensus": "3.0.3",
     "@tradejs/strategy-kit": "3.0.4",
     "@tradejs/strategy-liquidity-tails": "3.0.3",

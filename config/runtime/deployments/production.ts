@@ -1,6 +1,7 @@
 import type { RuntimeDeploymentDeclaration } from "@tradejs/types";
 import { cupAndHandleRuntime } from "../strategies/cup-and-handle";
 import { doubleTapRuntime } from "../strategies/double-tap";
+import { headAndShouldersRuntime } from "../strategies/head-and-shoulders";
 import { marketFlushReversalRuntime } from "../strategies/market-flush-reversal";
 import { structureZonesRuntime } from "../strategies/structure-zones";
 import { trendFollowRuntime } from "../strategies/trend-follow";
@@ -15,6 +16,7 @@ export const productionDeployment = {
   strategies: {
     CupAndHandle: cupAndHandleRuntime,
     DoubleTap: doubleTapRuntime,
+    HeadAndShoulders: headAndShouldersRuntime,
     MarketFlushReversal: marketFlushReversalRuntime,
     StructureZones: structureZonesRuntime,
     TrendShift: trendShiftRuntime,
