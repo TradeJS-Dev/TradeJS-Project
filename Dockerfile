@@ -66,8 +66,9 @@ ENV NODE_ENV=production \
 COPY --from=builder /app ./
 COPY entrypoint.sh ./entrypoint.sh
 COPY cronjob /etc/crontabs/root
+COPY scripts/write-runtime-cron-identity.sh ./scripts/write-runtime-cron-identity.sh
 
-RUN chmod +x ./entrypoint.sh
+RUN chmod +x ./entrypoint.sh ./scripts/write-runtime-cron-identity.sh
 
 EXPOSE 3000 3001
 

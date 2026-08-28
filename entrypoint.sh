@@ -96,6 +96,7 @@ trap 'shutdown 0' INT TERM
 
 touch "$SIGNALS_LOG_PATH"
 
+./scripts/write-runtime-cron-identity.sh
 crond -f -P &
 cron_pid=$!
 managed_pids+=("$cron_pid")

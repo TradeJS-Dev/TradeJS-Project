@@ -60,6 +60,7 @@ const requiredFiles = [
   "entrypoint.sh",
   "scripts/research-notes-check.mjs",
   "scripts/runtime-entrypoint.test.mjs",
+  "scripts/write-runtime-cron-identity.sh",
   "scripts/project-workflows.test.mjs",
   "scripts/project-image-smoke.sh",
   "scripts/sync-runtime-package-composition.mjs",
