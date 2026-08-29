@@ -1388,14 +1388,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/strategy-liquidity-tails@npm:3.0.3":
-  version: 3.0.3
-  resolution: "@tradejs/strategy-liquidity-tails@npm:3.0.3"
+"@tradejs/strategy-liquidity-tails@npm:3.0.4":
+  version: 3.0.4
+  resolution: "@tradejs/strategy-liquidity-tails@npm:3.0.4"
   peerDependencies:
     "@tradejs/core": ^3.0.1
     "@tradejs/strategy-kit": ^3.0.1
     "@tradejs/types": ^3.0.1
-  checksum: 10c0/0a22fa447841b6e08ef582890f9ae0d9f40ba140d043ff95ab48abc75e23ab8809b0536dacea925a70fc06d18cd1b2d58cb96fbaaffb68e2fcf54aefa8ea5e98
+  checksum: 10c0/8784226acb65ba45f68524325f23b74ba79dfd52e57e10b42ed73d0410ff7ae75762342ebb4abd694e83cc1a7ee9df33ebb2b68ad611804d6076f75cdd40ba3c
   languageName: node
   linkType: hard
 
@@ -5536,7 +5536,7 @@ __metadata:
     "@tradejs/strategy-head-and-shoulders": "npm:3.0.5"
     "@tradejs/strategy-hyperliquid-consensus": "npm:3.0.3"
     "@tradejs/strategy-kit": "npm:3.0.4"
-    "@tradejs/strategy-liquidity-tails": "npm:3.0.3"
+    "@tradejs/strategy-liquidity-tails": "npm:3.0.4"
     "@tradejs/strategy-liquidity-zones": "npm:3.0.3"
     "@tradejs/strategy-ma-strategy": "npm:3.0.3"
     "@tradejs/strategy-market-flush-reversal": "npm:3.0.5"
