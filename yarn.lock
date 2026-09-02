@@ -1139,9 +1139,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/base@npm:3.1.4":
-  version: 3.1.4
-  resolution: "@tradejs/base@npm:3.1.4"
+"@tradejs/base@npm:3.1.5":
+  version: 3.1.5
+  resolution: "@tradejs/base@npm:3.1.5"
   peerDependencies:
     "@tradejs/connectors": ^3.0.1
     "@tradejs/core": ^3.0.1
@@ -1153,6 +1153,7 @@ __metadata:
     "@tradejs/strategy-cup-and-handle": ^3.0.0
     "@tradejs/strategy-double-tap": ^3.0.0
     "@tradejs/strategy-dragon": ^0.1.1
+    "@tradejs/strategy-flag": ^0.1.1
     "@tradejs/strategy-grid": ^3.0.0
     "@tradejs/strategy-grid-classic": ^3.0.0
     "@tradejs/strategy-head-and-shoulders": ^3.0.0
@@ -1170,7 +1171,7 @@ __metadata:
     "@tradejs/strategy-volatility-compression-breakout": ^3.0.0
     "@tradejs/strategy-volume-divergence": ^3.0.0
     "@tradejs/types": ^3.0.1
-  checksum: 10c0/53e3bee251a5ac25a4203c78f319c08fb7c588b720e4904b9278a1df8077373023f4a9235ec2536b6db6855e4fbccdce8934bb0cdd7b12c9afd37aba39898f55
+  checksum: 10c0/f7e9b7bf768c8c9af85449ad574bb52bd89dbe1869bc139fe0589a71415a9277451e5066e0f75ba94b400eaa4f408c060629515cadab81d6f642d4ae608ff131
   languageName: node
   linkType: hard
 
@@ -1343,6 +1344,17 @@ __metadata:
     "@tradejs/strategy-kit": ^3.0.1
     "@tradejs/types": ^3.0.1
   checksum: 10c0/ea95d24cb2ff4a9e3eba55a597a47c0f3d618d75c89a73250671151b1d94b37fd36bd0c945a120e985a5e3c8988b7d90ab37aed030fefa00bdea9cec39f9cb5b
+  languageName: node
+  linkType: hard
+
+"@tradejs/strategy-flag@npm:0.1.1":
+  version: 0.1.1
+  resolution: "@tradejs/strategy-flag@npm:0.1.1"
+  peerDependencies:
+    "@tradejs/core": ^3.0.1
+    "@tradejs/strategy-kit": ^3.0.1
+    "@tradejs/types": ^3.0.1
+  checksum: 10c0/57ef98e312a57fb990ef2cf5ca957afe52804c804514890095cc29d35182203dc9fea8f90d955959c8d0c89f664dd924b3ecaae9531098c3cc9df518a4c65c83
   languageName: node
   linkType: hard
 
@@ -5533,7 +5545,7 @@ __metadata:
   resolution: "tradejs-project@workspace:."
   dependencies:
     "@tradejs/app": "npm:3.1.27-beta.247"
-    "@tradejs/base": "npm:3.1.4"
+    "@tradejs/base": "npm:3.1.5"
     "@tradejs/cli": "npm:3.1.27-beta.247"
     "@tradejs/connectors": "npm:3.1.27-beta.247"
     "@tradejs/core": "npm:3.1.27-beta.247"
@@ -5546,6 +5558,7 @@ __metadata:
     "@tradejs/strategy-cup-and-handle": "npm:3.0.4"
     "@tradejs/strategy-double-tap": "npm:3.0.3"
     "@tradejs/strategy-dragon": "npm:0.1.1"
+    "@tradejs/strategy-flag": "npm:0.1.1"
     "@tradejs/strategy-grid": "npm:3.0.3"
     "@tradejs/strategy-grid-classic": "npm:3.0.3"
     "@tradejs/strategy-head-and-shoulders": "npm:3.0.5"

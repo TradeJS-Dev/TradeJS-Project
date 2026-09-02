@@ -53,6 +53,7 @@ const requiredFiles = [
   "config/runtime/deployments/production.ts",
   "config/runtime/strategies/double-tap.ts",
   "config/runtime/strategies/dragon.ts",
+  "config/runtime/strategies/flag.ts",
   "config/runtime/strategies/trend-follow.ts",
   "config/runtime/strategies/trend-shift.ts",
   "config/runtime/ticker-sets/trend-follow-20260818.ts",
@@ -99,8 +100,8 @@ const strategyDependencies = Object.entries(packageJson.dependencies).filter(
     name.startsWith("@tradejs/strategy-") && name !== "@tradejs/strategy-kit",
 );
 assert(
-  strategyDependencies.length === 21,
-  "All 21 strategy packages must be direct dependencies",
+  strategyDependencies.length === 22,
+  "All 22 strategy packages must be direct dependencies",
 );
 assert(
   !Object.hasOwn(packageJson.dependencies, "@tradejs/strategies"),
@@ -139,6 +140,7 @@ const runtimeConfig = [
   "config/runtime/deployments/production.ts",
   "config/runtime/strategies/double-tap.ts",
   "config/runtime/strategies/dragon.ts",
+  "config/runtime/strategies/flag.ts",
   "config/runtime/strategies/trend-follow.ts",
   "config/runtime/strategies/trend-shift.ts",
 ]
@@ -153,6 +155,7 @@ for (const expectedRuntimeConfig of [
   'accountId: "bybit-default"',
   "DoubleTap: doubleTapRuntime",
   "Dragon: dragonRuntime",
+  "Flag: flagRuntime",
   "TrendFollow: trendFollowRuntime",
   "enabled: true",
   'INTERVAL: "15"',
@@ -170,7 +173,7 @@ assert(
 );
 assert(
   (runtimeConfig.match(/satisfies RuntimeStrategyDeclaration/g) ?? [])
-    .length === 4,
+    .length === 5,
   "Every runtime strategy declaration must have a TypeScript contract",
 );
 assert(
