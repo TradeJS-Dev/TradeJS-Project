@@ -13,6 +13,7 @@
     "build": "tradejs-app build",
     "start": "tradejs-app start",
     "backtest": "tradejs backtest",
+    "portfolio-backtest": "node ./scripts/portfolio-backtest.mjs",
     "replay": "tradejs replay",
     "results": "tradejs results",
     "ai-export": "tradejs ai-export",
