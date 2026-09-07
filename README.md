@@ -100,6 +100,7 @@ Run personal operational flows from this repository:
 
 ```bash
 yarn backtest
+yarn portfolio-backtest
 yarn replay
 yarn results
 yarn ai-export
@@ -112,6 +113,12 @@ yarn notes:check
 yarn runtime:manifest
 yarn runtime:validate
 ```
+
+`yarn portfolio-backtest` runs the complete `production` strategy declaration
+over the full cached candle range with `MAX_LOSS_VALUE=10`. It processes symbols
+in bounded batches and writes HTML, Markdown, JSON, and SVG reports under
+`data/replay/output`. Pass `--tickers` for an explicit symbol set or
+`--portfolioBatchSize <count>` to change the default batch size of four.
 
 The project directory is the `PROJECT_CWD`: `.env`, `tradejs.config.ts`,
 `data/`, `notes/`, `output/`, and all relative research artifacts resolve here.
