@@ -77,6 +77,44 @@ test("weekly adjunct updates only host-provided packages from latest", async () 
   ]);
 });
 
+test("weekly adjunct preserves immutable strategy aliases", async () => {
+  const packageJsonWithAlias = {
+    ...packageJson,
+    dependencies: {
+      ...packageJson.dependencies,
+      "@tradejs/strategy-double-tap-forward":
+        "npm:@tradejs/strategy-double-tap@3.0.2",
+    },
+  };
+  const requestedPackages = [];
+
+  const result = await resolveRuntimePackageComposition({
+    packageJson: packageJsonWithAlias,
+    frameworkVersion: "3.1.26-beta.242",
+    syncStablePackages: true,
+    getMetadata: async (name, selector) => {
+      requestedPackages.push(`${name}@${selector}`);
+      return metadata({
+        versions: {
+          "@tradejs/base@latest": "3.1.3",
+          "@tradejs/strategy-double-tap@latest": "3.0.4",
+        },
+      })(name, selector);
+    },
+  });
+
+  assert.equal(
+    result.packageJson.dependencies["@tradejs/strategy-double-tap-forward"],
+    "npm:@tradejs/strategy-double-tap@3.0.2",
+  );
+  assert.equal(
+    requestedPackages.some((request) =>
+      request.startsWith("@tradejs/strategy-double-tap-forward@"),
+    ),
+    false,
+  );
+});
+
 test("rejects a stable version selected as the production framework channel", async () => {
   await assert.rejects(
     resolveRuntimePackageComposition({

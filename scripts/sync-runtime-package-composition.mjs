@@ -78,7 +78,9 @@ export const resolveRuntimePackageComposition = async ({
   const updatedStablePackages = [];
   if (syncStablePackages) {
     const stablePackages = tradejsPackages.filter(
-      (name) => !isFrameworkRuntimePackage(name),
+      (name) =>
+        !isFrameworkRuntimePackage(name) &&
+        !String(dependencies[name]).startsWith("npm:"),
     );
     const stableMetadata = await Promise.all(
       stablePackages.map(async (name) => ({

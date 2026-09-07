@@ -30,6 +30,24 @@ export const assertProjectTradejsVersion = (name, version) => {
   }
 };
 
+export const resolveProjectTradejsDependency = (name, reference) => {
+  const value = String(reference);
+  if (!value.startsWith("npm:")) {
+    assertProjectTradejsVersion(name, value);
+    return { dependencyName: name, packageName: name, version: value };
+  }
+
+  const match = /^npm:(@tradejs\/strategy-[^@]+)@(.+)$/.exec(value);
+  if (!match) {
+    throw new Error(
+      `${name} must alias an @tradejs/strategy-* package at an exact stable version`,
+    );
+  }
+  const [, packageName, version] = match;
+  assertProjectTradejsVersion(packageName, version);
+  return { dependencyName: name, packageName, version };
+};
+
 export const resolveFrameworkPackageRelease = (packages) => {
   const frameworkPackages = Object.entries(packages)
     .filter(([name]) => isFrameworkRuntimePackage(name))

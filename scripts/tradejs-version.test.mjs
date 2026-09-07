@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   assertProjectTradejsVersion,
+  resolveProjectTradejsDependency,
   resolveFrameworkPackageRelease,
 } from "./tradejs-version.mjs";
 
@@ -33,6 +34,36 @@ test("host-provided packages remain stable-only", () => {
         "3.0.4-beta.1",
       ),
     /exact stable version/,
+  );
+});
+
+test("strategy dependencies may use exact npm aliases", () => {
+  assert.deepEqual(
+    resolveProjectTradejsDependency(
+      "@tradejs/strategy-double-tap-forward",
+      "npm:@tradejs/strategy-double-tap@3.0.4",
+    ),
+    {
+      dependencyName: "@tradejs/strategy-double-tap-forward",
+      packageName: "@tradejs/strategy-double-tap",
+      version: "3.0.4",
+    },
+  );
+  assert.throws(
+    () =>
+      resolveProjectTradejsDependency(
+        "@tradejs/node-pinned",
+        "npm:@tradejs/node@3.1.9-beta.42",
+      ),
+    /must alias an @tradejs\/strategy-\* package/,
+  );
+  assert.throws(
+    () =>
+      resolveProjectTradejsDependency(
+        "@tradejs/strategy-double-tap-forward",
+        "npm:@tradejs/strategy-double-tap@^3.0.4",
+      ),
+    /exact stable or beta version/,
   );
 });
 

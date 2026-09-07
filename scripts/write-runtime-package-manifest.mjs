@@ -6,6 +6,7 @@ import semver from "semver";
 import {
   assertProjectTradejsVersion,
   isFrameworkRuntimePackage,
+  resolveProjectTradejsDependency,
   resolveFrameworkPackageRelease,
 } from "./tradejs-version.mjs";
 
@@ -48,9 +49,12 @@ export const buildRuntimePackageManifest = ({
   const directRuntimePackages = Object.keys(packageJson.dependencies)
     .filter((name) => name.startsWith("@tradejs/"))
     .sort();
-  for (const name of directRuntimePackages) {
-    assertProjectTradejsVersion(name, packageJson.dependencies[name]);
-  }
+  const directPackageIdentities = new Map(
+    directRuntimePackages.map((name) => [
+      name,
+      resolveProjectTradejsDependency(name, packageJson.dependencies[name]),
+    ]),
+  );
 
   const packages = {};
   const requirements = [];
@@ -61,11 +65,19 @@ export const buildRuntimePackageManifest = ({
     const installed = readJson(
       path.join(root, "node_modules", ...name.split("/"), "package.json"),
     );
-    if (installed.name !== name || typeof installed.version !== "string") {
+    const identity = directPackageIdentities.get(name) ?? {
+      dependencyName: name,
+      packageName: name,
+      version: undefined,
+    };
+    if (
+      installed.name !== identity.packageName ||
+      typeof installed.version !== "string"
+    ) {
       throw new Error(`Invalid installed package manifest: ${name}`);
     }
-    assertProjectTradejsVersion(name, installed.version);
-    const declaredVersion = packageJson.dependencies[name];
+    assertProjectTradejsVersion(identity.packageName, installed.version);
+    const declaredVersion = identity.version;
     if (
       declaredVersion !== undefined &&
       installed.version !== declaredVersion
@@ -78,7 +90,10 @@ export const buildRuntimePackageManifest = ({
     const runtimeDependencies = Object.entries(
       installed.dependencies ?? {},
     ).filter(([dependencyName]) => dependencyName.startsWith("@tradejs/"));
-    if (usesHostProvidedRuntime(name) && runtimeDependencies.length > 0) {
+    if (
+      usesHostProvidedRuntime(identity.packageName) &&
+      runtimeDependencies.length > 0
+    ) {
       throw new Error(
         `${name} must use host-provided TradeJS peers, not dependencies: ${runtimeDependencies
           .map(([dependencyName]) => dependencyName)

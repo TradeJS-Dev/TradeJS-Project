@@ -93,6 +93,35 @@ test("records only exact installed TradeJS package versions and project SHA", (t
   );
 });
 
+test("records a strategy alias by its dependency name", (t) => {
+  const root = makeFixture();
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const packagePath = path.join(root, "package.json");
+  const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8"));
+  delete packageJson.dependencies["@tradejs/strategy-double-tap"];
+  packageJson.dependencies["@tradejs/strategy-double-tap-forward"] =
+    "npm:@tradejs/strategy-double-tap@3.0.0";
+  fs.writeFileSync(packagePath, JSON.stringify(packageJson));
+  fs.renameSync(
+    path.join(root, "node_modules/@tradejs/strategy-double-tap"),
+    path.join(root, "node_modules/@tradejs/strategy-double-tap-forward"),
+  );
+
+  const manifest = buildRuntimePackageManifest({
+    root,
+    projectSha: "a".repeat(40),
+  });
+
+  assert.equal(
+    manifest.packages["@tradejs/strategy-double-tap-forward"],
+    "3.0.0",
+  );
+  assert.equal(
+    Object.hasOwn(manifest.packages, "@tradejs/strategy-double-tap"),
+    false,
+  );
+});
+
 test("rejects an invalid Project SHA", (t) => {
   const root = makeFixture();
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
