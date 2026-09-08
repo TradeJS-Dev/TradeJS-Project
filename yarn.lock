@@ -1139,9 +1139,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/base@npm:3.1.5":
-  version: 3.1.5
-  resolution: "@tradejs/base@npm:3.1.5"
+"@tradejs/base@npm:3.1.6":
+  version: 3.1.6
+  resolution: "@tradejs/base@npm:3.1.6"
   peerDependencies:
     "@tradejs/connectors": ^3.0.1
     "@tradejs/core": ^3.0.1
@@ -1154,6 +1154,7 @@ __metadata:
     "@tradejs/strategy-double-tap": ^3.0.0
     "@tradejs/strategy-dragon": ^0.1.1
     "@tradejs/strategy-flag": ^0.1.1
+    "@tradejs/strategy-gartley": ^0.1.1
     "@tradejs/strategy-grid": ^3.0.0
     "@tradejs/strategy-grid-classic": ^3.0.0
     "@tradejs/strategy-head-and-shoulders": ^3.0.0
@@ -1171,7 +1172,7 @@ __metadata:
     "@tradejs/strategy-volatility-compression-breakout": ^3.0.0
     "@tradejs/strategy-volume-divergence": ^3.0.0
     "@tradejs/types": ^3.0.1
-  checksum: 10c0/f7e9b7bf768c8c9af85449ad574bb52bd89dbe1869bc139fe0589a71415a9277451e5066e0f75ba94b400eaa4f408c060629515cadab81d6f642d4ae608ff131
+  checksum: 10c0/ffd9a0e216b8edc87b37e6be377445f60e4b659e915cd797c150e543471b2efd801c491ef594a5120ec78bd167d14ee631d40d45d5db72a7c670d3cad44f7ce3
   languageName: node
   linkType: hard
 
@@ -5545,7 +5546,7 @@ __metadata:
   resolution: "tradejs-project@workspace:."
   dependencies:
     "@tradejs/app": "npm:3.1.28-beta.252"
-    "@tradejs/base": "npm:3.1.5"
+    "@tradejs/base": "npm:3.1.6"
     "@tradejs/cli": "npm:3.1.28-beta.252"
     "@tradejs/connectors": "npm:3.1.28-beta.252"
     "@tradejs/core": "npm:3.1.28-beta.252"
