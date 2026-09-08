@@ -1359,6 +1359,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tradejs/strategy-gartley@npm:0.1.1":
+  version: 0.1.1
+  resolution: "@tradejs/strategy-gartley@npm:0.1.1"
+  peerDependencies:
+    "@tradejs/core": ^3.0.1
+    "@tradejs/strategy-kit": ^3.0.1
+    "@tradejs/types": ^3.0.1
+  checksum: 10c0/57a3c8af0b866cbf124f8f7d3738360a1f6540d547d725af1a6aac71fe0a957af574b033e0ff8bfd865ce709a42cdcfbd98686022093442f5a9b7affe5622023
+  languageName: node
+  linkType: hard
+
 "@tradejs/strategy-grid-classic@npm:3.0.3":
   version: 3.0.3
   resolution: "@tradejs/strategy-grid-classic@npm:3.0.3"
@@ -5560,6 +5571,7 @@ __metadata:
     "@tradejs/strategy-double-tap": "npm:3.0.3"
     "@tradejs/strategy-dragon": "npm:0.1.1"
     "@tradejs/strategy-flag": "npm:0.1.1"
+    "@tradejs/strategy-gartley": "npm:0.1.1"
     "@tradejs/strategy-grid": "npm:3.0.3"
     "@tradejs/strategy-grid-classic": "npm:3.0.3"
     "@tradejs/strategy-head-and-shoulders": "npm:3.0.5"

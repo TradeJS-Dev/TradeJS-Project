@@ -61,6 +61,7 @@
     "@tradejs/strategy-double-tap": "3.0.3",
     "@tradejs/strategy-dragon": "0.1.1",
     "@tradejs/strategy-flag": "0.1.1",
+    "@tradejs/strategy-gartley": "0.1.1",
     "@tradejs/strategy-grid": "3.0.3",
     "@tradejs/strategy-grid-classic": "3.0.3",
     "@tradejs/strategy-head-and-shoulders": "3.0.5",

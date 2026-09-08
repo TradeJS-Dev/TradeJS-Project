@@ -100,8 +100,8 @@ const strategyDependencies = Object.entries(packageJson.dependencies).filter(
     name.startsWith("@tradejs/strategy-") && name !== "@tradejs/strategy-kit",
 );
 assert(
-  strategyDependencies.length === 22,
-  "All 22 strategy packages must be direct dependencies",
+  strategyDependencies.length === 23,
+  "All 23 strategy packages must be direct dependencies",
 );
 assert(
   !Object.hasOwn(packageJson.dependencies, "@tradejs/strategies"),
