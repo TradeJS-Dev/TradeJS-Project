@@ -1,7 +1,7 @@
 import type { RuntimeStrategyDeclaration } from "@tradejs/types";
 
 export const flagRuntime = {
-  generation: "structural-v3-near-support-btc-lead-risk1-20260902",
+  generation: "structural-v3-h2-decisive-swing-breakout-risk1-20260910",
   enabled: true,
   config: {
     INTERVAL: "15",
@@ -12,7 +12,9 @@ export const flagRuntime = {
     ML_ENABLED: false,
     ML_THRESHOLD: 0.1,
     MIN_AI_QUALITY: 4,
-    FEE_PERCENT: 0.001,
+    RISK_FEE_RATE: 0.001,
+    RISK_SLIPPAGE_BPS: 0,
+    RISK_MARKET_IMPACT_BPS: 0,
     MAX_LOSS_VALUE: 1,
     MA_FAST: 14,
     MA_MEDIUM: 49,
