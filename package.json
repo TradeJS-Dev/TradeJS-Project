@@ -77,7 +77,7 @@
     "@tradejs/strategy-trend-line": "3.0.3",
     "@tradejs/strategy-trend-shift": "3.0.4",
     "@tradejs/strategy-volatility-compression-breakout": "3.0.3",
-    "@tradejs/strategy-volume-divergence": "3.0.3",
+    "@tradejs/strategy-volume-divergence": "3.0.5",
     "@tradejs/types": "3.1.28-beta.254"
   },
   "devDependencies": {

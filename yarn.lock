@@ -1539,14 +1539,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/strategy-volume-divergence@npm:3.0.3":
-  version: 3.0.3
-  resolution: "@tradejs/strategy-volume-divergence@npm:3.0.3"
+"@tradejs/strategy-volume-divergence@npm:3.0.5":
+  version: 3.0.5
+  resolution: "@tradejs/strategy-volume-divergence@npm:3.0.5"
   peerDependencies:
     "@tradejs/core": ^3.0.1
-    "@tradejs/strategy-kit": ^3.0.1
+    "@tradejs/strategy-kit": ^3.0.5
     "@tradejs/types": ^3.0.1
-  checksum: 10c0/2e5d9270ad286dcd74625ecd8796b722fa877c4c6aca1a2ff9fd74544c73015d0eb46ccf98d64701708118b5a9000764b27080f439b6ba7be8bc4fa0d3305688
+  checksum: 10c0/d5ab5780e0290c04e8cc26dcad5759886076f161310d0233901cebd22718e048a8c9de197c9d95e5d84eed8716da4dac699553516c8ccf14630224911513c5fa
   languageName: node
   linkType: hard
 
@@ -5587,7 +5587,7 @@ __metadata:
     "@tradejs/strategy-trend-line": "npm:3.0.3"
     "@tradejs/strategy-trend-shift": "npm:3.0.4"
     "@tradejs/strategy-volatility-compression-breakout": "npm:3.0.3"
-    "@tradejs/strategy-volume-divergence": "npm:3.0.3"
+    "@tradejs/strategy-volume-divergence": "npm:3.0.5"
     "@tradejs/types": "npm:3.1.28-beta.254"
     "@types/node": "npm:^24.0.0"
     "@types/semver": "npm:^7"

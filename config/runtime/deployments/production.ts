@@ -10,6 +10,7 @@ import { relativeRotationRuntime } from "../strategies/relative-rotation";
 import { structureZonesRuntime } from "../strategies/structure-zones";
 import { trendFollowRuntime } from "../strategies/trend-follow";
 import { trendShiftRuntime } from "../strategies/trend-shift";
+import { volumeDivergenceRuntime } from "../strategies/volume-divergence";
 
 export const productionDeployment = {
   label: "Production",
@@ -29,5 +30,6 @@ export const productionDeployment = {
     StructureZones: structureZonesRuntime,
     TrendShift: trendShiftRuntime,
     TrendFollow: trendFollowRuntime,
+    VolumeDivergence: volumeDivergenceRuntime,
   },
 } satisfies RuntimeDeploymentDeclaration;
