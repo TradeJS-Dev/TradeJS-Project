@@ -81,7 +81,7 @@
     "@tradejs/types": "3.1.28-beta.254"
   },
   "devDependencies": {
-    "@types/node": "^24.0.0",
+    "@types/node": "^26.4.1",
     "@types/semver": "^7",
     "prettier": "^3.6.2",
     "semver": "^7.8.5",
