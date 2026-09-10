@@ -15,7 +15,7 @@ export const flagRuntime = {
     RISK_FEE_RATE: 0.001,
     RISK_SLIPPAGE_BPS: 0,
     RISK_MARKET_IMPACT_BPS: 0,
-    MAX_LOSS_VALUE: 1,
+    MAX_LOSS_VALUE: 0.5,
     MA_FAST: 14,
     MA_MEDIUM: 49,
     MA_SLOW: 50,
