@@ -1695,12 +1695,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:24.13.3, @types/node@npm:^24, @types/node@npm:^24.0.0":
+"@types/node@npm:24.13.3, @types/node@npm:^24":
   version: 24.13.3
   resolution: "@types/node@npm:24.13.3"
   dependencies:
     undici-types: "npm:~7.18.0"
   checksum: 10c0/a5bc08f49b9581dcdca90e02cd77197a3c799840807664942e5cd5161a553d4d2ae8064f7e3294410d748d7d098b5c1848be7fa50c06f29c4193ab16be4e59eb
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:^26.5.0":
+  version: 26.5.0
+  resolution: "@types/node@npm:26.5.0"
+  dependencies:
+    undici-types: "npm:~8.9.0"
+  checksum: 10c0/1ab105dfe717f6442092ad8732d25d115fcf44596bb64009b3a6eb2dd988aef9ea76ad8a372e88cdf28800161681e1597c779451bade4428801f1a34129e5e37
   languageName: node
   linkType: hard
 
@@ -5589,7 +5598,7 @@ __metadata:
     "@tradejs/strategy-volatility-compression-breakout": "npm:3.0.4"
     "@tradejs/strategy-volume-divergence": "npm:3.0.5"
     "@tradejs/types": "npm:3.1.28-beta.255"
-    "@types/node": "npm:^24.0.0"
+    "@types/node": "npm:^26.5.0"
     "@types/semver": "npm:^7"
     prettier: "npm:^3.6.2"
     semver: "npm:^7.8.5"
@@ -5705,6 +5714,13 @@ __metadata:
   version: 8.3.0
   resolution: "undici-types@npm:8.3.0"
   checksum: 10c0/c8aa7e2fbebfce519654dafadc0ece59be888d2ccaf180fb4495da875e7b536d2456345c384069c7e6f3e9c9ab7435f074957da306f142343eee86ff8048855a
+  languageName: node
+  linkType: hard
+
+"undici-types@npm:~8.9.0":
+  version: 8.9.0
+  resolution: "undici-types@npm:8.9.0"
+  checksum: 10c0/51c712c20c087368f62c6fc0f2bc49fa76bfe5dec28ff01584bb677ff29b0622569783c02d43e151143808c48c0503f804093bd2c491b10f2a830138034cb451
   languageName: node
   linkType: hard
 
