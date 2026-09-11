@@ -12,7 +12,7 @@ export const cupAndHandleRuntime = {
     ML_ENABLED: false,
     ML_THRESHOLD: 0.1,
     MIN_AI_QUALITY: 4,
-    FEE_PERCENT: 0.001,
+    RISK_FEE_RATE: 0.001,
     MAX_LOSS_VALUE: 1,
     MA_FAST: 14,
     MA_MEDIUM: 49,
