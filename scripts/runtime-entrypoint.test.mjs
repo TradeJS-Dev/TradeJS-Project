@@ -62,6 +62,13 @@ test("runtime evidence cron restores immutable image identity", (context) => {
   );
 });
 
+test("production cron leaves parity notification to verified runtime feedback", () => {
+  const cronjob = fs.readFileSync(path.join(root, "cronjob"), "utf8");
+
+  assert.doesNotMatch(cronjob, /runtime-parity[^\n]*--notify/);
+  assert.match(cronjob, /runtime-evidence --daily/);
+});
+
 test("entrypoint rejects a missing runtime deployment before starting processes", () => {
   const env = { ...process.env };
   delete env.SIGNALS_DAEMON_DEPLOYMENT_ID;
