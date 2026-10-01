@@ -341,8 +341,8 @@ assert(
 
 const runtimeEnv = read("deploy/runtime.env");
 assert(
-  /^SIGNALS_DAEMON_DEPLOYMENT_ID=production$/m.test(runtimeEnv),
-  "Production signals daemon must select the canonical deployment explicitly",
+  /^SIGNALS_DAEMON_DEPLOYMENT_ID=production,CopyTrading$/m.test(runtimeEnv),
+  "Production signals daemon must select both configured deployments explicitly",
 );
 assert(
   !runtimeEnv.includes("trendfollow-forward-loss-guard-20260818"),
