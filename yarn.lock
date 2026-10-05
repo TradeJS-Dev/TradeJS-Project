@@ -1348,14 +1348,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/strategy-flag@npm:0.1.4":
-  version: 0.1.4
-  resolution: "@tradejs/strategy-flag@npm:0.1.4"
+"@tradejs/strategy-flag@npm:0.1.5":
+  version: 0.1.5
+  resolution: "@tradejs/strategy-flag@npm:0.1.5"
   peerDependencies:
     "@tradejs/core": ^3.0.1
     "@tradejs/strategy-kit": ^3.0.5
     "@tradejs/types": ^3.0.1
-  checksum: 10c0/da40bac7a82a75b0e7e5f93a4b463d58bf778995eda0a4740bb3b7e8ea4d4c5de747941532c9a8d312fb0ff71b039eac0a8012240e365adc1bf56b5f6b4e4e47
+  checksum: 10c0/836a48daa826e264e047fc7cc60edbfbfa75c9e6156470668f1b92f3b2d65d3330bc6c7743f3a5c1ceb2baa2ea50aa30b63c0a1bb97bba2cd82f52be5729ec33
   languageName: node
   linkType: hard
 
@@ -5570,7 +5570,7 @@ __metadata:
     "@tradejs/strategy-cup-and-handle": "npm:3.0.6"
     "@tradejs/strategy-double-tap": "npm:3.0.5"
     "@tradejs/strategy-dragon": "npm:0.1.3"
-    "@tradejs/strategy-flag": "npm:0.1.4"
+    "@tradejs/strategy-flag": "npm:0.1.5"
     "@tradejs/strategy-gartley": "npm:0.1.3"
     "@tradejs/strategy-grid": "npm:3.0.5"
     "@tradejs/strategy-grid-classic": "npm:3.0.5"
