@@ -10,6 +10,7 @@ import { relativeRotationRuntime } from "../strategies/relative-rotation";
 import { structureZonesRuntime } from "../strategies/structure-zones";
 import { trendFollowRuntime } from "../strategies/trend-follow";
 import { trendShiftRuntime } from "../strategies/trend-shift";
+import { tradingPatternsRuntime } from "../strategies/trading-patterns";
 import { volumeDivergenceRuntime } from "../strategies/volume-divergence";
 
 export const productionDeployment = {
@@ -29,6 +30,7 @@ export const productionDeployment = {
     RelativeRotation: relativeRotationRuntime,
     StructureZones: structureZonesRuntime,
     TrendShift: trendShiftRuntime,
+    TradingPatterns: tradingPatternsRuntime,
     TrendFollow: trendFollowRuntime,
     VolumeDivergence: volumeDivergenceRuntime,
   },

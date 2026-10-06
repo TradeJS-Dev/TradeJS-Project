@@ -100,8 +100,8 @@ const strategyDependencies = Object.entries(packageJson.dependencies).filter(
     name.startsWith("@tradejs/strategy-") && name !== "@tradejs/strategy-kit",
 );
 assert(
-  strategyDependencies.length === 23,
-  "All 23 strategy packages must be direct dependencies",
+  strategyDependencies.length === 25,
+  "All 25 strategy packages must be direct dependencies",
 );
 assert(
   !Object.hasOwn(packageJson.dependencies, "@tradejs/strategies"),
@@ -147,7 +147,9 @@ const runtimeConfig = [
   .map(read)
   .join("\n");
 assert(
-  config.includes("defineConfig(basePreset, { runtime })"),
+  config.includes("defineConfig(basePreset,") &&
+    config.includes('strategies: ["@tradejs/strategy-trading-patterns"]') &&
+    config.includes("runtime,"),
   "basePreset is not active",
 );
 for (const expectedRuntimeConfig of [
