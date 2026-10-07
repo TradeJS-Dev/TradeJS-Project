@@ -12,7 +12,7 @@ export const doubleTapRuntime = {
     ML_THRESHOLD: 0.1,
     MIN_AI_QUALITY: 4,
     RISK_FEE_RATE: 0.001,
-    MAX_LOSS_VALUE: 0.5,
+    MAX_LOSS_VALUE: 1,
     MA_FAST: 14,
     MA_MEDIUM: 49,
     MA_SLOW: 50,
