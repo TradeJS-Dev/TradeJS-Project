@@ -228,6 +228,13 @@ Redis/Timescale services, but it must not start `signals-daemon`, `market-ws`,
 or any exchange-facing transport. Live runtime behavior is validated only by
 an explicit runtime workflow with the required credentials and network scope.
 
+AI-gate research uses outer 60/40 by timestamp groups: search the whole first
+60%, diagnose three consecutive stability blocks inside it, and seal the last
+40% until candidate rules are frozen. Use `--validationSplit 0 --testSplit 0.4
+--sealTest`. Internal blocks are development diagnostics, not independent
+validation. Freeze one calendar test boundary for comparisons across exports.
+Previously opened history remains retrospective; sparse support is research-only.
+
 ## MCP access
 
 Prefer the authenticated TradeJS `/mcp` endpoint for remote market/runtime data,
