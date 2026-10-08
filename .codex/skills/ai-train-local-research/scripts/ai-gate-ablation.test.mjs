@@ -7,9 +7,11 @@ import test from 'node:test';
 
 import {
   aggregateBenchmarkDiscoveryRows,
+  applyTimestampRotationPlacebos,
   applyBenchmarkEventSnapshots,
   balanceCrossStrategyRows,
   buildAblationReport,
+  developmentBlocks,
   buildCrossStrategyReport,
   buildEquitySeries,
   buildMovingAverageVariants,
@@ -35,6 +37,7 @@ import {
   parseVariant,
   partitionCrossStrategyFeatures,
   resolveArtifactProjectRoot,
+  selectRowsWithinCapacity,
   splitRowsByTimestamp,
   splitRowsByTimestampBounds,
   summarizeRows,
@@ -959,6 +962,237 @@ test('applies filter, exclude, add, and replace selection semantics', () => {
   assert.equal(selected('replace', false, true), true);
 });
 
+test('applies deterministic timestamp-local capacity ranking', () => {
+  const timestamp = Date.UTC(2026, 0, 1);
+  const rows = [
+    { timestamp, symbol: 'B', sequence: 0, features: { margin: 2 } },
+    { timestamp, symbol: 'A', sequence: 1, features: { margin: 2 } },
+    { timestamp, symbol: 'C', sequence: 2, features: { margin: 1 } },
+    { timestamp, symbol: 'D', sequence: 3, features: {} },
+  ];
+  const selected = selectRowsWithinCapacity({
+    rows,
+    selector: () => true,
+    selection: {
+      capacity: 2,
+      rankBy: [{ path: 'margin', order: 'desc' }],
+    },
+  });
+
+  assert.deepEqual(
+    rows.filter((row) => selected.has(row)).map((row) => row.symbol),
+    ['B', 'A'],
+  );
+});
+
+test('applies variant capacity before every report slice', () => {
+  const timestamp = Date.UTC(2026, 0, 1);
+  const variant = parseVariant('ranked::replace@4::true');
+  variant.selection = {
+    capacity: 2,
+    rankBy: [{ path: 'margin', order: 'desc' }],
+  };
+  const rows = [1, 3, 2].map((margin, sequence) => ({
+    timestamp,
+    profit: margin,
+    symbol: `S${sequence}`,
+    direction: 'SHORT',
+    directionMatches: true,
+    quality: 4,
+    variantMatches: [true],
+    features: { margin },
+    sequence,
+  }));
+  const report = buildAblationReport({
+    rows,
+    variants: [variant],
+    minQuality: 4,
+    qualityThresholds: [4],
+    terminalWindows: [7],
+    validationSplit: 0,
+    filePaths: ['part1.jsonl'],
+  });
+
+  assert.equal(report.variants[0].periods.full.trades, 2);
+  assert.equal(report.variants[0].periods.full.totalProfit, 5);
+  assert.equal(report.variants[0].train.trades, 2);
+  assert.deepEqual(report.variants[0].selection, variant.selection);
+  assert.deepEqual(
+    report.variants[0].approvedSignals.map((row) => row.sequence),
+    [1, 2],
+  );
+});
+
+test('traces the exact approved signals without replaying the gate', () => {
+  const start = Date.UTC(2026, 0, 1);
+  const rows = [4, 3, 5, 4].map((quality, sequence) => ({
+    timestamp: start + sequence * 900000,
+    signalId: `signal-${sequence}`,
+    sequence,
+    symbol: 'A',
+    direction: 'LONG',
+    directionMatches: sequence !== 2,
+    quality,
+    profit: sequence - 1,
+    variantMatches: [sequence === 1],
+  }));
+  const report = buildAblationReport({
+    rows,
+    variants: [parseVariant('replacement::replace@4::true')],
+    minQuality: 4,
+    qualityThresholds: [4],
+    terminalWindows: [7],
+    validationSplit: 0,
+    filePaths: ['fixture.jsonl'],
+    windowStart: start,
+    windowEnd: start + 3 * 900000,
+  });
+  assert.deepEqual(report.baseline.approvedSignals, [
+    {
+      sequence: 0,
+      signalId: 'signal-0',
+      timestamp: start,
+      symbol: 'A',
+      direction: 'LONG',
+      profit: -1,
+    },
+  ]);
+  assert.deepEqual(
+    report.variants[0].approvedSignals.map((row) => row.signalId),
+    ['signal-1'],
+  );
+  for (const composition of [report.baseline, ...report.variants]) {
+    assert.equal(
+      composition.approvedSignals.length,
+      composition.periods.full.trades,
+    );
+    assert.equal(
+      composition.approvedSignals.reduce((sum, row) => sum + row.profit, 0),
+      composition.periods.full.totalProfit,
+    );
+  }
+});
+
+test('uses common half-open comparison bounds for sparse gate exports', () => {
+  const start = Date.UTC(2025, 0, 1);
+  const day = 86400000;
+  const end = start + 365 * day;
+  const rows = [-1, 0, 100, 365].map((offset, sequence) => ({
+    timestamp: start + offset * day,
+    profit: 10,
+    symbol: 'A',
+    direction: 'LONG',
+    directionMatches: true,
+    quality: 4,
+    variantMatches: [true],
+    sequence,
+  }));
+  const args = {
+    rows,
+    variants: [parseVariant('pass::replace@4::true')],
+    minQuality: 4,
+    qualityThresholds: [4],
+    terminalWindows: [30, 7],
+    validationSplit: 0,
+    filePaths: ['fixture.jsonl'],
+    windowStart: start,
+    windowEnd: end,
+  };
+  const report = buildAblationReport(args);
+  assert.equal(report.run.rows, 2);
+  assert.equal(report.variants[0].periods.full.totalProfit, 20);
+  assert.equal(report.variants[0].periods.full.cadencePerDay, 2 / 365);
+  assert.equal(
+    report.variants[0].periodDirections.full.LONG.cadencePerDay,
+    2 / 365,
+  );
+  assert.equal(report.variants[0].periods['30d'].trades, 0);
+  assert.deepEqual(report.variants[0].equity.at(-1), [end - 1, 20]);
+  assert.throws(
+    () => buildAblationReport({ ...args, windowEnd: null }),
+    /both windowStart/,
+  );
+  assert.throws(
+    () => buildAblationReport({ ...args, windowEnd: start }),
+    /increasing bounds/,
+  );
+  const empty = buildAblationReport({
+    ...args,
+    windowStart: end + day,
+    windowEnd: end + 2 * day,
+  });
+  assert.equal(empty.variants[0].periods.full.trades, 0);
+  assert.equal(empty.variants[0].periods.full.totalProfit, 0);
+  assert.deepEqual(empty.baseline.approvedSignals, []);
+  assert.deepEqual(empty.variants[0].approvedSignals, []);
+  const parsed = parseCliArgs([
+    '--windowStart',
+    String(start),
+    '--windowEnd',
+    new Date(end).toISOString(),
+  ]);
+  assert.equal(parsed.windowStart, start);
+  assert.equal(parsed.windowEnd, end);
+});
+
+test('rotates placebo approval timestamps while preserving event count', () => {
+  const variants = [
+    { name: 'reference' },
+    {
+      name: 'rotated',
+      placebo: {
+        type: 'timestamp-rotation',
+        referenceVariant: 'reference',
+        offsetEvents: 1,
+      },
+    },
+  ];
+  const rows = [0, 1, 2, 3].map((index) => ({
+    timestamp: Date.UTC(2026, 0, index + 1),
+    variantMatches: [index === 0 || index === 2, true],
+  }));
+
+  applyTimestampRotationPlacebos(rows, variants);
+
+  assert.deepEqual(
+    rows.filter((row) => row.variantMatches[1]).map((row) => row.timestamp),
+    [Date.UTC(2026, 0, 2), Date.UTC(2026, 0, 4)],
+  );
+});
+
+test('preserves timestamp-rotation event count inside each supplied partition', () => {
+  const variants = [
+    { name: 'reference' },
+    {
+      name: 'rotated',
+      placebo: {
+        type: 'timestamp-rotation',
+        referenceVariant: 'reference',
+        offsetEvents: 1,
+      },
+    },
+  ];
+  const rows = [0, 1, 2, 3, 4, 5].map((index) => ({
+    timestamp: Date.UTC(2026, 0, index + 1),
+    variantMatches: [[0, 2, 3, 5].includes(index), true],
+  }));
+  const partitions = [rows.slice(0, 3), rows.slice(3)];
+
+  applyTimestampRotationPlacebos(rows, variants, partitions);
+
+  assert.deepEqual(
+    partitions.map(
+      (partition) =>
+        new Set(
+          partition
+            .filter((row) => row.variantMatches[1])
+            .map((row) => row.timestamp),
+        ).size,
+    ),
+    [2, 2],
+  );
+});
+
 test('calculates required profit, drawdown, strict-loss, and cadence metrics', () => {
   const rows = [
     {
@@ -1067,12 +1301,18 @@ test('uses exact calendar boundaries without splitting timestamp events', () => 
 
   const split = splitRowsByTimestampBounds(rows, tuning, testStart);
 
-  assert.deepEqual(split.train.map((row) => row.id), ['train']);
-  assert.deepEqual(split.tuning.map((row) => row.id), [
-    'tuning-a',
-    'tuning-b',
-  ]);
-  assert.deepEqual(split.test.map((row) => row.id), ['test']);
+  assert.deepEqual(
+    split.train.map((row) => row.id),
+    ['train'],
+  );
+  assert.deepEqual(
+    split.tuning.map((row) => row.id),
+    ['tuning-a', 'tuning-b'],
+  );
+  assert.deepEqual(
+    split.test.map((row) => row.id),
+    ['test'],
+  );
 });
 
 test('builds timestamp-grouped cumulative equity with common endpoints', () => {
@@ -1213,4 +1453,35 @@ test('uses inclusive UTC calendar days for terminal active-day ratio', () => {
 
   assert.equal(report.baseline.periods['7d'].activeDays, 2);
   assert.equal(report.baseline.periods['7d'].activeDayRatio, 0.25);
+});
+
+test('outer 60/40 is the CLI default and stability blocks preserve whole events', () => {
+  const options = parseCliArgs([]);
+  assert.equal(options.validationSplit, 0);
+  assert.equal(options.testSplit, 0.4);
+  const rows = Array.from({ length: 30 }, (_, i) => ({
+    timestamp: Math.floor(i / 2),
+  }));
+  const blocks = developmentBlocks(rows);
+  assert.deepEqual(
+    blocks.map((block) => block.length),
+    [10, 10, 10],
+  );
+  assert.equal(new Set(blocks.flat().map((row) => row.timestamp)).size, 15);
+  for (let i = 0; i < 2; i++)
+    assert.ok(blocks[i].at(-1).timestamp < blocks[i + 1][0].timestamp);
+});
+
+test('shared outer boundary permits development/test without separate tuning', () => {
+  const rows = [1, 2, 2, 3, 4].map((timestamp) => ({ timestamp }));
+  const split = splitRowsByTimestampBounds(rows, null, 3);
+  assert.deepEqual(
+    split.train.map((row) => row.timestamp),
+    [1, 2, 2],
+  );
+  assert.deepEqual(split.tuning, []);
+  assert.deepEqual(
+    split.test.map((row) => row.timestamp),
+    [3, 4],
+  );
 });

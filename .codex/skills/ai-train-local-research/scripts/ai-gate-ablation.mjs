@@ -32,10 +32,12 @@ Options:
   --minQuality <n>             Main baseline threshold (default: 4)
   --qualityThresholds <list>   qN+ summaries (default: 3,4,5)
   --terminalWindows <list>     Terminal windows in days (default: 180,90,30,7)
-  --validationSplit <ratio>    Trailing timestamp-grouped tuning share (default: 0.25)
-  --testSplit <ratio>          Later timestamp-grouped test share (default: 0)
+  --validationSplit <ratio>    Optional legacy tuning share (default: 0; stability stays in development)
+  --testSplit <ratio>          Outer timestamp-grouped test share (default: 0.4)
   --tuningSince <timestamp>    Exact UTC boundary where tuning starts
   --testSince <timestamp>      Exact UTC boundary where test starts
+  --windowStart <timestamp>    Common comparison start, inclusive
+  --windowEnd <timestamp>      Common comparison end, exclusive
   --capacities <list>          Capacity stress limits (default: 1,3,5)
   --maxLossValue <n>           Per-order loss budget for capacity stress
   --featurePattern <regex>     Inventory matching causal feature paths
@@ -89,8 +91,8 @@ export const parseCliArgs = (argv) => {
     minQuality: 4,
     qualityThresholds: DEFAULT_QUALITY_THRESHOLDS,
     terminalWindows: DEFAULT_WINDOWS,
-    validationSplit: 0.25,
-    testSplit: 0,
+    validationSplit: 0,
+    testSplit: 0.4,
     tuningSince: null,
     testSince: null,
     capacities: DEFAULT_CAPACITIES,
@@ -165,7 +167,9 @@ export const parseCliArgs = (argv) => {
       options.testSplit = Number.isFinite(parsed)
         ? Math.max(0, Math.min(0.9, parsed))
         : 0;
-    } else if (name === 'tuningSince' || name === 'testSince') {
+    } else if (
+      ['tuningSince', 'testSince', 'windowStart', 'windowEnd'].includes(name)
+    ) {
       const numeric = Number(value);
       const parsed = Number.isFinite(numeric) ? numeric : Date.parse(value);
       if (!Number.isFinite(parsed)) {
@@ -668,11 +672,55 @@ const loadVariants = async (inlineVariants, specPath) => {
       entry.quality == null ? '' : `@${Math.trunc(Number(entry.quality))}`;
     const directionSuffix =
       entry.direction == null ? '' : `[${String(entry.direction)}]`;
-    variants.push(
-      parseVariant(
-        `${entry.name}::${entry.mode}${qualitySuffix}${directionSuffix}::${entry.expression}`,
-      ),
+    const variant = parseVariant(
+      `${entry.name}::${entry.mode}${qualitySuffix}${directionSuffix}::${entry.expression}`,
     );
+    if (entry.selection != null) {
+      const capacity = Math.trunc(Number(entry.selection.capacity));
+      const rankBy = entry.selection.rankBy;
+      if (!Number.isFinite(capacity) || capacity < 1) {
+        throw new Error(
+          `Variant ${entry.name} selection.capacity must be a positive integer`,
+        );
+      }
+      if (!Array.isArray(rankBy) || rankBy.length === 0) {
+        throw new Error(
+          `Variant ${entry.name} selection.rankBy must be a non-empty array`,
+        );
+      }
+      variant.selection = {
+        capacity,
+        rankBy: rankBy.map((rank, index) => {
+          const pathValue = String(rank?.path ?? '').trim();
+          const order = String(rank?.order ?? 'desc').toLowerCase();
+          if (!pathValue || !['asc', 'desc'].includes(order)) {
+            throw new Error(
+              `Variant ${entry.name} selection.rankBy[${index}] requires path and asc|desc order`,
+            );
+          }
+          return { path: pathValue, order };
+        }),
+      };
+    }
+    if (entry.placebo != null) {
+      const type = String(entry.placebo.type ?? '').trim();
+      const referenceVariant = String(
+        entry.placebo.referenceVariant ?? '',
+      ).trim();
+      const offsetEvents = Math.trunc(Number(entry.placebo.offsetEvents));
+      if (
+        type !== 'timestamp-rotation' ||
+        !referenceVariant ||
+        !Number.isFinite(offsetEvents) ||
+        offsetEvents < 1
+      ) {
+        throw new Error(
+          `Variant ${entry.name} placebo requires type=timestamp-rotation, referenceVariant, and positive offsetEvents`,
+        );
+      }
+      variant.placebo = { type, referenceVariant, offsetEvents };
+    }
+    variants.push(variant);
   }
   const names = new Set();
   for (const variant of variants) {
@@ -680,6 +728,16 @@ const loadVariants = async (inlineVariants, specPath) => {
       throw new Error(`Duplicate variant name: ${variant.name}`);
     }
     names.add(variant.name);
+  }
+  for (const variant of variants) {
+    if (
+      variant.placebo != null &&
+      !names.has(variant.placebo.referenceVariant)
+    ) {
+      throw new Error(
+        `Variant ${variant.name} references unknown placebo variant ${variant.placebo.referenceVariant}`,
+      );
+    }
   }
   return variants;
 };
@@ -962,6 +1020,111 @@ const candidateSelectedAt = (
     defaultQuality: minQuality,
   });
 
+const compareRankValue = (left, right, order) => {
+  const leftMissing = left == null || Number.isNaN(left);
+  const rightMissing = right == null || Number.isNaN(right);
+  if (leftMissing || rightMissing) {
+    if (leftMissing && rightMissing) return 0;
+    return leftMissing ? 1 : -1;
+  }
+  let comparison;
+  if (typeof left === 'number' && typeof right === 'number') {
+    comparison = left - right;
+  } else {
+    comparison = String(left).localeCompare(String(right));
+  }
+  return order === 'asc' ? comparison : -comparison;
+};
+
+export const selectRowsWithinCapacity = ({ rows, selector, selection }) => {
+  const selected = rows.filter(selector);
+  if (selection == null) return new Set(selected);
+  const byTimestamp = new Map();
+  for (const row of selected) {
+    const eventRows = byTimestamp.get(row.timestamp) ?? [];
+    eventRows.push(row);
+    byTimestamp.set(row.timestamp, eventRows);
+  }
+  const accepted = new Set();
+  for (const eventRows of byTimestamp.values()) {
+    eventRows.sort((left, right) => {
+      for (const rank of selection.rankBy) {
+        const comparison = compareRankValue(
+          left.features?.[rank.path],
+          right.features?.[rank.path],
+          rank.order,
+        );
+        if (comparison !== 0) return comparison;
+      }
+      return (
+        String(left.symbol ?? '').localeCompare(String(right.symbol ?? '')) ||
+        Number(left.sequence ?? 0) - Number(right.sequence ?? 0)
+      );
+    });
+    for (const row of eventRows.slice(0, selection.capacity)) {
+      accepted.add(row);
+    }
+  }
+  return accepted;
+};
+
+export const applyTimestampRotationPlacebos = (
+  rows,
+  variants,
+  partitions = [rows],
+) => {
+  const variantIndexes = new Map(
+    variants.map((variant, index) => [variant.name, index]),
+  );
+  for (
+    let placeboIndex = 0;
+    placeboIndex < variants.length;
+    placeboIndex += 1
+  ) {
+    const placebo = variants[placeboIndex].placebo;
+    if (placebo?.type !== 'timestamp-rotation') continue;
+    const referenceIndex = variantIndexes.get(placebo.referenceVariant);
+    if (referenceIndex == null) {
+      throw new Error(
+        `Unknown timestamp-rotation reference ${placebo.referenceVariant}`,
+      );
+    }
+    for (const partitionRows of partitions) {
+      const eligibleTimestamps = [
+        ...new Set(
+          partitionRows
+            .filter((row) => row.variantMatches[placeboIndex])
+            .map((row) => row.timestamp),
+        ),
+      ].sort((left, right) => left - right);
+      if (eligibleTimestamps.length === 0) continue;
+      const eligibleIndex = new Map(
+        eligibleTimestamps.map((timestamp, index) => [timestamp, index]),
+      );
+      const referenceTimestamps = new Set(
+        partitionRows
+          .filter((row) => row.variantMatches[referenceIndex])
+          .map((row) => row.timestamp),
+      );
+      const rotatedTimestamps = new Set();
+      for (const timestamp of referenceTimestamps) {
+        const index = eligibleIndex.get(timestamp);
+        if (index == null) continue;
+        rotatedTimestamps.add(
+          eligibleTimestamps[
+            (index + placebo.offsetEvents) % eligibleTimestamps.length
+          ],
+        );
+      }
+      for (const row of partitionRows) {
+        row.variantMatches[placeboIndex] =
+          row.variantMatches[placeboIndex] &&
+          rotatedTimestamps.has(row.timestamp);
+      }
+    }
+  }
+};
+
 const selectRows = (rows, predicate) => rows.filter(predicate);
 
 const buildPeriodSummaries = ({
@@ -972,15 +1135,17 @@ const buildPeriodSummaries = ({
   maxTimestamp,
   summaryOptions,
 }) => {
-  const withCalendarDays = (periodRows) => ({
+  const withCalendarDays = (periodRows, start, end) => ({
     ...summaryOptions,
-    calendarDays: getCalendarDays(periodRows),
+    calendarDays: summaryOptions.comparisonWindow
+      ? getCalendarDays([{ timestamp: start }, { timestamp: end - 1 }])
+      : getCalendarDays(periodRows),
   });
   const result = {
     full: summarizeRows(
       selectRows(rows, selector),
       Math.max((maxTimestamp - minTimestamp) / DAY_MS, 1),
-      withCalendarDays(rows),
+      withCalendarDays(rows, minTimestamp, maxTimestamp),
     ),
   };
   for (const days of windows) {
@@ -989,7 +1154,7 @@ const buildPeriodSummaries = ({
     result[`${days}d`] = summarizeRows(
       selectRows(periodRows, selector),
       days,
-      withCalendarDays(periodRows),
+      withCalendarDays(periodRows, from, maxTimestamp),
     );
   }
   return result;
@@ -1027,11 +1192,14 @@ export const splitRowsByTimestamp = (rows, validationSplit, testSplit = 0) => {
   };
 };
 
-export const splitRowsByTimestampBounds = (
-  rows,
-  tuningSince,
-  testSince,
-) => {
+export const splitRowsByTimestampBounds = (rows, tuningSince, testSince) => {
+  if (tuningSince == null && Number.isFinite(testSince)) {
+    return {
+      train: rows.filter((row) => row.timestamp < testSince),
+      tuning: [],
+      test: rows.filter((row) => row.timestamp >= testSince),
+    };
+  }
   if (!Number.isFinite(tuningSince) || !Number.isFinite(testSince)) {
     throw new Error(
       'Exact calendar partitions require both tuningSince and testSince',
@@ -1049,6 +1217,21 @@ export const splitRowsByTimestampBounds = (
   };
 };
 
+// Three diagnostics wholly inside the development partition, never test selection.
+export const developmentBlocks = (rows) => {
+  const timestamps = [...new Set(rows.map((row) => row.timestamp))].sort(
+    (a, b) => a - b,
+  );
+  return [0, 1, 2].map((index) => {
+    const from = timestamps[Math.floor((timestamps.length * index) / 3)];
+    const until =
+      index === 2
+        ? Infinity
+        : timestamps[Math.floor((timestamps.length * (index + 1)) / 3)];
+    return rows.filter((row) => row.timestamp >= from && row.timestamp < until);
+  });
+};
+
 const summarizeSplit = (rows, selector, summaryOptions) =>
   summarizeRows(selectRows(rows, selector), getPeriodDays(rows), {
     ...summaryOptions,
@@ -1061,7 +1244,7 @@ const summarizeDirections = (rows, selector, summaryOptions) =>
       direction,
       summarizeRows(
         selectRows(rows, (row) => row.direction === direction && selector(row)),
-        getPeriodDays(rows),
+        summaryOptions?.denominatorDays ?? getPeriodDays(rows),
         summaryOptions,
       ),
     ]),
@@ -1091,7 +1274,8 @@ export const buildEquitySeries = (
     if (timestamp === minTimestamp) result[0] = [timestamp, cumulative];
     else result.push([timestamp, cumulative]);
   }
-  if (result.at(-1)[0] !== maxTimestamp) result.push([maxTimestamp, cumulative]);
+  if (result.at(-1)[0] !== maxTimestamp)
+    result.push([maxTimestamp, cumulative]);
   return result;
 };
 
@@ -1105,7 +1289,12 @@ const buildPeriodDirectionSummaries = ({
   const result = {
     full: summarizeDirections(rows, selector, {
       ...summaryOptions,
-      calendarDays: getCalendarDays(rows),
+      calendarDays: summaryOptions.comparisonWindow
+        ? getCalendarDays([
+            { timestamp: summaryOptions.comparisonWindow.start },
+            { timestamp: maxTimestamp - 1 },
+          ])
+        : getCalendarDays(rows),
     }),
   };
   for (const days of windows) {
@@ -1113,7 +1302,13 @@ const buildPeriodDirectionSummaries = ({
     const periodRows = selectRows(rows, (row) => row.timestamp >= from);
     result[`${days}d`] = summarizeDirections(periodRows, selector, {
       ...summaryOptions,
-      calendarDays: getCalendarDays(periodRows),
+      ...(summaryOptions.comparisonWindow ? { denominatorDays: days } : {}),
+      calendarDays: summaryOptions.comparisonWindow
+        ? getCalendarDays([
+            { timestamp: from },
+            { timestamp: maxTimestamp - 1 },
+          ])
+        : getCalendarDays(periodRows),
     });
   }
   return result;
@@ -1254,9 +1449,8 @@ export const loadStandaloneStrategyEntries = async (sourceRepositoryRoot) => {
       `Expected a standalone TradeJS strategy repository: ${sourceRepositoryRoot}`,
     );
   }
-  const { entrypoint, packageJson } = resolveStandaloneStrategyEntrypoint(
-    sourceRepositoryRoot,
-  );
+  const { entrypoint, packageJson } =
+    resolveStandaloneStrategyEntrypoint(sourceRepositoryRoot);
   let outputStat;
   try {
     outputStat = await fsp.stat(entrypoint);
@@ -1317,9 +1511,15 @@ export const ensureRuntimeBuild = async (frameworkRepositoryRoot) => {
       output: aiModulePath,
       sources: [
         path.join(frameworkRepositoryRoot, 'packages/node/src/ai.ts'),
-        path.join(frameworkRepositoryRoot, 'packages/node/src/aiMarketContext.ts'),
+        path.join(
+          frameworkRepositoryRoot,
+          'packages/node/src/aiMarketContext.ts',
+        ),
         path.join(frameworkRepositoryRoot, 'packages/node/src/aiShared.ts'),
-        path.join(frameworkRepositoryRoot, 'packages/node/src/strategyAdapters'),
+        path.join(
+          frameworkRepositoryRoot,
+          'packages/node/src/strategyAdapters',
+        ),
       ],
       command: 'yarn workspace @tradejs/node build',
     },
@@ -1372,9 +1572,8 @@ const loadResearchRows = async ({
   const require = createRequire(import.meta.url);
   const { collectAiPocketFeatures } = require(pocketModulePath);
   if (getSourceRepositoryKind(sourceRepositoryRoot) === 'strategy') {
-    const { strategyEntries } = await loadStandaloneStrategyEntries(
-      sourceRepositoryRoot,
-    );
+    const { strategyEntries } =
+      await loadStandaloneStrategyEntries(sourceRepositoryRoot);
     registryModule.resetStrategyRegistryCache(projectRoot);
     registryModule.registerStrategyEntries(strategyEntries, projectRoot);
   } else {
@@ -1430,6 +1629,7 @@ const loadResearchRows = async ({
             analysis.direction === source.direction &&
             quality != null &&
             quality >= minQuality,
+          features,
           movingAverageSource: {
             provider: String(source.connectorName ?? '')
               .trim()
@@ -2856,6 +3056,9 @@ export const evaluateCrossPocket = ({
     expectedSign,
   );
   const test = summarizeCrossSlice(split.test, pocket.predicates, expectedSign);
+  const developmentStability = developmentBlocks(split.train).map((block) =>
+    summarizeCrossSlice(block, pocket.predicates, expectedSign),
+  );
   const negativeControl = evaluateNegativeControl(
     split.test,
     pocket.predicates,
@@ -2931,6 +3134,7 @@ export const evaluateCrossPocket = ({
   return {
     condition: pocket.condition,
     predicates: pocket.predicates,
+    developmentStability,
     train,
     tuning,
     test,
@@ -3416,9 +3620,9 @@ export const buildCrossStrategyReport = async ({
   if (groups.length < 2) {
     throw new Error('Cross-strategy research requires at least two exports');
   }
-  if (testSplit <= 0 || validationSplit <= 0) {
+  if (testSplit <= 0 || validationSplit < 0) {
     throw new Error(
-      '--crossStrategy requires positive --validationSplit and --testSplit',
+      '--crossStrategy requires positive --testSplit and non-negative --validationSplit',
     );
   }
   let searchAiPockets = searchAiPocketsOverride;
@@ -3553,6 +3757,10 @@ export const buildCrossStrategyReport = async ({
       left.timestamp - right.timestamp || left.sequence - right.sequence,
   );
   const split = splitRowsByTimestamp(rows, validationSplit, testSplit);
+  if (validationSplit === 0) {
+    // This overlaps development deliberately: diagnostic stability, not holdout tuning.
+    split.tuning = developmentBlocks(split.train).at(-1);
+  }
   const minSharedStrategies = Math.min(
     groups.length,
     Math.max(5, Math.ceil(minFeatureStrategies * 0.6)),
@@ -3790,6 +3998,10 @@ export const buildCrossStrategyReport = async ({
       },
       validationSplit,
       testSplit,
+      tuningRole:
+        validationSplit === 0
+          ? 'last development block, overlapping diagnostic; not independent holdout'
+          : 'legacy separate tuning',
       minFeatureStrategies,
       acceptance: {
         minSharedStrategies,
@@ -3837,10 +4049,12 @@ export const buildAblationReport = ({
   minQuality,
   qualityThresholds,
   terminalWindows,
-  validationSplit,
-  testSplit = 0,
+  validationSplit = 0,
+  testSplit = 0.4,
   tuningSince = null,
   testSince = null,
+  windowStart = null,
+  windowEnd = null,
   capacities = DEFAULT_CAPACITIES,
   maxLossValue = null,
   filePaths,
@@ -3851,17 +4065,43 @@ export const buildAblationReport = ({
   featureInventory = [],
 }) => {
   if (!rows.length) throw new Error('No rows were evaluated');
-  const minTimestamp = rows[0].timestamp;
-  const maxTimestamp = rows.at(-1).timestamp;
-  if ((tuningSince == null) !== (testSince == null)) {
+  if ((windowStart == null) !== (windowEnd == null)) {
+    throw new Error(
+      'Common comparison window requires both windowStart and windowEnd',
+    );
+  }
+  const explicitWindow = windowStart != null;
+  if (
+    explicitWindow &&
+    (!Number.isFinite(windowStart) ||
+      !Number.isFinite(windowEnd) ||
+      windowStart >= windowEnd)
+  ) {
+    throw new Error(
+      'Common comparison window must have finite increasing bounds',
+    );
+  }
+  if (explicitWindow) {
+    rows = rows.filter(
+      (row) => row.timestamp >= windowStart && row.timestamp < windowEnd,
+    );
+  }
+  const minTimestamp = windowStart ?? rows[0].timestamp;
+  const maxTimestamp = windowEnd ?? rows.at(-1).timestamp;
+  if (tuningSince != null && testSince == null) {
     throw new Error(
       'Exact calendar partitions require both tuningSince and testSince',
     );
   }
-  const exactCalendarPartitions = tuningSince != null;
+  const exactCalendarPartitions = testSince != null;
   const split = exactCalendarPartitions
     ? splitRowsByTimestampBounds(rows, tuningSince, testSince)
     : splitRowsByTimestamp(rows, validationSplit, testSplit);
+  applyTimestampRotationPlacebos(rows, variants, [
+    split.train,
+    split.tuning,
+    split.test,
+  ]);
   const partitionEvidence = (partitionRows) => ({
     rows: partitionRows.length,
     events: new Set(partitionRows.map((row) => row.timestamp)).size,
@@ -3872,14 +4112,39 @@ export const buildAblationReport = ({
       ? new Date(partitionRows.at(-1).timestamp).toISOString()
       : null,
   });
-  const summaryOptions = { capacities, maxLossValue };
+  const summaryOptions = {
+    capacities,
+    maxLossValue,
+    ...(explicitWindow
+      ? {
+          comparisonWindow: { start: windowStart, end: windowEnd },
+          denominatorDays: Math.max((windowEnd - windowStart) / DAY_MS, 1),
+        }
+      : {}),
+  };
+  const stabilityBlocks = developmentBlocks([...split.train, ...split.tuning]);
+  const stabilitySummary = (selector) =>
+    stabilityBlocks.map((block) => ({
+      ...partitionEvidence(block),
+      metrics: summarizeSplit(block, selector, summaryOptions),
+    }));
   const baselineSelector = (row) => baselineSelectedAt(row, minQuality);
+  const approvedSignalTrace = (selector) =>
+    selectRows(rows, selector).map((row) => ({
+      sequence: row.sequence ?? null,
+      signalId: row.signalId ?? null,
+      timestamp: row.timestamp,
+      symbol: row.symbol,
+      direction: row.direction,
+      profit: row.profit,
+    }));
   const baseline = {
+    approvedSignals: approvedSignalTrace(baselineSelector),
     equity: buildEquitySeries(
       rows,
       baselineSelector,
       minTimestamp,
-      maxTimestamp,
+      maxTimestamp - Number(explicitWindow),
     ),
     periods: buildPeriodSummaries({
       rows,
@@ -3896,6 +4161,7 @@ export const buildAblationReport = ({
       maxTimestamp,
       summaryOptions,
     }),
+    developmentStability: stabilitySummary(baselineSelector),
     train: summarizeSplit(split.train, baselineSelector, summaryOptions),
     tuning: summarizeSplit(split.tuning, baselineSelector, summaryOptions),
     test: summarizeSplit(split.test, baselineSelector, summaryOptions),
@@ -3913,8 +4179,17 @@ export const buildAblationReport = ({
     months: summarizeMonths(rows, baselineSelector, summaryOptions),
   };
   const variantReports = variants.map((variant, variantIndex) => {
-    const candidateSelector = (row) =>
-      candidateSelectedAt(row, variant, variantIndex, minQuality, minQuality);
+    const candidateSelectorFor = (threshold) => {
+      const baseSelector = (row) =>
+        candidateSelectedAt(row, variant, variantIndex, threshold, minQuality);
+      const selectedRows = selectRowsWithinCapacity({
+        rows,
+        selector: baseSelector,
+        selection: variant.selection,
+      });
+      return (row) => selectedRows.has(row);
+    };
+    const candidateSelector = candidateSelectorFor(minQuality);
     const matchedSelector = (row) => row.variantMatches[variantIndex];
     const removedSelector = (row) =>
       baselineSelector(row) && !candidateSelector(row);
@@ -3926,11 +4201,14 @@ export const buildAblationReport = ({
       quality: variant.quality,
       direction: variant.direction,
       expression: variant.expression,
+      selection: variant.selection ?? null,
+      placebo: variant.placebo ?? null,
+      approvedSignals: approvedSignalTrace(candidateSelector),
       equity: buildEquitySeries(
         rows,
         candidateSelector,
         minTimestamp,
-        maxTimestamp,
+        maxTimestamp - Number(explicitWindow),
       ),
       periods: buildPeriodSummaries({
         rows,
@@ -3947,26 +4225,22 @@ export const buildAblationReport = ({
         maxTimestamp,
         summaryOptions,
       }),
+      developmentStability: stabilitySummary(candidateSelector),
       train: summarizeSplit(split.train, candidateSelector, summaryOptions),
       tuning: summarizeSplit(split.tuning, candidateSelector, summaryOptions),
       test: summarizeSplit(split.test, candidateSelector, summaryOptions),
       qualityThresholds: Object.fromEntries(
-        qualityThresholds.map((threshold) => [
-          `q${threshold}+`,
-          summarizeRows(
-            selectRows(rows, (row) =>
-              candidateSelectedAt(
-                row,
-                variant,
-                variantIndex,
-                threshold,
-                minQuality,
-              ),
+        qualityThresholds.map((threshold) => {
+          const thresholdSelector = candidateSelectorFor(threshold);
+          return [
+            `q${threshold}+`,
+            summarizeRows(
+              selectRows(rows, thresholdSelector),
+              getPeriodDays(rows),
+              summaryOptions,
             ),
-            getPeriodDays(rows),
-            summaryOptions,
-          ),
-        ]),
+          ];
+        }),
       ),
       directions: summarizeDirections(rows, candidateSelector, summaryOptions),
       months: summarizeMonths(rows, candidateSelector, summaryOptions),
@@ -4003,9 +4277,14 @@ export const buildAblationReport = ({
       validationSplit,
       testSplit,
       partitionMode: exactCalendarPartitions ? 'exact-calendar' : 'ratio',
-      tuningSince: exactCalendarPartitions
-        ? new Date(tuningSince).toISOString()
+      developmentStabilityRole:
+        'diagnostic inside development; never outer test selection',
+      developmentStabilityFolds: 3,
+      comparisonWindow: explicitWindow
+        ? { start: windowStart, end: windowEnd, interval: '[start, end)' }
         : null,
+      tuningSince:
+        tuningSince != null ? new Date(tuningSince).toISOString() : null,
       testSince: exactCalendarPartitions
         ? new Date(testSince).toISOString()
         : null,
@@ -4331,6 +4610,14 @@ export const formatMarkdownReport = (report) => {
           report.run.trainEvents,
           report.baseline.train,
         ),
+        ...(report.baseline.developmentStability ?? []).map((block, index) =>
+          validationSummaryRow(
+            `development block ${index + 1} (diagnostic)`,
+            block.rows,
+            block.events,
+            block.metrics,
+          ),
+        ),
         validationSummaryRow(
           'tuning',
           report.run.tuningRows,
@@ -4338,7 +4625,7 @@ export const formatMarkdownReport = (report) => {
           report.baseline.tuning,
         ),
         validationSummaryRow(
-          'untouched test',
+          'outer test (opened)',
           report.run.testRows,
           report.run.testEvents,
           report.baseline.test,
@@ -4450,13 +4737,20 @@ export const formatMarkdownReport = (report) => {
             report.baseline.train,
             variant.train,
           ),
+          ...(variant.developmentStability ?? []).map((block, index) =>
+            validationComparisonRow(
+              `development block ${index + 1} (diagnostic)`,
+              report.baseline.developmentStability[index].metrics,
+              block.metrics,
+            ),
+          ),
           validationComparisonRow(
             'tuning',
             report.baseline.tuning,
             variant.tuning,
           ),
           validationComparisonRow(
-            'untouched test',
+            'outer test (opened)',
             report.baseline.test,
             variant.test,
           ),
@@ -5021,9 +5315,8 @@ export const main = async () => {
   }
   const sourceRepositoryRoot = findSourceRepositoryRoot();
   const sourceRepositoryKind = getSourceRepositoryKind(sourceRepositoryRoot);
-  const frameworkRepositoryRoot = findFrameworkRepositoryRoot(
-    sourceRepositoryRoot,
-  );
+  const frameworkRepositoryRoot =
+    findFrameworkRepositoryRoot(sourceRepositoryRoot);
   if (options.crossStrategy) {
     if (options.tuningSince != null || options.testSince != null) {
       throw new Error(
@@ -5134,6 +5427,8 @@ export const main = async () => {
     testSplit: options.testSplit,
     tuningSince: options.tuningSince,
     testSince: options.testSince,
+    windowStart: options.windowStart,
+    windowEnd: options.windowEnd,
     capacities: options.capacities,
     maxLossValue: options.maxLossValue,
     sourceRepositoryRoot,

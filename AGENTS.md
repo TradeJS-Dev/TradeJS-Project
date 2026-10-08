@@ -227,3 +227,23 @@ The stable Project image smoke may start the application and isolated
 Redis/Timescale services, but it must not start `signals-daemon`, `market-ws`,
 or any exchange-facing transport. Live runtime behavior is validated only by
 an explicit runtime workflow with the required credentials and network scope.
+
+## MCP access
+
+Prefer the authenticated TradeJS `/mcp` endpoint for remote market/runtime data,
+backtest jobs, and verified runtime-evidence/feedback/parity reports. Check
+`tradejs_info` and `runtime_get_status` first: local storage never establishes
+production state. Bind every investigation to the exact user, deployment,
+account, time window, `strategyRevision`, and `deploymentCompositionId`.
+
+Use `diagnostics_list_reports` and `diagnostics_get_report` before requesting a
+new diagnostic run. Download full artifacts through `artifact_get`, decode
+base64 chunks and verify size plus SHA-256 before local analysis. Do not infer
+no activity from missing retained records. Aggregate skip counters are debug
+telemetry, not immutable evidence.
+
+Only start/cancel background jobs when requested by the user. Reuse an
+idempotency key for an identical request; a disconnect never cancels a job.
+MCP cannot place/cancel/close live orders, edit runtime config, deploy, or send
+notifications. Do not fall back to SSH or broader credentials without an
+explicit operational request. OAuth consent/login remains user-managed.
