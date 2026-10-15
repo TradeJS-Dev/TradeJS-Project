@@ -2,6 +2,7 @@ import type { RuntimeDeploymentDeclaration } from "@tradejs/types";
 import { doubleTapRuntime } from "../strategies/double-tap";
 import { headAndShouldersRuntime } from "../strategies/head-and-shoulders";
 import { liquidityTailsRuntime } from "../strategies/liquidity-tails";
+import { tradingPatternsRuntime } from "../strategies/trading-patterns";
 
 export const copyTradingDeployment = {
   label: "CopyTrading",
@@ -21,6 +22,10 @@ export const copyTradingDeployment = {
     LiquidityTails: {
       ...liquidityTailsRuntime,
       config: { ...liquidityTailsRuntime.config, MAX_LOSS_VALUE: 5 },
+    },
+    TradingPatterns: {
+      ...tradingPatternsRuntime,
+      config: { ...tradingPatternsRuntime.config, MAX_LOSS_VALUE: 2 },
     },
   },
 } satisfies RuntimeDeploymentDeclaration;
