@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "@tradejs/app": "3.1.29-beta.273",
-    "@tradejs/base": "3.1.7",
+    "@tradejs/base": "3.1.8",
     "@tradejs/cli": "3.1.29-beta.273",
     "@tradejs/connectors": "3.1.29-beta.273",
     "@tradejs/core": "3.1.29-beta.273",

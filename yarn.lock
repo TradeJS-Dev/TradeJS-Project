@@ -1202,9 +1202,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/base@npm:3.1.7":
-  version: 3.1.7
-  resolution: "@tradejs/base@npm:3.1.7"
+"@tradejs/base@npm:3.1.8":
+  version: 3.1.8
+  resolution: "@tradejs/base@npm:3.1.8"
   peerDependencies:
     "@tradejs/connectors": ^3.0.1
     "@tradejs/core": ^3.0.1
@@ -1235,7 +1235,7 @@ __metadata:
     "@tradejs/strategy-volatility-compression-breakout": ^3.0.0
     "@tradejs/strategy-volume-divergence": ^3.0.0
     "@tradejs/types": ^3.0.1
-  checksum: 10c0/f52ab623805bd7dacd6815e6452d0c2a2b141eed41895e8219ca8b51070e3742d086d92be7a7807376544cadc92fd2431675dfa53c2baaae3b120139c0e000f1
+  checksum: 10c0/c3535ef37e67d764e64f9da636b109811e294babab36a6bb96fc402e3f13253cbe1acd3a59991a43a427f53fbe11f424dba92ed445f267aa402fb2d15f0afcbf
   languageName: node
   linkType: hard
 
@@ -6279,7 +6279,7 @@ __metadata:
   resolution: "tradejs-project@workspace:."
   dependencies:
     "@tradejs/app": "npm:3.1.29-beta.273"
-    "@tradejs/base": "npm:3.1.7"
+    "@tradejs/base": "npm:3.1.8"
     "@tradejs/cli": "npm:3.1.29-beta.273"
     "@tradejs/connectors": "npm:3.1.29-beta.273"
     "@tradejs/core": "npm:3.1.29-beta.273"
