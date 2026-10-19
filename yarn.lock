@@ -1566,9 +1566,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/strategy-trading-patterns@npm:0.1.1":
-  version: 0.1.1
-  resolution: "@tradejs/strategy-trading-patterns@npm:0.1.1"
+"@tradejs/strategy-trading-patterns@npm:0.1.2":
+  version: 0.1.2
+  resolution: "@tradejs/strategy-trading-patterns@npm:0.1.2"
   peerDependencies:
     "@tradejs/core": ^3.0.1
     "@tradejs/strategy-diamond": ^0.1.1
@@ -1577,7 +1577,7 @@ __metadata:
     "@tradejs/strategy-head-and-shoulders": ^3.0.5
     "@tradejs/strategy-kit": ^3.0.5
     "@tradejs/types": ^3.0.1
-  checksum: 10c0/4a7339ae8dd87bb2fdb2bfb90774500e9f41c0c48faee18011dc6ace7fed3a7d4b230fedd17b069920b587512621e9a46ebc44e76c7723c5f1452c70285b91d7
+  checksum: 10c0/1123d6d5f226a3215a3d2fc3d18ade08cb6ff55feb4dc14fe0661f88918807e1acd08d9148239761c651bba66bef890161d917bf6a1369ff6587cc71c7715d03
   languageName: node
   linkType: hard
 
@@ -6306,7 +6306,7 @@ __metadata:
     "@tradejs/strategy-market-flush-reversal": "npm:3.0.7"
     "@tradejs/strategy-relative-rotation": "npm:3.0.5"
     "@tradejs/strategy-structure-zones": "npm:3.0.6"
-    "@tradejs/strategy-trading-patterns": "npm:0.1.1"
+    "@tradejs/strategy-trading-patterns": "npm:0.1.2"
     "@tradejs/strategy-trend-follow": "npm:3.0.6"
     "@tradejs/strategy-trend-line": "npm:3.0.5"
     "@tradejs/strategy-trend-shift": "npm:3.0.5"

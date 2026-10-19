@@ -75,7 +75,7 @@
     "@tradejs/strategy-market-flush-reversal": "3.0.7",
     "@tradejs/strategy-relative-rotation": "3.0.5",
     "@tradejs/strategy-structure-zones": "3.0.6",
-    "@tradejs/strategy-trading-patterns": "0.1.1",
+    "@tradejs/strategy-trading-patterns": "0.1.2",
     "@tradejs/strategy-trend-follow": "3.0.6",
     "@tradejs/strategy-trend-line": "3.0.5",
     "@tradejs/strategy-trend-shift": "3.0.5",
