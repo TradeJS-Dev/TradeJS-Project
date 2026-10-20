@@ -57,6 +57,7 @@ const requiredFiles = [
   "config/runtime/strategies/flag.ts",
   "config/runtime/strategies/trend-follow.ts",
   "config/runtime/strategies/trend-shift.ts",
+  "config/runtime/strategies/range-reclaim.ts",
   "config/runtime/ticker-sets/trend-follow-20260818.ts",
   "deploy/runtime.env",
   "docker-compose.dev.yml",
@@ -101,8 +102,8 @@ const strategyDependencies = Object.entries(packageJson.dependencies).filter(
     name.startsWith("@tradejs/strategy-") && name !== "@tradejs/strategy-kit",
 );
 assert(
-  strategyDependencies.length === 25,
-  "All 25 strategy packages must be direct dependencies",
+  strategyDependencies.length === 26,
+  "All 26 strategy packages must be direct dependencies",
 );
 assert(
   !Object.hasOwn(packageJson.dependencies, "@tradejs/strategies"),
@@ -144,12 +145,14 @@ const runtimeConfig = [
   "config/runtime/strategies/flag.ts",
   "config/runtime/strategies/trend-follow.ts",
   "config/runtime/strategies/trend-shift.ts",
+  "config/runtime/strategies/range-reclaim.ts",
 ]
   .map(read)
   .join("\n");
 assert(
   config.includes("defineConfig(basePreset,") &&
-    config.includes('strategies: ["@tradejs/strategy-trading-patterns"]') &&
+    config.includes('"@tradejs/strategy-trading-patterns"') &&
+    config.includes('"@tradejs/strategy-range-reclaim"') &&
     config.includes("runtime,"),
   "basePreset is not active",
 );
@@ -160,6 +163,7 @@ for (const expectedRuntimeConfig of [
   "Dragon: dragonRuntime",
   "Flag: flagRuntime",
   "TrendFollow: trendFollowRuntime",
+  "RangeReclaim: rangeReclaimRuntime",
   "enabled: true",
   'INTERVAL: "15"',
   'UNIVERSE: "crypto"',
@@ -176,7 +180,7 @@ assert(
 );
 assert(
   (runtimeConfig.match(/satisfies RuntimeStrategyDeclaration/g) ?? [])
-    .length === 5,
+    .length === 6,
   "Every runtime strategy declaration must have a TypeScript contract",
 );
 assert(

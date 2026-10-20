@@ -3,6 +3,9 @@ import { defineConfig } from "@tradejs/core/config";
 import { runtime } from "./config/runtime";
 
 export default defineConfig(basePreset, {
-  strategies: ["@tradejs/strategy-trading-patterns"],
+  strategies: [
+    "@tradejs/strategy-trading-patterns",
+    "@tradejs/strategy-range-reclaim",
+  ],
   runtime,
 });

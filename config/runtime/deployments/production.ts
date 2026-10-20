@@ -6,6 +6,7 @@ import { flagRuntime } from "../strategies/flag";
 import { headAndShouldersRuntime } from "../strategies/head-and-shoulders";
 import { liquidityTailsRuntime } from "../strategies/liquidity-tails";
 import { marketFlushReversalRuntime } from "../strategies/market-flush-reversal";
+import { rangeReclaimRuntime } from "../strategies/range-reclaim";
 import { relativeRotationRuntime } from "../strategies/relative-rotation";
 import { structureZonesRuntime } from "../strategies/structure-zones";
 import { trendFollowRuntime } from "../strategies/trend-follow";
@@ -27,6 +28,7 @@ export const productionDeployment = {
     HeadAndShoulders: headAndShouldersRuntime,
     LiquidityTails: liquidityTailsRuntime,
     MarketFlushReversal: marketFlushReversalRuntime,
+    RangeReclaim: rangeReclaimRuntime,
     RelativeRotation: relativeRotationRuntime,
     StructureZones: structureZonesRuntime,
     TrendShift: trendShiftRuntime,
