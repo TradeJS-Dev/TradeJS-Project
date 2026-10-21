@@ -44,7 +44,6 @@ LABEL org.opencontainers.image.source="https://github.com/TradeJS-Dev/TradeJS-Pr
 
 RUN apk add --no-cache \
     bash \
-    docker-cli \
     ca-certificates \
     chromium \
     cronie \
