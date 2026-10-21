@@ -44,6 +44,7 @@ LABEL org.opencontainers.image.source="https://github.com/TradeJS-Dev/TradeJS-Pr
 
 RUN apk add --no-cache \
     bash \
+    docker-cli \
     ca-certificates \
     chromium \
     cronie \
@@ -66,9 +67,10 @@ ENV NODE_ENV=production \
 COPY --from=builder /app ./
 COPY entrypoint.sh ./entrypoint.sh
 COPY cronjob /etc/crontabs/root
+COPY scripts/runtime-evidence-daily.sh ./scripts/runtime-evidence-daily.sh
 COPY scripts/write-runtime-cron-identity.sh ./scripts/write-runtime-cron-identity.sh
 
-RUN chmod +x ./entrypoint.sh ./scripts/write-runtime-cron-identity.sh
+RUN chmod +x ./scripts/runtime-evidence-daily.sh ./entrypoint.sh ./scripts/write-runtime-cron-identity.sh
 
 EXPOSE 3000 3001
 

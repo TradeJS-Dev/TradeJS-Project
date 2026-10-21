@@ -25,6 +25,7 @@ const tradejsSkills = [
   "strategy-forward-start",
   "strategy-forward-status",
   "tradejs-mcp",
+  "tradejs-docs",
   "strategy-risk-scale",
   "strategy-release",
 ];

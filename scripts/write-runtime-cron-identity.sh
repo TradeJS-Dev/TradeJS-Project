@@ -25,6 +25,7 @@ cleanup() {
 trap cleanup EXIT
 
 {
+  printf 'export RUNTIME_EVIDENCE_DEPLOYMENT_ID=%q\n' "${RUNTIME_EVIDENCE_DEPLOYMENT_ID:-${SIGNALS_DAEMON_DEPLOYMENT_ID:-production}}"
   printf 'export TRADEJS_PROJECT_SHA=%s\n' "$project_sha"
   printf 'export TRADEJS_PROJECT_IMAGE_DIGEST=%s\n' "$image_digest"
 } >"$temporary_path"
