@@ -200,6 +200,28 @@ is not the production source of truth.
 - `ml-infer` must use `ML_INFER_IMAGE`; do not add a local `build:` context or
   bind mounts to `TradeJS` source.
 
+## Completed research storage
+
+Keep compact results and all frozen candidates permanently, including rejected
+hypotheses, exact source/config/gate, comparison conditions, structured
+ALL/LONG/SHORT metrics and selection reasons. Read those records before starting
+new research so old hypotheses are not repeated without a recorded reason.
+After the entire study finishes, including gate evaluation, comparison and
+charts, verify the permanent records and remove its trade data, feature exports,
+trace streams, intermediate datasets and run-specific caches. Follow
+`.codex/skills/strategy-backtest-research/references/research-retention.md`.
+Do not remove inputs still used by another study. Shared
+market history and runtime evidence follow separate retention rules. New
+trade-level analyses after cleanup require rerunning the frozen candidate.
+
+Recover old compact results and candidate definitions from existing files only.
+If filling the gaps would require another run, retire the study with its
+original partial/blocked status, record the missing evidence and delete its
+temporary payloads without rerunning it. After final handoff, archive exact
+source/dirty changes and remove the dedicated worktree, including selected
+candidates. Retain their commit/branch and compact source archive. Protect
+canonical checkouts and worktrees still used by active research.
+
 ## Research Notes
 
 - Everything under `notes/` is local-only and permanently ignored. Never
