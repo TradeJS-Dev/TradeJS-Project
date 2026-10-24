@@ -13,19 +13,19 @@ export const copyTradingDeployment = {
   strategies: {
     DoubleTap: {
       ...doubleTapRuntime,
-      config: { ...doubleTapRuntime.config, MAX_LOSS_VALUE: 20 },
+      config: { ...doubleTapRuntime.config, MAX_LOSS_VALUE: 30 },
     },
     HeadAndShoulders: {
       ...headAndShouldersRuntime,
-      config: { ...headAndShouldersRuntime.config, MAX_LOSS_VALUE: 20 },
+      config: { ...headAndShouldersRuntime.config, MAX_LOSS_VALUE: 30 },
     },
     LiquidityTails: {
       ...liquidityTailsRuntime,
-      config: { ...liquidityTailsRuntime.config, MAX_LOSS_VALUE: 20 },
+      config: { ...liquidityTailsRuntime.config, MAX_LOSS_VALUE: 30 },
     },
     TradingPatterns: {
       ...tradingPatternsRuntime,
-      config: { ...tradingPatternsRuntime.config, MAX_LOSS_VALUE: 20 },
+      config: { ...tradingPatternsRuntime.config, MAX_LOSS_VALUE: 30 },
     },
   },
 } satisfies RuntimeDeploymentDeclaration;
