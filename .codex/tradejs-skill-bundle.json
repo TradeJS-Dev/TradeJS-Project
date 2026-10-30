@@ -1,7 +1,7 @@
 {
   "schema": "tradejs-skill-bundle/v1",
   "source": "TradeJS-Dev/TradeJS:.codex/skills",
-  "bundleSha256": "e63d233c0cab62f3924a14db1c665433244f6572cf550812ca30857ae69bfa29",
+  "bundleSha256": "c77ddcd99454e3b3ca9efe607e39c5c65898c50681cc72f5d814c1efc0377d71",
   "skills": [
     "ai-train-local-research",
     "backtest-config-redis",
@@ -12,6 +12,7 @@
     "strategy-candidate-compare",
     "strategy-improvement-plan",
     "strategy-improvement-research",
+    "strategy-research",
     "strategy-period-revalidate",
     "strategy-forward-start",
     "strategy-forward-status",
@@ -89,9 +90,11 @@
     ".codex/skills/strategy-release/scripts/release-progress-checkpoint.mjs": "28da8715ab51ee7217d633c675d014b8004e5ddda8faf9489ebacacef98f6b9b",
     ".codex/skills/strategy-release/scripts/release-progress-checkpoint.test.mjs": "d378b0ab87cd3ee7bbf384ec5f5810565b480b56533ad3c6700edf5938286a38",
     ".codex/skills/strategy-release/SKILL.md": "590948c2c1ad222c7784b050e0fa0a8fea60efa7b0f23d8d355fd56a3e8a1291",
+    ".codex/skills/strategy-research/agents/openai.yaml": "25a015bfa21c9260b587bfd4306578927147254173b3fab7cf64ec9a7e71fd3a",
+    ".codex/skills/strategy-research/SKILL.md": "c082d583e29400ead7cb1dba1038aef48d90408ab8bae264a8f14b6de47912c3",
     ".codex/skills/strategy-risk-scale/SKILL.md": "2c07846c9da2fd622ea6f5586c42863fc27b35a7d1d00614d5bbe0719da4d39f",
     ".codex/skills/tradejs-docs/agents/openai.yaml": "47e75a2523ba0e4fd3a65d8bd4828dc74b021fa5377b2b04b1aee2130a12d6c3",
     ".codex/skills/tradejs-docs/SKILL.md": "26dec701db7149053afebc086440456601644c904d6f05b180b61aba3e98de89",
-    ".codex/skills/tradejs-mcp/SKILL.md": "a9c5dfde4ccab13e1fa2c3e56f6f3132fb0ed99e492b119a5017588db55b34c4"
+    ".codex/skills/tradejs-mcp/SKILL.md": "09c52e524b9326171393b51134e238b90a777b835c2180d5cd1f7cb0abd854d0"
   }
 }

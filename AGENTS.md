@@ -30,6 +30,9 @@ the immutable handoff to `TradeJS-Deploy`.
 
 ## Operational Entry Points
 
+Use Node.js 24 from `.nvmrc`. Run `nvm use` before checks and research, and
+verify `node --version`; do not inherit Node 20 from another project.
+
 Run these commands from this repository. Prefer package scripts when present;
 for CLI commands without a script use `yarn exec tradejs <command>`.
 
@@ -92,6 +95,9 @@ Read the complete matching Project-local `SKILL.md` before acting:
   candidate reporting and production comparison.
 - `$strategy-improvement-plan` and `$strategy-improvement-research` — causal
   planning and bounded new research without production changes.
+- `$strategy-research` — automatic `research:strategy` execution for the
+  strategy in this chat, including resume, frozen-period revalidation, a
+  verified report and retention; it does not change detector source.
 - `$strategy-period-revalidate` — frozen-candidate evaluation on new data.
 - `$strategy-forward-start` — explicitly authorized risk-1 rollout, including
   an operator-directed reproducible historical candidate when named exactly.

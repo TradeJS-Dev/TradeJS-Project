@@ -21,6 +21,7 @@ const tradejsSkills = [
   "strategy-candidate-compare",
   "strategy-improvement-plan",
   "strategy-improvement-research",
+  "strategy-research",
   "strategy-period-revalidate",
   "strategy-forward-start",
   "strategy-forward-status",
