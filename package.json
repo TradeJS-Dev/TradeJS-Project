@@ -47,14 +47,14 @@
     "mcp:worker": "tradejs mcp-worker"
   },
   "dependencies": {
-    "@tradejs/app": "3.1.29-beta.283",
+    "@tradejs/app": "3.1.29-beta.284",
     "@tradejs/base": "3.1.8",
-    "@tradejs/cli": "3.1.29-beta.283",
-    "@tradejs/connectors": "3.1.29-beta.283",
-    "@tradejs/core": "3.1.29-beta.283",
-    "@tradejs/indicators": "3.1.29-beta.283",
-    "@tradejs/infra": "3.1.29-beta.283",
-    "@tradejs/node": "3.1.29-beta.283",
+    "@tradejs/cli": "3.1.29-beta.284",
+    "@tradejs/connectors": "3.1.29-beta.284",
+    "@tradejs/core": "3.1.29-beta.284",
+    "@tradejs/indicators": "3.1.29-beta.284",
+    "@tradejs/infra": "3.1.29-beta.284",
+    "@tradejs/node": "3.1.29-beta.284",
     "@tradejs/strategy-adaptive-momentum-ribbon": "3.0.5",
     "@tradejs/strategy-adaptive-trend-channel": "3.0.6",
     "@tradejs/strategy-breakout": "3.0.4",
@@ -82,7 +82,7 @@
     "@tradejs/strategy-trend-shift": "3.0.5",
     "@tradejs/strategy-volatility-compression-breakout": "3.0.5",
     "@tradejs/strategy-volume-divergence": "3.0.6",
-    "@tradejs/types": "3.1.29-beta.283"
+    "@tradejs/types": "3.1.29-beta.284"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
