@@ -38,9 +38,13 @@ test("production image publication verifies the exact committed composition", ()
 
 test("Project SHA does not invalidate the runner system layer", () => {
   const dockerfile = fs.readFileSync(path.join(root, "Dockerfile"), "utf8");
-  const runner = dockerfile.slice(
-    dockerfile.indexOf("FROM node:24-alpine AS runner"),
+  const runnerStart = dockerfile.search(/^FROM node:\S+ AS runner$/m);
+  assert.notEqual(
+    runnerStart,
+    -1,
+    "Dockerfile must declare its Node runner stage",
   );
+  const runner = dockerfile.slice(runnerStart);
 
   assert.ok(
     runner.indexOf("RUN apk add") < runner.indexOf("ARG TRADEJS_PROJECT_SHA"),

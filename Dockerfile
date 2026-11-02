@@ -2,7 +2,7 @@
 
 ARG TRADEJS_PROJECT_SHA
 
-FROM node:24-alpine AS dependencies
+FROM node:24.22.2-alpine AS dependencies
 
 WORKDIR /app
 
@@ -36,7 +36,7 @@ RUN TRADEJS_PROJECT_SHA=${TRADEJS_PROJECT_SHA} \
 
 RUN --mount=type=cache,target=/app/.tradejs/app/.next/cache yarn build
 
-FROM node:24-alpine AS runner
+FROM node:24.22.2-alpine AS runner
 
 LABEL org.opencontainers.image.source="https://github.com/TradeJS-Dev/TradeJS-Project" \
       org.opencontainers.image.description="TradeJS project runtime" \
