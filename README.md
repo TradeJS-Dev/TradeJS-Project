@@ -69,6 +69,9 @@ other production-only secrets when it writes the container environment file.
 
 ## Local setup
 
+Use Node.js 24 from `.nvmrc`. Select it with `nvm use` and confirm
+`node --version` before installing packages, running checks or research.
+
 ```bash
 cp .env.example .env
 yarn install --immutable
@@ -108,6 +111,7 @@ yarn ai-train --localOnly
 yarn ai-pocket-search
 yarn research:auto
 yarn research:core --help
+yarn exec tradejs research:strategy --help
 yarn strategy-release --help
 yarn notes:check
 yarn runtime:manifest
@@ -148,6 +152,16 @@ this Project. Update it only through an explicitly selected generator build:
 ```bash
 npx create-tradejs@<approved-version> --update-skills .
 ```
+
+`$strategy-research <Strategy>` runs the installed `research:strategy` workflow
+for fixed configurations, resumes an unchanged study, or revalidates its frozen
+rules on a new period. It requires Node.js 24 and a compatible installed CLI
+and research runtime. It uses cached USDT history, freezes filters and
+directions on DEV before TEST, and produces a verified HTML report and permanent
+records. Configured Jev adds a frozen with/without comparison using saved
+assessments or a local model; it does not make paid requests or train a model.
+Use `run`, `verify`, and `status` with the same specification and executable
+lineage. This workflow does not edit the detector, publish packages or deploy.
 
 `$strategy-improvement-research` owns the complete bounded improvement
 lineage. It delegates one frozen core experiment at a time to
