@@ -52,9 +52,28 @@ test("CopyTrading requests 20x for every strategy and retains risk 40", () => {
   }
 });
 
-test("production retains its separate account and leverage configuration", () => {
+test("Production requests 20x and preserves every strategy setting and risk limit", () => {
   assert.equal(deployments.production.accountId, "bybit-default");
-  for (const strategy of Object.values(deployments.production.strategies)) {
-    assert.equal(strategy.config.LEVERAGE, undefined);
+  assert.equal(Object.keys(deployments.production.strategies).length, 14);
+  for (const [name, strategy] of Object.entries(
+    deployments.production.strategies,
+  )) {
+    const filename = name.replace(
+      /[A-Z]/g,
+      (letter, index) => `${index ? "-" : ""}${letter.toLowerCase()}`,
+    );
+    const exportName = `${name[0].toLowerCase()}${name.slice(1)}Runtime`;
+    const original = loadDeclaration(
+      `config/runtime/strategies/${filename}.ts`,
+    )[exportName];
+    assert.equal(strategy.config.LEVERAGE, 20, name);
+    assert.deepEqual(
+      structuredClone(strategy),
+      structuredClone({
+        ...original,
+        config: { ...original.config, LEVERAGE: 20 },
+      }),
+      name,
+    );
   }
 });

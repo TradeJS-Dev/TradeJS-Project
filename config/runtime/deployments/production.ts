@@ -21,19 +21,61 @@ export const productionDeployment = {
   accountId: "bybit-default",
   enabled: true,
   strategies: {
-    CupAndHandle: cupAndHandleRuntime,
-    DoubleTap: doubleTapRuntime,
-    Dragon: dragonRuntime,
-    Flag: flagRuntime,
-    HeadAndShoulders: headAndShouldersRuntime,
-    LiquidityTails: liquidityTailsRuntime,
-    MarketFlushReversal: marketFlushReversalRuntime,
-    RangeReclaim: rangeReclaimRuntime,
-    RelativeRotation: relativeRotationRuntime,
-    StructureZones: structureZonesRuntime,
-    TrendShift: trendShiftRuntime,
-    TradingPatterns: tradingPatternsRuntime,
-    TrendFollow: trendFollowRuntime,
-    VolumeDivergence: volumeDivergenceRuntime,
+    CupAndHandle: {
+      ...cupAndHandleRuntime,
+      config: { ...cupAndHandleRuntime.config, LEVERAGE: 20 },
+    },
+    DoubleTap: {
+      ...doubleTapRuntime,
+      config: { ...doubleTapRuntime.config, LEVERAGE: 20 },
+    },
+    Dragon: {
+      ...dragonRuntime,
+      config: { ...dragonRuntime.config, LEVERAGE: 20 },
+    },
+    Flag: {
+      ...flagRuntime,
+      config: { ...flagRuntime.config, LEVERAGE: 20 },
+    },
+    HeadAndShoulders: {
+      ...headAndShouldersRuntime,
+      config: { ...headAndShouldersRuntime.config, LEVERAGE: 20 },
+    },
+    LiquidityTails: {
+      ...liquidityTailsRuntime,
+      config: { ...liquidityTailsRuntime.config, LEVERAGE: 20 },
+    },
+    MarketFlushReversal: {
+      ...marketFlushReversalRuntime,
+      config: { ...marketFlushReversalRuntime.config, LEVERAGE: 20 },
+    },
+    RangeReclaim: {
+      ...rangeReclaimRuntime,
+      config: { ...rangeReclaimRuntime.config, LEVERAGE: 20 },
+    },
+    RelativeRotation: {
+      ...relativeRotationRuntime,
+      config: { ...relativeRotationRuntime.config, LEVERAGE: 20 },
+    },
+    StructureZones: {
+      ...structureZonesRuntime,
+      config: { ...structureZonesRuntime.config, LEVERAGE: 20 },
+    },
+    TrendShift: {
+      ...trendShiftRuntime,
+      config: { ...trendShiftRuntime.config, LEVERAGE: 20 },
+    },
+    TradingPatterns: {
+      ...tradingPatternsRuntime,
+      config: { ...tradingPatternsRuntime.config, LEVERAGE: 20 },
+    },
+    TrendFollow: {
+      ...trendFollowRuntime,
+      config: { ...trendFollowRuntime.config, LEVERAGE: 20 },
+    },
+    VolumeDivergence: {
+      ...volumeDivergenceRuntime,
+      config: { ...volumeDivergenceRuntime.config, LEVERAGE: 20 },
+    },
   },
 } satisfies RuntimeDeploymentDeclaration;
