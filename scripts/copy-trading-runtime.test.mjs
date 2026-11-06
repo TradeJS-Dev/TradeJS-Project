@@ -29,13 +29,19 @@ const loadDeclaration = (relativePath) => {
 const deployments = loadDeclaration("config/runtime/index.ts").runtime
   .deployments;
 
-test("CopyTrading requests 20x for every strategy and retains risk 40", () => {
+test("CopyTrading requests 20x and uses the configured risk for each strategy", () => {
   const copy = deployments.CopyTrading;
   assert.equal(copy.accountId, "bybit-tradejs");
   assert.equal(Object.keys(copy.strategies).length, 4);
+  const expectedRisk = {
+    DoubleTap: 5,
+    HeadAndShoulders: 10,
+    LiquidityTails: 10,
+    TradingPatterns: 20,
+  };
   for (const [name, strategy] of Object.entries(copy.strategies)) {
     assert.equal(strategy.config.LEVERAGE, 20, name);
-    assert.equal(strategy.config.MAX_LOSS_VALUE, 40, name);
+    assert.equal(strategy.config.MAX_LOSS_VALUE, expectedRisk[name], name);
     const original = deployments.production.strategies[name];
     assert.deepEqual(
       structuredClone({
