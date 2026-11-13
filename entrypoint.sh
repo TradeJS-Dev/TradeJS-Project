@@ -97,6 +97,9 @@ trap 'shutdown 0' INT TERM
 touch "$SIGNALS_LOG_PATH"
 
 ./scripts/write-runtime-cron-identity.sh
+if parse_deployment_ids "$SIGNALS_DAEMON_DEPLOYMENT_ID" | grep -Fx production >/dev/null; then
+  PROJECT_CWD=/app timeout 120 node ./scripts/range-reclaim-ticker-profiles.mjs refresh
+fi
 crond -f -P &
 cron_pid=$!
 managed_pids+=("$cron_pid")

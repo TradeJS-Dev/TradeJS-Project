@@ -68,6 +68,7 @@ COPY entrypoint.sh ./entrypoint.sh
 COPY cronjob /etc/crontabs/root
 COPY scripts/runtime-evidence-daily.sh ./scripts/runtime-evidence-daily.sh
 COPY scripts/write-runtime-cron-identity.sh ./scripts/write-runtime-cron-identity.sh
+COPY scripts/range-reclaim-ticker-profiles.mjs ./scripts/range-reclaim-ticker-profiles.mjs
 
 RUN chmod +x ./scripts/runtime-evidence-daily.sh ./entrypoint.sh ./scripts/write-runtime-cron-identity.sh
 

@@ -2,7 +2,7 @@ import type { RuntimeStrategyDeclaration } from "@tradejs/types";
 import { rangeReclaimGreenTickers } from "../ticker-sets/range-reclaim-green-20261020";
 
 export const rangeReclaimRuntime = {
-  generation: "green-intersection-15-240-risk1-20261020",
+  generation: "intersection-low-low-short-15-240-risk1-20261113",
   enabled: true,
   selection: {
     tickers: rangeReclaimGreenTickers,
@@ -22,7 +22,7 @@ export const rangeReclaimRuntime = {
     MAX_LOSS_VALUE: 1,
     ML_ENABLED: false,
     RANGE_RECLAIM_ATR_LENGTH: 14,
-    RANGE_RECLAIM_ENTRY_POLICY: "intersection",
+    RANGE_RECLAIM_ENTRY_POLICY: "intersection-low-low-short",
     RANGE_RECLAIM_MAX_COST_SHARE: 0.01,
     RANGE_RECLAIM_MAX_DEPTH_RATIO: 0.25,
     RANGE_RECLAIM_MAX_HOLD_BARS: 16,
