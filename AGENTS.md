@@ -237,7 +237,7 @@ canonical checkouts and worktrees still used by active research.
   strategy name. Shared work lives in `notes/Shared/`, and one comparison
   spanning several strategies lives in `notes/CrossStrategy/`.
 - Do not place files directly under `notes/`.
-- Every new record begins with `schema: tradejs-research/v1` frontmatter and
+- Every new record begins with `schema: tradejs-research/v2` frontmatter and
   follows the research-note contract owned by the TradeJS research tooling.
 - One immutable question/run/export lineage belongs to one file. New lineage
   or a new decision gets a new file.
