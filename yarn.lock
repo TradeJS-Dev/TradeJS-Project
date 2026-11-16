@@ -1554,14 +1554,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tradejs/strategy-range-reclaim@npm:0.1.3":
-  version: 0.1.3
-  resolution: "@tradejs/strategy-range-reclaim@npm:0.1.3"
+"@tradejs/strategy-range-reclaim@npm:0.1.4":
+  version: 0.1.4
+  resolution: "@tradejs/strategy-range-reclaim@npm:0.1.4"
   peerDependencies:
     "@tradejs/core": ^3.0.1
     "@tradejs/strategy-kit": ^3.0.5
     "@tradejs/types": ^3.0.1
-  checksum: 10c0/0a782f0d60af60f2854848e0280db8b5c75b1284ef023231c8baba8f6660f780bf3aef689686570818b33e21700c5c48c7e36769419da49de80e2a4f55d8237b
+  checksum: 10c0/6a6b823bb78911a9515ac6846be2ce04595c2fe9d944dd4e011dcfe9da3ba1844e22ffaf92420c7e5fadac9e8fa6cdf265eb45f4990d5c11648a439c356b41ea
   languageName: node
   linkType: hard
 
@@ -6341,7 +6341,7 @@ __metadata:
     "@tradejs/strategy-liquidity-zones": "npm:3.0.5"
     "@tradejs/strategy-ma-strategy": "npm:3.0.5"
     "@tradejs/strategy-market-flush-reversal": "npm:3.0.8"
-    "@tradejs/strategy-range-reclaim": "npm:0.1.3"
+    "@tradejs/strategy-range-reclaim": "npm:0.1.4"
     "@tradejs/strategy-relative-rotation": "npm:3.0.6"
     "@tradejs/strategy-structure-zones": "npm:3.0.7"
     "@tradejs/strategy-trading-patterns": "npm:0.1.3"
