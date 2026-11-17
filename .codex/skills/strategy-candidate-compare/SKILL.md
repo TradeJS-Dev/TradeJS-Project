@@ -16,6 +16,10 @@ it must not change either composition.
 
 ## Resolve both identities
 
+Read
+[`../strategy-backtest-research/references/production-baseline.md`](../strategy-backtest-research/references/production-baseline.md)
+before resolving either identity.
+
 1. Resolve the latest explicitly selected, reproducible candidate using the
    same rules as `$strategy-candidate-report`.
 2. Resolve production from the deployed package manifest and Git-owned
@@ -24,6 +28,10 @@ it must not change either composition.
    Redis backtest configs and legacy strategy keys are not production truth.
 3. If live evidence is unavailable, use the newest immutable deployment
    manifest and label production identity as unconfirmed rather than guessing.
+4. If the selected candidate is the exact deployed composition, relabel it as
+   the production `BASELINE`. Do not manufacture a candidate-versus-itself
+   comparison; use earlier frozen alternatives only as `REFERENCE` or report
+   that no distinct candidate remains.
 
 ## Make the comparison fair
 
@@ -50,6 +58,12 @@ ALL/LONG/SHORT across full/max coverage and continuous 365d/180d/90d/30d/7d
 windows, plus 3y/4y/5y-or-max when covered. Include `N`, net PnL, expectancy,
 PF, win rate, Sharpe/PSR/DSR, MaxDD, worst trade, loss streak, losing-month
 streak, recovery, cadence, stability, concentration, and cost stress.
+
+Show the comparison with the mandatory three-panel chart from
+[`../strategy-backtest-research/references/research-comparison-charts.md`](../strategy-backtest-research/references/research-comparison-charts.md):
+production is the only `BASELINE`, the selected research composition is
+`CANDIDATE`, and both use the same UTC axis, costs, scope, and normalized risk.
+Do not substitute two separately scaled curves or a terminal-PnL bar chart.
 
 Conclude with:
 

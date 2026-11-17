@@ -57,6 +57,10 @@ document. Missing controls mean no manual overrides; pause creates an
 config read-only and exposes only pause/resume for new entries. It does not
 require or display a production evidence artifact.
 
+The **Details** view can show a strategy's historical launch report. Set
+`launchReports[deploymentId][strategyName]` in `tradejs.config.ts` to the ID
+exported by the installed strategy package under `launch-reports/`.
+
 `deploy/runtime.env` selects the `production` declaration consumed by the
 signals daemon; the container refuses to start when it is absent. The daemon
 re-reads the declaration and controls on every cycle, so pause/resume takes
