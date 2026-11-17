@@ -17,6 +17,10 @@ not publish or deploy. A configuration change belongs to a new
 
 ## Cohort
 
+Read
+[`../strategy-backtest-research/references/production-baseline.md`](../strategy-backtest-research/references/production-baseline.md)
+and resolve production before freezing the cohort.
+
 Include the exact current production composition, latest selected best
 candidate, strongest prior aggregate candidate, strongest side-specific
 candidate when distinct, and any currently running forward candidate. Deduplicate
@@ -26,7 +30,10 @@ cannot be reproduced.
 ## Run
 
 1. Freeze the new common end time, maximum common start, point-in-time universe,
-   costs, execution assumptions, and candidate identities before evaluation.
+   costs, execution assumptions, candidate identities and acceptance rules before
+   evaluation. Record previously inspected calendar windows and mark them
+   retrospective. For later observation, bind runtime scorecards and execution
+   calibration to the exact frozen composition and candidate lineage.
 2. Use existing cached history first. If the requested new tail is absent,
    fetch only that missing tail through the supported TradeJS data path, then
    fingerprint the resulting coverage; never silently rewrite old history.
@@ -45,6 +52,12 @@ Update the immutable comparison evidence and candidate freshness without
 rewriting the original selection record. State whether the incumbent remains
 best under the frozen objective and choose exactly one next skill: report,
 research, forward-start, forward-status, or risk-scale.
+
+Render the updated primary comparison through
+[`../strategy-backtest-research/references/research-comparison-charts.md`](../strategy-backtest-research/references/research-comparison-charts.md).
+Keep production as the one `BASELINE`, label frozen alternatives as
+`CANDIDATE`, and shade only the preregistered new period. Preserve the original
+chart beside the new version instead of overwriting it.
 
 Before finishing, follow
 [`../strategy-backtest-research/references/research-retention.md`](../strategy-backtest-research/references/research-retention.md).

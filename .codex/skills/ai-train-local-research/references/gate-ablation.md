@@ -865,3 +865,57 @@ comparisons and final charts finish. For the permanent v2 note, retain all
 aggregate reports and frozen chart points through the verified snapshot encoder
 in `strategy-backtest-research`. Keep shared feature audits once per exact
 export/context fingerprint. Follow the shared retention contract before cleanup.
+
+## Registered features and monthly ticker profiles
+
+Read the framework `CONTEXT_FEATURES.md` contract before adding data. New feature
+projections live in strategy/indicator `aiFeatures` definitions and are frozen in
+`AiPayload.featureSnapshot`; native pocket search exposes `registered.<id>`.
+Do not reconstruct untrimmed array reductions from the five-point prompt view.
+Changed definitions require a new decision-time export, not silent replay under
+old lineage. Coverage/provenance/outcome/policy roles are never approval inputs.
+For custom ablation, inspect `payload.featureSnapshot.values` from the frozen
+native payload and preserve its definitions; do not assume a registered discovery
+name is an old baseContext property path. Monthly profiles use explicit
+provider/universe identities, immutable as-of snapshots and unknown coverage.
+They are shared market data and remain outside research-payload cleanup.
+
+For backtest exports with profiles, use `--ai` with the profile source. A plain
+`--fast` run without export does not exercise optional profile enrichment. Verify
+`payload.featureSnapshot` in actual rows before claiming feature availability or
+measuring its overhead. Profiles do not manufacture a missing baseContext.
+
+
+## Compare refitting and ticker groups
+
+Use the same core export and freeze the search budget, eligibility, treatment of
+unknowns and calendar before opening outcomes. A is the current gate. B searches
+with the prior feature list. C repeats B with the declared registered ticker
+groups. Report B–A, C–B and C–A. For a single frozen split, use the existing
+variants report and `--compareTo` for the direct B/C difference.
+
+For a recurring refit, use the existing search command from Project:
+
+```sh
+yarn exec tradejs ai-pocket-search --file <export.jsonl> -n 0 \
+  --scope all --validationSplit 0 --testSince <outer-test-UTC> --sealTest \
+  --objective add-to-gate --walkForwardPlan <plan.json> --output <report.json>
+```
+
+The plan has `folds` with numeric UTC milliseconds `trainStart`, `testStart` and
+`testEnd`, `baselineFeatures` with exact eligible feature paths, `tickerGroups`
+with registered paths such as `registered.ticker.moneyGroup`, and
+`minimumEvents` for timestamp support. Optional `sensitivityFraction` reports
+one-at-a-time changes to nonzero numerical thresholds. This is a diagnostic
+around the selected rule. It does not select a replacement threshold.
+
+Test windows are disjoint and entirely inside outer development. Each fold
+uses labels closed strictly before its training cutoff and reports evaluation
+labels closed before the evaluation end. Both searches use the same rows.
+If a search finds no stable pocket, the fold records a fallback to A. If
+support is insufficient, the fold is marked and the aggregate covers only
+evaluated folds. Counts by timestamp measure support, while market-episode
+dependence still needs diagnosis. The report uses decision-time approval-set
+economics. Verify shortlisted frozen rules in native execution where admissions
+change position occupancy. A historical fold previously used to choose rules or
+settings is retrospective evidence.

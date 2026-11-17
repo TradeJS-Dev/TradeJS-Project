@@ -1596,6 +1596,7 @@ const finalizeFeatureInventory = (inventory) =>
 
 const signalFromRow = (row) => ({
   ...row.payload.signal,
+  aiFeatureReplay: { snapshot: row.payload.featureSnapshot ?? null },
   strategy: row.payload.signal.strategy,
   figures: row.payload.figures ?? {},
   indicators: row.payload.indicators ?? {},

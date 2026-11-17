@@ -5,7 +5,8 @@
 The opt-in `executionBasis: closed-loop-execution` branch is distinct from the
 legacy posthoc conditional subset. Its `metricBasis` must be `completed-trade`.
 Legacy inputs without the new discriminator keep their existing JSON bytes,
-fingerprints and chart layout. Never mix raw, posthoc and actual curves.
+fingerprints and economic inputs. Both branches use the shared three-panel
+research chart, while still keeping raw, posthoc and actual curves separate.
 
 Use `executed-composition-report.mjs --projectRoot <Project> --authority
 <Project-relative authority.json> --outputPrefix <new Project-relative prefix>`
@@ -77,8 +78,11 @@ each candidate, plus a common `selectionAuthority`. No fake core export is
 required for verified zero completions. Verified empty equity is exactly
 `{status: verified-empty, stream: null, rows: 0}`; the dashed zero guide is an
 annotation outside the observed-data layer. An unavailable stream is UNKNOWN,
-not a zero guide. The LiquidityZones baseline is installed stable core plus
-exact current AI-gate under frozen research risk/costs, not active production.
+not a zero guide. When the strategy is declared in production, the baseline is
+its exact verified deployed core plus current AI-gate under frozen research
+risk/costs. An installed stable control may be a diagnostic/reference, or an
+explicitly labelled research baseline only when the strategy is absent from
+production.
 
 Compact disk indexes and bounded external merge sorting never retain whole
 payload/trade/equity arrays. Equity reduction retains actual endpoints and
@@ -160,6 +164,11 @@ node .codex/skills/strategy-improvement-research/scripts/freeze-gate-variants.mj
 
 ## Final comparison
 
+Resolve baseline identity through
+[`../../strategy-backtest-research/references/production-baseline.md`](../../strategy-backtest-research/references/production-baseline.md)
+before building either table. A historical board remains immutable, but a new
+board must not reuse its old baseline role after production has changed.
+
 Build two separate tables:
 
 - **Raw-core diagnostics**: baseline and every raw core with the fixed
@@ -175,6 +184,17 @@ ranking or charting. Use the same half-open comparison window and terminal
 `365d`, `180d`, `90d`, `30d`, and `7d` slices for every composition, including
 zero-trade windows. A gate without sufficient untouched support remains visible
 as `research-only` or `blocked`; the chart is not evidence of readiness.
+
+## Portfolio contribution
+
+For a finalist intended for a shared portfolio, compare the incumbent portfolio
+with the same ordered composition replacing one strategy. Use identical
+cached inputs, risk and policies. Run both as one shared replay batch and pass
+the incumbent portfolio JSON to the candidate replay with
+`--portfolioCompareTo`. Compare realized PnL, drawdown, recovery and contributions
+from unchanged strategies. Read marked drawdown and confirmed displacement
+from the shared replay diagnostics. A change in trade count alone is not
+evidence of capacity displacement.
 
 ## Mandatory visual artifacts
 
@@ -223,9 +243,11 @@ Required outputs:
   of every final composition, and limitations. `terminalComparisonIds`
   defaults to `[selectedId]`; it may include up to three candidate IDs, must
   include `selectedId`, and does not change the research selection;
-- `final-composition-equity.svg` and `.png`: cumulative PnL curves for the
-  current production composition and every research composition on the common
-  time axis;
+- `final-composition-equity.svg` and `.png`: the shared three-panel research
+  comparison for the current production `BASELINE` and every research
+  `CANDIDATE` on one common time axis: cumulative net PnL, realized drawdown,
+  and consecutive losing trades or, for retained equity-only inputs,
+  consecutive negative realized-equity steps;
 - `final-composition-summary.json`: derived composition fingerprints, source
   hashes, normalized metrics, and hashes of all four rendered files.
 
@@ -234,6 +256,8 @@ of the same SVG. Link or display both charts in the final answer and immutable
 research note. Store the complete board spec and summary in Project-owned
 evidence; paths alone do not replace the note's machine-readable metrics.
 
+This artifact follows
+[`../../strategy-backtest-research/references/research-comparison-charts.md`](../../strategy-backtest-research/references/research-comparison-charts.md).
 For these research comparison charts, use continuous straight segments between
 the recorded equity samples by default, not staircase corners. This matches the
 preferred presentation without averaging returns or rounding away drawdowns.
@@ -351,4 +375,6 @@ tests to check boundaries and lane overlap, including long names/coincident poin
 
 This change only projects verified fields. Selection, metrics, candidate order,
 fingerprints, authority inputs, linear equity interpolation and retained extrema
-are unchanged. The legacy raw/posthoc branch and its SVG golden bytes are unchanged.
+are unchanged. The legacy raw/posthoc branch now uses the same mandatory
+three-panel chart, so its SVG bytes intentionally change without changing its
+economic inputs.

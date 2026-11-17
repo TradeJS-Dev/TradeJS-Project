@@ -62,6 +62,20 @@ Before preregistration, read
 [`references/final-composition-board.md`](references/final-composition-board.md).
 It defines candidate-specific gate isolation, common partitions, the final
 composition ledger, and the mandatory visual artifacts.
+Also read
+[`../strategy-backtest-research/references/production-baseline.md`](../strategy-backtest-research/references/production-baseline.md)
+and resolve the current production deployment before freezing the lineage.
+
+## Support before outcomes
+
+Before evaluating PnL, record the mechanism, event identity, minimum useful
+effect and available support by calendar block, symbol and market episode.
+Compare two rules on the same setup when possible. For different events,
+declare causal comparability fields and inspect overlap before seeing outcomes.
+Exact ticker/week pairing is optional when it leaves too little support.
+For existing outcome-blind traces, use the optional `research:core prepare`
+support check in `CORE_RESEARCH.md`. Distinguish missing evidence, insufficient
+support, mechanism failure and economic rejection.
 
 ## Required contour
 
@@ -72,6 +86,9 @@ composition ledger, and the mandatory visual artifacts.
    compatible candidates and exact-bridge any plausibly competitive
    incompatible candidate on the new common period before inventing changes.
    Old winners are competitors, not automatic controls and not erased.
+   If the strategy is present in production, freeze that exact deployed
+   composition as the sole baseline. If it is absent, freeze and explicitly
+   label a research control without calling it production.
 3. Reconstruct the market thesis and opportunity map. Select at least three
    distinct causal families: exploit, repair, and explore/falsify.
 4. Evaluate one preregistered candidate per family. Continue viable families
@@ -92,25 +109,29 @@ composition ledger, and the mandatory visual artifacts.
    reconciled, behavior-changing core candidate. Give each export its own gate
    discovery and exactly one selected deterministic gate; never reuse another
    core's gate metrics or compare a gated candidate with an ungated baseline.
-   On the production core export, also replay the exact current production
-   AI-gate and bind it to its checksum-verified gate-authority report. This
-   `production core + current AI-gate` composition is the mandatory baseline;
+   On the verified production core export, also replay the exact current
+   production AI-gate and bind it to its checksum-verified gate-authority
+   report. This `production core + current AI-gate` composition is the
+   mandatory baseline;
    the production core with its newly rebuilt gate is a separate research
    candidate and must not replace the current-gate baseline.
    Use common calendar development/test boundaries (outer 60/40; three stability blocks inside development) and open every sealed gate
    tail together only after all per-core gate variants are frozen. Run every
    gate board through `$ai-train-local-research`; do not retune or relabel the
    raw-core result inside gate tooling.
-8. Build the final leaderboard from the mandatory `production core + current
-AI-gate` baseline and `core + own deterministic gate` research candidates,
+8. Build the final leaderboard from the mandatory exact deployed `production
+core + current AI-gate` baseline and `core + own deterministic gate` research
+candidates,
    including `production core + rebuilt gate` as its own candidate. Preserve
    raw-core metrics in a separate diagnostic table. Apply the final selection
    rules and multiple-testing denominator to the complete core-by-gate trial
    ledger, not only to the winning core or gate.
 9. Generate and checksum the mandatory final-composition dashboard and
-   cumulative-equity chart with the permanent script from the referenced
-   contract. A metrics-only handoff or a chart mixing raw and gated candidates
-   is incomplete.
+   three-panel comparison chart with the permanent script from the referenced
+   contract. It must show cumulative net PnL, realized drawdown, and loss
+   streak on the same UTC axis with explicit `BASELINE`/`CANDIDATE` roles. A
+   metrics-only handoff, a PnL-only curve, or a chart mixing raw and gated
+   candidates is incomplete.
 10. Run package formatting, typecheck, tests, and build in the lineage worktree.
     Commit only the selected candidate and its tests on that worktree branch;
     preserve rejected experiments as immutable evidence, not source clutter.
@@ -142,12 +163,15 @@ source/package SHA, full resolved core config, deterministic gate/context,
 direction policy, evidence hashes, trial count, metric matrix, chart, freshness,
 limitations, and forward-test eligibility. End with the selected candidate,
 why it beat production and prior candidates, and exactly one next skill.
+Do not mark the selected candidate as the current baseline here: that role is
+recorded only after `$strategy-forward-start` verifies its production cutover.
 
 The handoff must link both visual artifacts for the final compositions:
 
 - `final-composition-dashboard.{svg,png}` with KPI deltas against the exact
   production-core + current-AI-gate baseline, terminal
   `365d/180d/90d/30d/7d` PnL, and the all-candidate PnL-versus-MaxDD plane;
-- `final-composition-equity.{svg,png}` with cumulative PnL for the gated
-  production baseline, the rebuilt production-core gate, and every final
-  `core + own gate` composition over the common comparison window.
+- `final-composition-equity.{svg,png}` in the shared three-panel research
+  format: cumulative PnL, realized drawdown, and loss streak for the gated
+  production `BASELINE`, the rebuilt production-core gate, and every final
+  `core + own gate` `CANDIDATE` over the common comparison window.

@@ -129,6 +129,14 @@ rounding, and `n/a` rules exactly. Use the full contract unless the user
 explicitly asks for one narrow metric. Do not improvise a shorter alternative
 or silently omit unavailable metrics.
 
+For every baseline-versus-gate comparison, also read
+[`../strategy-backtest-research/references/research-comparison-charts.md`](../strategy-backtest-research/references/research-comparison-charts.md)
+and render the mandatory three-panel SVG/PNG before retention cleanup. The
+current gate is the explicit `BASELINE`; each frozen alternative is a
+`CANDIDATE`. Ablation slices and volatility/direction groups are
+`DIAGNOSTIC`, never candidates. The chart uses the same completed-trade window,
+costs, risk unit, and partitions as the metrics report.
+
 For every approved-stream summary, calculate `PnL/trade` as total approved PnL
 divided by completed approved trades. Never substitute the backtest CLI progress
 `avg`, which is PnL per completed test/symbol. Use `n/a` when `N = 0`.
@@ -277,9 +285,10 @@ Mandatory validation sections for gate work:
   target/benchmark/global, and whether it depends on
   lookback/window/cache/provider settings.
 - **Walk-forward validation**: when the export spans enough history, validate
-  across multiple chronological folds or at least month/quarter buckets. Prefer
-  pockets that survive changing market regimes over pockets that win only in a
-  single terminal validation split.
+  a recurring refit procedure with the A/B/C protocol in
+  [gate-ablation.md](references/gate-ablation.md#compare-refitting-and-ticker-groups).
+  Month/quarter buckets of one frozen rule measure stability. Walk-forward
+  reselects the rule from earlier mature labels for each evaluation window.
 - **Acceptance gates**: define minimum validation support, maximum symbol
   and event concentration, acceptable losing months, max loss streak,
   PF/drawdown improvement, and cadence/capacity bounds before recommending
@@ -564,7 +573,7 @@ Minimum checks:
 - classify old pockets as `keep`, `round`, `replace`, `disable`, or
   `needs-more-data`
 - include live-env parity and feature provenance tables in the analysis
-- run walk-forward or month/quarter stability checks when history allows it
+- apply the validation sections above, including threshold sensitivity
 - define acceptance gates before treating a pocket as production-ready
 - use a negative control for unusually strong or highly specific pockets
 - reject approval rules based on data-count or availability fields such as
@@ -572,7 +581,6 @@ Minimum checks:
   size; use those only as missing/stale-data guards
 - reject high-precision pocket thresholds until they have been rounded to a
   defensible value and replayed again
-- run sensitivity checks around each proposed numeric threshold
 - report train and validation support separately when using `ai-pocket-search`
   or a custom split, but label any partition used for selection as tuning
 - group partitions by timestamp and report independent-event support separately
@@ -580,8 +588,8 @@ Minimum checks:
 - report event clustering and capacity stress for every terminal window
 - require a target-specific discriminator or portfolio throttle for
   benchmark/global pockets that can approve many symbols on one timestamp
-- include an ablation table: baseline, pocket-only when applicable, and final
-  gate
+- compare the current gate with the proposed gate. Use the A/B/C protocol
+  when the claim concerns the incremental value of ticker groups
 - require boundary tests and a passive-rollout plan for implemented gate changes
 - clean up old disabled pockets instead of leaving dead constants or prompt
   fields behind
