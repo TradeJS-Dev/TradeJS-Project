@@ -68,6 +68,12 @@ start_signals_daemon() {
 
   (
     set -o pipefail
+    if [ "$deployment_id" = production ]; then
+      until PROJECT_CWD=/app timeout 120 node ./scripts/range-reclaim-ticker-profiles.mjs refresh; do
+        printf 'RangeReclaim profile unavailable; production signals wait, app remains available. Retrying in 60s.\n' >&2
+        sleep 60
+      done
+    fi
     PROJECT_CWD=/app \
       DOTENV_CONFIG_PATH=/app/.env \
       NODE_OPTIONS="--max-old-space-size=${SIGNALS_DAEMON_HEAP_MB:-4096}" \
@@ -97,9 +103,6 @@ trap 'shutdown 0' INT TERM
 touch "$SIGNALS_LOG_PATH"
 
 ./scripts/write-runtime-cron-identity.sh
-if parse_deployment_ids "$SIGNALS_DAEMON_DEPLOYMENT_ID" | grep -Fx production >/dev/null; then
-  PROJECT_CWD=/app timeout 120 node ./scripts/range-reclaim-ticker-profiles.mjs refresh
-fi
 crond -f -P &
 cron_pid=$!
 managed_pids+=("$cron_pid")

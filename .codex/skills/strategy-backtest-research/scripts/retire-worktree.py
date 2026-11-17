@@ -47,7 +47,7 @@ def retire(repository, worktree, out, apply=False, history_root=None):
     tracked = set(git(worktree, 'ls-files', '-z', '--cached').split(b'\0'))
     files = set(git(worktree, 'ls-files', '-z', '--cached', '--others', '--exclude-standard').split(b'\0'))
     files.update(git(worktree, 'ls-files', '-z', '--others', '--ignored', '--exclude-standard').split(b'\0'))
-    generated = {'node_modules', 'dist', 'build', '.yarn', '.turbo', '.next', 'coverage', '__pycache__', 'synthetic-fixtures'}
+    generated = {'node_modules', 'dist', 'build', '.yarn', '.turbo', '.next', 'coverage', '__pycache__'}
     selected = []
     for raw in sorted(files):
         if not raw:
@@ -87,7 +87,12 @@ def retire(repository, worktree, out, apply=False, history_root=None):
                 pass
         finally:
             os.unlink(temporary)
-    git(repository, 'bundle', 'verify', str(history))
+    # Verify without objects from the source repository: incremental bundles are not backups.
+    with tempfile.TemporaryDirectory(prefix='verify-history-') as verification:
+        git(verification, 'init', '--bare', '-q')
+        git(verification, 'bundle', 'verify', str(history))
+        git(verification, 'fetch', '--quiet', str(history), 'HEAD')
+        git(verification, 'fsck', '--full', '--strict')
     if git(repository, 'bundle', 'list-heads', str(history), 'HEAD').decode().strip() != f'{head} HEAD':
         raise ValueError('Shared history HEAD does not match archived worktree')
     history_reference = {'path': os.path.relpath(history, out), 'sha256': sha_file(history), 'head': head}

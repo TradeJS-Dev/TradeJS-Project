@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: ${PG_PASSWORD:-app}
       POSTGRES_DB: ${PG_DATABASE:-app}
     ports:
-      - "${PG_PORT:-5432}:5432"
+      - "127.0.0.1:${PG_PORT:-5432}:5432"
     command:
       - postgres
       - -c
@@ -38,8 +38,8 @@ services:
         --appendonly yes --appendfsync everysec --save 60 1
         --stop-writes-on-bgsave-error no
     ports:
-      - "${REDIS_PORT:-6379}:6379"
-      - "${REDIS_INSIGHT_PORT:-5540}:8001"
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+      - "127.0.0.1:${REDIS_INSIGHT_PORT:-5540}:8001"
     volumes:
       - redisdata:/data
     healthcheck:
@@ -59,7 +59,7 @@ services:
       ML_GRPC_HOST: 0.0.0.0
       ML_GRPC_PORT: 50051
     ports:
-      - "50051:50051"
+      - "127.0.0.1:50051:50051"
     volumes:
       - ./data:/app/data
     healthcheck:
@@ -84,7 +84,7 @@ services:
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
       PGADMIN_LISTEN_PORT: "5050"
     ports:
-      - "5050:5050"
+      - "127.0.0.1:5050:5050"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     depends_on:
