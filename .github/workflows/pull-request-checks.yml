@@ -1,0 +1,41 @@
+name: Проверка изменений
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pull-request-checks-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      PUPPETEER_SKIP_DOWNLOAD: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: ".nvmrc"
+          package-manager-cache: false
+      - name: Подготовить Yarn
+        run: |
+          corepack enable
+          corepack prepare yarn@4.13.0 --activate
+      - run: yarn install --immutable
+      - run: yarn checks
+      - name: Проверить сохранность архивов
+        run: python3 .codex/skills/strategy-backtest-research/scripts/retire-worktree.test.py
+      - name: Проверить Compose и production-образ
+        run: |
+          docker compose -f docker-compose.dev.yml config --quiet
+          docker build --build-arg TRADEJS_PROJECT_SHA="$GITHUB_SHA" -t project-validation .
+          docker run --rm --network none --entrypoint bash project-validation -n /app/entrypoint.sh

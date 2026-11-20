@@ -1,7 +1,7 @@
 {
   "schema": "tradejs-skill-bundle/v1",
   "source": "TradeJS-Dev/TradeJS:.codex/skills",
-  "bundleSha256": "773bd442dade76970e8749eb690512c352c21de199847e677d3f1580c3b16585",
+  "bundleSha256": "a85123240beec39ed985961f30e1026c31e132fe06dfac07a4f6d583337a3e2d",
   "skills": [
     "ai-train-local-research",
     "backtest-config-redis",
@@ -63,8 +63,8 @@
     ".codex/skills/strategy-backtest-research/scripts/research-comparison-chart.test.mjs": "fa79560ccf00601997401ef6e248d8639edf5c1808ec92e81094a4baf6e1a7be",
     ".codex/skills/strategy-backtest-research/scripts/research-notes-check.mjs": "196f420845f0cc841bdbb1651063a485c90a1140f767e88f4dbf3543adb881de",
     ".codex/skills/strategy-backtest-research/scripts/research-notes-check.test.mjs": "256618c16d797374078198e6e61c50b518cef5bbbc85c3ceffa891035ae58318",
-    ".codex/skills/strategy-backtest-research/scripts/retire-worktree.py": "6870d1c537e32c9626c27c1e0dfd5911e4e2fe917b82de28a15f82193f1e6384",
-    ".codex/skills/strategy-backtest-research/scripts/retire-worktree.test.py": "648071b5c6326f5129c3d1893da763212d2bdd92d4ea66226e3823e7189848ef",
+    ".codex/skills/strategy-backtest-research/scripts/retire-worktree.py": "51ce91206a922da3fb7fc2c84c6824466d05be3022548f220448612cd4507f93",
+    ".codex/skills/strategy-backtest-research/scripts/retire-worktree.test.py": "ed8db5075bcbdac380b0100e47cb2b2335804148155baa8c49ff41a87517e0b3",
     ".codex/skills/strategy-backtest-research/SKILL.md": "baa9525098dcc321f0714dbe98a744cb05f840b6ace056acc66205b7b869391d",
     ".codex/skills/strategy-candidate-compare/SKILL.md": "cd3cf47259c9eb96bfaba795983788b77d463557a965692aaa19ad2de16850e6",
     ".codex/skills/strategy-candidate-report/SKILL.md": "f5cb27dd1ddc2e24afaf2aa2b86aa9edf6ef2b91f3d7acc5d49ee8209d8d3d7b",
