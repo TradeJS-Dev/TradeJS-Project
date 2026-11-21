@@ -56,6 +56,18 @@ profile|create|verify|decide|diagnose|retention`. The Project wrapper uses a
   `yarn exec tradejs execution-calibration`, and
   `yarn exec tradejs runtime-scorecard`.
 
+Если пользователь не указал тикеры или другую биржу, используй актуальный
+полный список бессрочных USDT-контрактов Bybit со статусом `Trading`. Перед
+прогоном сверь список с API биржи и сохрани его в материалах исследования.
+Используй одинаковый список для всех сравниваемых вариантов. Новые тикеры
+включай после прогрева. Указывай дату снимка, покрытие и причины исключений.
+
+Если пользователь явно не попросил параллельный запуск, проводи исследования
+в один поток. Для команд с настройкой числа воркеров или потоков указывай
+один воркер или поток. Бэктесты, варианты, выгрузки и другие ресурсоёмкие
+этапы запускай последовательно. Перед тяжёлым запуском проверь, не идёт ли
+другое ресурсоёмкое исследование, и дождись его завершения.
+
 Historical research defaults to `--cacheOnly`. A forward test is a
 `$strategy-forward-start` rollout of one exact candidate, not a generic
 backtest; it requires explicit authorization, an exact runtime binding, the
