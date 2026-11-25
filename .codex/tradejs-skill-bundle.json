@@ -1,7 +1,7 @@
 {
   "schema": "tradejs-skill-bundle/v1",
   "source": "TradeJS-Dev/TradeJS:.codex/skills",
-  "bundleSha256": "a85123240beec39ed985961f30e1026c31e132fe06dfac07a4f6d583337a3e2d",
+  "bundleSha256": "a0acbf3ab157fd3485050155d554bdf1f925fdcb204f0e3f343f3b992aa855df",
   "skills": [
     "ai-train-local-research",
     "backtest-config-redis",
@@ -59,8 +59,9 @@
     ".codex/skills/strategy-backtest-research/scripts/fast-ai-export-metrics.test.mjs": "447453e2415004336293297b7f68ffd16ae35053d9725accaa5f42e1bbe28a58",
     ".codex/skills/strategy-backtest-research/scripts/metric-snapshot.mjs": "b96ece871772c82074a188c105520f773362980fa09677456bc5dff895855ade",
     ".codex/skills/strategy-backtest-research/scripts/metric-snapshot.test.mjs": "77ef641d1f8590063db13aa9fe12d1db30b28c622f44c774be502d0a9fa487dc",
-    ".codex/skills/strategy-backtest-research/scripts/research-comparison-chart.mjs": "e995ed31cb311b065c1062cd5fe6102dc6e5aaf25dcdc9567af9dc45367ec8fc",
-    ".codex/skills/strategy-backtest-research/scripts/research-comparison-chart.test.mjs": "fa79560ccf00601997401ef6e248d8639edf5c1808ec92e81094a4baf6e1a7be",
+    ".codex/skills/strategy-backtest-research/scripts/portfolio-signal-agent.mjs": "44fb6bcf41a3e08ef697b30258c79d18ed57503b910bf5486e19ec72e4f1eff8",
+    ".codex/skills/strategy-backtest-research/scripts/research-comparison-chart.mjs": "6245ea4ebccdea53784dc1e5aeadb70ecc23a9b94d74cba4ba2129b5d307f86f",
+    ".codex/skills/strategy-backtest-research/scripts/research-comparison-chart.test.mjs": "1a068cc2fd11184de1e7dde21f07ef57beda25aeacef104b43636c45d5dcc54d",
     ".codex/skills/strategy-backtest-research/scripts/research-notes-check.mjs": "196f420845f0cc841bdbb1651063a485c90a1140f767e88f4dbf3543adb881de",
     ".codex/skills/strategy-backtest-research/scripts/research-notes-check.test.mjs": "256618c16d797374078198e6e61c50b518cef5bbbc85c3ceffa891035ae58318",
     ".codex/skills/strategy-backtest-research/scripts/retire-worktree.py": "51ce91206a922da3fb7fc2c84c6824466d05be3022548f220448612cd4507f93",
