@@ -6,6 +6,7 @@ const config = defineConfig(basePreset, {
   strategies: [
     "@tradejs/strategy-trading-patterns",
     "@tradejs/strategy-range-reclaim",
+    "@tradejs/strategy-ridge-m15",
   ],
   runtime,
 });
@@ -13,6 +14,7 @@ const config = defineConfig(basePreset, {
 export default {
   ...config,
   launchReports: {
+    Agent: { RidgeM15: "ridge-m15-prospective-20261125" },
     production: {
       CupAndHandle: "causal-cup-progress-20260825",
       HeadAndShoulders: "rebuilt-long-poc-slope-20260826",

@@ -1576,6 +1576,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tradejs/strategy-ridge-m15@npm:0.1.4":
+  version: 0.1.4
+  resolution: "@tradejs/strategy-ridge-m15@npm:0.1.4"
+  peerDependencies:
+    "@tradejs/core": ^3.1.30 || >=3.1.31-beta.323 <3.1.31
+    "@tradejs/strategy-diamond": 0.1.2
+    "@tradejs/strategy-double-tap": 3.0.6
+    "@tradejs/strategy-flag": 0.1.7
+    "@tradejs/strategy-gartley": 0.1.3
+    "@tradejs/strategy-head-and-shoulders": 3.0.8
+    "@tradejs/strategy-kit": 3.0.6
+    "@tradejs/strategy-liquidity-tails": 3.0.7
+    "@tradejs/strategy-trading-patterns": 0.1.3
+    "@tradejs/strategy-trend-follow": 3.0.7
+    "@tradejs/strategy-trend-shift": 3.0.6
+    "@tradejs/types": ^3.1.30 || >=3.1.31-beta.323 <3.1.31
+  checksum: 10c0/0faeed1f941f6dac16f7f84b6a0010bf4d6c495ff4b3e41a0e1ba7c2e4f1bc98688c41f0660a6802a2e6a54c05fbb85ec82ecb967aa4bc8e4421f9d93d939a5f
+  languageName: node
+  linkType: hard
+
 "@tradejs/strategy-structure-zones@npm:3.0.7":
   version: 3.0.7
   resolution: "@tradejs/strategy-structure-zones@npm:3.0.7"
@@ -6343,6 +6363,7 @@ __metadata:
     "@tradejs/strategy-market-flush-reversal": "npm:3.0.8"
     "@tradejs/strategy-range-reclaim": "npm:0.1.4"
     "@tradejs/strategy-relative-rotation": "npm:3.0.6"
+    "@tradejs/strategy-ridge-m15": "npm:0.1.4"
     "@tradejs/strategy-structure-zones": "npm:3.0.7"
     "@tradejs/strategy-trading-patterns": "npm:0.1.3"
     "@tradejs/strategy-trend-follow": "npm:3.0.7"

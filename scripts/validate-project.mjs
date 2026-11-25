@@ -104,8 +104,8 @@ const strategyDependencies = Object.entries(packageJson.dependencies).filter(
     name.startsWith("@tradejs/strategy-") && name !== "@tradejs/strategy-kit",
 );
 assert(
-  strategyDependencies.length === 26,
-  "All 26 strategy packages must be direct dependencies",
+  strategyDependencies.length === 27,
+  "All 27 strategy packages must be direct dependencies",
 );
 assert(
   !Object.hasOwn(packageJson.dependencies, "@tradejs/strategies"),
@@ -350,8 +350,10 @@ assert(
 
 const runtimeEnv = read("deploy/runtime.env");
 assert(
-  /^SIGNALS_DAEMON_DEPLOYMENT_ID=production,CopyTrading$/m.test(runtimeEnv),
-  "Production signals daemon must select both configured deployments explicitly",
+  /^SIGNALS_DAEMON_DEPLOYMENT_ID=production,CopyTrading,Agent$/m.test(
+    runtimeEnv,
+  ),
+  "Production signals daemon must select all three configured deployments explicitly",
 );
 assert(
   !runtimeEnv.includes("trendfollow-forward-loss-guard-20260818"),
