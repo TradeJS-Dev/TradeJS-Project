@@ -14,7 +14,7 @@ const config = defineConfig(basePreset, {
 export default {
   ...config,
   launchReports: {
-    Agent: { RidgeM15: "ridge-m15-prospective-20261125" },
+    Agent: { RidgeM15: "ridge-m15-limit-5-20261126" },
     production: {
       CupAndHandle: "causal-cup-progress-20260825",
       HeadAndShoulders: "rebuilt-long-poc-slope-20260826",
