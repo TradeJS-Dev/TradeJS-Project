@@ -107,7 +107,7 @@ test("evidence cron runs each deployment and preserves failures", (context) => {
   const cli = path.join(dir, "cli");
   fs.writeFileSync(
     cli,
-    '#!/bin/sh\nprintf "%s\\n" "$*" >> "$CALLS"\ncase "$*" in *"--deployment production "*) exit 1;; esac\n',
+    '#!/bin/sh\nprintf "%s\\n" "$*" >> "$CALLS"\nprintf "collector stdout\\n"\nprintf "collector stderr\\n" >&2\ncase "$*" in *"--deployment production "*) exit 17;; esac\n',
   );
   fs.chmodSync(cli, 0o755);
   const script = path.join(dir, "daily.sh");
@@ -138,6 +138,57 @@ test("evidence cron runs each deployment and preserves failures", (context) => {
     /--deployment CopyTrading --out .*latest\/CopyTrading\//,
   );
   assert.ok(lines.every((line) => !line.includes("production,CopyTrading")));
+  const logDir = path.join(dir, "data/runtime-evidence/logs");
+  const logFiles = fs.readdirSync(logDir);
+  assert.equal(logFiles.length, 1);
+  const log = fs.readFileSync(path.join(logDir, logFiles[0]), "utf8");
+  assert.match(log, /event=started/);
+  assert.match(log, /collector stdout/);
+  assert.match(log, /collector stderr/);
+  assert.match(
+    log,
+    /event=deployment-finished deployment=production exitCode=17/,
+  );
+  assert.match(
+    log,
+    /event=deployment-finished deployment=CopyTrading exitCode=0/,
+  );
+  assert.match(log, /event=finished exitCode=1/);
+  assert.equal(result.stdout, "");
+  assert.equal(result.stderr, "");
+
+  fs.rmSync(identity);
+  const missingIdentity = spawnSync("bash", [script], {
+    env: { ...process.env, CALLS: calls },
+    encoding: "utf8",
+  });
+  assert.equal(missingIdentity.status, 1);
+  const logsAfterFailure = fs.readdirSync(logDir);
+  assert.equal(logsAfterFailure.length, 2);
+  const failureLog = fs.readFileSync(
+    path.join(
+      logDir,
+      logsAfterFailure.find((name) => !logFiles.includes(name)),
+    ),
+    "utf8",
+  );
+  assert.match(failureLog, /Runtime cron identity is not readable/);
+  assert.match(failureLog, /event=finished exitCode=1/);
+  assert.equal(fs.readFileSync(calls, "utf8").trim().split("\n").length, 2);
+  fs.writeFileSync(
+    identity,
+    "export RUNTIME_EVIDENCE_DEPLOYMENT_ID=CopyTrading\n",
+  );
+  const success = spawnSync("bash", [script], {
+    env: { ...process.env, CALLS: calls },
+    encoding: "utf8",
+  });
+  assert.equal(success.status, 0);
+  const successLogName = fs
+    .readdirSync(logDir)
+    .find((name) => !logsAfterFailure.includes(name));
+  const successLog = fs.readFileSync(path.join(logDir, successLogName), "utf8");
+  assert.match(successLog, /event=finished exitCode=0/);
 });
 
 test("production evidence targets are explicit and independent from the daemon fallback", () => {
